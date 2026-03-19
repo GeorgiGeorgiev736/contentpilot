@@ -1,0 +1,24 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect x="0" y="0" width="500" height="500" rx="110" fill="#0D0D1F"/>
+  <!-- Outer orbit ring -->
+  <ellipse cx="250" cy="250" rx="175" ry="175" fill="none" stroke="#7C5CFC" stroke-width="8" stroke-dasharray="28 14" opacity="0.5"/>
+  <!-- Inner orbit ring -->
+  <ellipse cx="250" cy="250" rx="110" ry="110" fill="none" stroke="#B45AFD" stroke-width="5" opacity="0.4"/>
+  <!-- Center dot -->
+  <circle cx="250" cy="250" r="36" fill="#7C5CFC"/>
+  <circle cx="250" cy="250" r="20" fill="#B45AFD"/>
+  <!-- Orbiting node top-right -->
+  <circle cx="370" cy="120" r="28" fill="#B45AFD"/>
+  <circle cx="370" cy="120" r="14" fill="#0D0D1F"/>
+  <!-- Orbiting node bottom-left -->
+  <circle cx="130" cy="370" r="20" fill="#7C5CFC" opacity="0.9"/>
+  <circle cx="130" cy="370" r="8" fill="#0D0D1F"/>
+  <!-- Trail lines -->
+  <path d="M290 186 L356 126" stroke="#B45AFD" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M210 314 L144 364" stroke="#7C5CFC" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+  <!-- Accent dots -->
+  <circle cx="425" cy="250" r="10" fill="#EC4899" opacity="0.9"/>
+  <circle cx="75"  cy="250" r="8"  fill="#69C9D0" opacity="0.9"/>
+  <circle cx="250" cy="425" r="9"  fill="#F59E0B" opacity="0.8"/>
+</svg>
