@@ -119,7 +119,7 @@ router.get("/facebook", (_req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.INSTAGRAM_CLIENT_ID,  // Facebook App ID
     redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
-    scope:         "email,pages_show_list,instagram_basic,instagram_content_publish",
+    scope:         "email,public_profile",
     response_type: "code",
   });
   res.redirect(`https://www.facebook.com/dialog/oauth?${params}`);
@@ -154,38 +154,6 @@ router.get("/facebook/callback", async (req, res) => {
       name:       profile.name,
       avatar:     profile.picture?.data?.url || null,
     });
-
-    // Auto-connect Instagram Business account
-    try {
-      const pagesRes = await fetch(
-        `https://graph.facebook.com/v19.0/me/accounts?access_token=${tokens.access_token}`
-      );
-      const pagesData = await pagesRes.json();
-      for (const page of pagesData.data || []) {
-        const igRes = await fetch(
-          `https://graph.facebook.com/v19.0/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`
-        );
-        const igData = await igRes.json();
-        if (!igData.instagram_business_account) continue;
-
-        const igId = igData.instagram_business_account.id;
-        const profileRes2 = await fetch(
-          `https://graph.facebook.com/v19.0/${igId}?fields=username,media_count,followers_count&access_token=${page.access_token}`
-        );
-        const igProfile = await profileRes2.json();
-
-        await query(
-          `INSERT INTO platform_connections (user_id,platform,handle,access_token,followers,video_count,connected)
-           VALUES ($1,'instagram',$2,$3,$4,$5,true)
-           ON CONFLICT (user_id,platform) DO UPDATE SET
-             handle=$2,access_token=$3,followers=$4,video_count=$5,connected=true,updated_at=NOW()`,
-          [user.id, `@${igProfile.username}`, page.access_token, igProfile.followers_count || 0, igProfile.media_count || 0]
-        );
-        break; // connect first linked account
-      }
-    } catch (e) {
-      console.warn("Instagram auto-connect failed:", e.message);
-    }
 
     const token = signToken(user.id);
     res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
