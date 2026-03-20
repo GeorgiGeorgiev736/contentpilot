@@ -108,25 +108,35 @@ export default function PostContent() {
     setAiStream("");
     setError("");
     let out = "";
-    await streamAI({
-      feature: "video_metadata",
-      context: { filename: videoFile?.name || "video", platform: selPlatforms[0] || "youtube" },
-      onToken: t => {
-        out += t;
-        setAiStream(out); // live update so user sees it typing
-      },
-      onDone: () => {
-        const titleMatch = out.match(/TITLE:\s*(.+)/);
-        const descMatch  = out.match(/DESCRIPTION:\s*([\s\S]+?)(?=\nHASHTAGS:|$)/);
-        const hashMatch  = out.match(/HASHTAGS:\s*([\s\S]+)/);
-        if (titleMatch) set("title")(titleMatch[1].trim());
-        if (descMatch)  set("description")(descMatch[1].trim());
-        if (hashMatch)  set("hashtags")(hashMatch[1].trim());
-        setAiLoading(false);
-        setAiStream("");
-      },
-      onError: (msg) => { setError(msg || "AI generation failed — check credits"); setAiLoading(false); setAiStream(""); },
-    });
+    try {
+      await streamAI({
+        feature: "video_metadata",
+        context: { filename: videoFile?.name || "video", platform: selPlatforms[0] || "youtube" },
+        onToken: t => {
+          out += t;
+          setAiStream(out);
+        },
+        onDone: () => {
+          const titleMatch = out.match(/TITLE:\s*(.+)/);
+          const descMatch  = out.match(/DESCRIPTION:\s*([\s\S]+?)(?=\nHASHTAGS:|$)/);
+          const hashMatch  = out.match(/HASHTAGS:\s*([\s\S]+)/);
+          if (titleMatch) set("title")(titleMatch[1].trim());
+          if (descMatch)  set("description")(descMatch[1].trim());
+          if (hashMatch)  set("hashtags")(hashMatch[1].trim());
+          setAiLoading(false);
+          setAiStream("");
+        },
+        onError: (msg) => {
+          setError(msg || "AI generation failed");
+          setAiLoading(false);
+          setAiStream("");
+        },
+      });
+    } catch (e) {
+      setError(e.message || "AI generation failed — check your connection");
+      setAiLoading(false);
+      setAiStream("");
+    }
   };
 
   const handleAutoClip = async () => {

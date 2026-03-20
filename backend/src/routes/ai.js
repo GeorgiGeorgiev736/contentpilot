@@ -55,7 +55,7 @@ router.post("/stream", requireAuth, requireCredits, async (req, res, next) => {
     send("start", { feature });
 
     const stream = anthropic.messages.stream({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-5",
       max_tokens: 2000,
       system: "You are an expert AI assistant for an influencer content autopilot platform. Be specific, actionable, and data-driven. Format responses clearly.",
       messages: [{ role: "user", content: prompt }],

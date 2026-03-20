@@ -68,7 +68,8 @@ export async function streamAI({ feature, context, onToken, onDone, onError }) {
       try {
         const data = JSON.parse(line.slice(6));
         if (data.text) onToken?.(data.text);
-        if (data.error) { onError?.(data.message || "AI error"); return; }
+        // Backend sends error as { message } — catch both shapes
+        if (data.message && !data.text && !data.feature) { onError?.(data.message); doneFired = true; return; }
         if (data.feature || data.creditsUsed) { doneFired = true; onDone?.(data); }
       } catch {}
     }
