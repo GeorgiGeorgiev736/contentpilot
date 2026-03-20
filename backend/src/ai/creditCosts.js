@@ -30,6 +30,7 @@ const CREDIT_COSTS = {
 
   // ── Video Clipper ─────────────────────────────────────────────
   suggest_clips:        3,   // AI analyzes video to suggest best Short segments
+  batch_clips:          8,   // AI suggests + ffmpeg trims + batch schedules short clips
 
   // ── AI Avatar ────────────────────────────────────────────────
   avatar_generate:     15,   // ElevenLabs TTS + SadTalker render on Replicate

@@ -62,11 +62,20 @@ export default function PostContent() {
 
   const [connList,        setConnList]        = useState([]);
   const [aiLoading,       setAiLoading]       = useState(false);
+  const [aiStream,        setAiStream]        = useState("");
   const [submitting,      setSubmitting]      = useState(false);
   const [uploadProgress,  setUploadProgress]  = useState(0);
   const [uploadPhase,     setUploadPhase]     = useState(""); // "initiating" | "uploading" | "saving"
   const [done,            setDone]            = useState(false);
   const [error,           setError]           = useState("");
+
+  // Auto-clip state
+  const [autoClipOpen,    setAutoClipOpen]    = useState(false);
+  const [autoClipPlats,   setAutoClipPlats]   = useState([]);
+  const [autoClipStart,   setAutoClipStart]   = useState("");
+  const [autoClipLoading, setAutoClipLoading] = useState(false);
+  const [autoClipResults, setAutoClipResults] = useState([]);
+  const [autoClipErr,     setAutoClipErr]     = useState("");
 
   const videoRef = useRef(null);
   const dropRef  = useRef(null);
@@ -96,12 +105,16 @@ export default function PostContent() {
 
   const generateAI = async () => {
     setAiLoading(true);
+    setAiStream("");
     setError("");
     let out = "";
     await streamAI({
       feature: "video_metadata",
       context: { filename: videoFile?.name || "video", platform: selPlatforms[0] || "youtube" },
-      onToken: t => { out += t; },
+      onToken: t => {
+        out += t;
+        setAiStream(out); // live update so user sees it typing
+      },
       onDone: () => {
         const titleMatch = out.match(/TITLE:\s*(.+)/);
         const descMatch  = out.match(/DESCRIPTION:\s*([\s\S]+?)(?=\nHASHTAGS:|$)/);
@@ -110,9 +123,37 @@ export default function PostContent() {
         if (descMatch)  set("description")(descMatch[1].trim());
         if (hashMatch)  set("hashtags")(hashMatch[1].trim());
         setAiLoading(false);
+        setAiStream("");
       },
-      onError: (msg) => { setError(msg || "AI generation failed — check credits"); setAiLoading(false); },
+      onError: (msg) => { setError(msg || "AI generation failed — check credits"); setAiLoading(false); setAiStream(""); },
     });
+  };
+
+  const handleAutoClip = async () => {
+    if (!videoFile) { setAutoClipErr("Upload a video first."); return; }
+    if (!autoClipPlats.length) { setAutoClipErr("Select at least one short-form platform."); return; }
+    setAutoClipLoading(true);
+    setAutoClipErr("");
+    setAutoClipResults([]);
+    const token = localStorage.getItem("token");
+    const fd = new FormData();
+    fd.append("video", videoFile);
+    fd.append("title", title || videoFile.name);
+    autoClipPlats.forEach(p => fd.append("platforms", p));
+    if (autoClipStart) fd.append("start_time", new Date(autoClipStart).toISOString());
+    try {
+      const res  = await fetch(`${API}/api/clips/batch-schedule`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Auto-clip failed");
+      setAutoClipResults(data.clips || []);
+    } catch (e) {
+      setAutoClipErr(e.message);
+    }
+    setAutoClipLoading(false);
   };
 
   const togglePlatform = (id) => set("selPlatforms")(
@@ -264,6 +305,7 @@ export default function PostContent() {
 
           {!videoFile ? (
             <div
+              data-tutorial="postcontent-drop"
               ref={dropRef}
               onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDropEvent}
               onClick={() => document.getElementById("vidInput").click()}
@@ -288,7 +330,7 @@ export default function PostContent() {
               </div>
               <div style={{ display:"flex", gap:12, justifyContent:"flex-end", marginTop:8 }}>
                 <button onClick={goToAI} className="btn-ghost" style={{ padding:"11px 22px", fontSize:14 }}>Skip Editing →</button>
-                <button onClick={() => set("step")(1)} className="btn-primary" style={{ padding:"11px 28px", fontSize:14 }}>Edit & Clip →</button>
+                <button data-tutorial="postcontent-edit-btn" onClick={() => set("step")(1)} className="btn-primary" style={{ padding:"11px 28px", fontSize:14 }}>Edit & Clip →</button>
               </div>
             </div>
           )}
@@ -348,13 +390,23 @@ export default function PostContent() {
           <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:14 }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
               <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>Title, Description & Hashtags</div>
-              <button onClick={generateAI} disabled={aiLoading} className="btn-primary" style={{ padding:"8px 18px", fontSize:13 }}>
+              <button data-tutorial="postcontent-ai-btn" onClick={generateAI} disabled={aiLoading} className="btn-primary" style={{ padding:"8px 18px", fontSize:13 }}>
                 {aiLoading ? "Generating…" : "✦ Generate with AI"}
               </button>
             </div>
             {aiLoading && (
-              <div style={{ fontSize:13, color:"#9090B8", padding:"10px 14px", background:"#0A0A22", borderRadius:8, border:"1px solid #1E1E42" }}>
-                ✦ Writing your title, description and hashtags…
+              <div style={{ background:"#0A0A22", border:"1px solid #1E1E42", borderRadius:10, padding:"14px 16px" }}>
+                <div style={{ fontSize:12, color:"#7C5CFC", fontWeight:600, marginBottom:8, display:"flex", alignItems:"center", gap:7 }}>
+                  <span style={{ display:"inline-block", animation:"spin 1s linear infinite" }}>◌</span>
+                  AI is generating your metadata…
+                </div>
+                {aiStream ? (
+                  <pre style={{ fontSize:12, color:"#C0C0D8", fontFamily:"'DM Mono',monospace", whiteSpace:"pre-wrap", lineHeight:1.7, margin:0, maxHeight:180, overflowY:"auto" }}>
+                    {aiStream}<span style={{ animation:"shimmer .7s ease infinite", color:"#7C5CFC" }}>▌</span>
+                  </pre>
+                ) : (
+                  <div style={{ fontSize:12, color:"#6868A8" }}>Connecting to AI…</div>
+                )}
               </div>
             )}
             <div>
@@ -381,6 +433,80 @@ export default function PostContent() {
       {/* ── Step 3: Schedule ── */}
       {step === 3 && (
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+          {/* ── Auto-clip for Shorts ── */}
+          <div data-tutorial="postcontent-autoclip" className="card" style={{ padding:24, border:"1px solid #7C5CFC33" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom: autoClipOpen ? 18 : 0 }}>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>✂ Auto-clip for Shorts</div>
+                {!autoClipOpen && <div style={{ fontSize:13, color:"#7878A8", marginTop:4 }}>AI finds best moments → trims to 9:16 → adds captions → batch-schedules</div>}
+              </div>
+              <button onClick={() => setAutoClipOpen(o => !o)} className="btn-primary" style={{ padding:"8px 18px", fontSize:13, flexShrink:0 }}>
+                {autoClipOpen ? "Collapse ↑" : "Enable →"}
+              </button>
+            </div>
+
+            {autoClipOpen && (
+              <>
+                <div style={{ fontSize:13, color:"#9090B8", marginBottom:16, lineHeight:1.65 }}>
+                  Autopilot uploads your video, detects 4–6 viral moments with AI, trims each to vertical 9:16, adds a title caption, and schedules them 6 hours apart across your chosen platforms.
+                </div>
+
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ fontSize:12, color:"#8888B8", marginBottom:8 }}>Short-form platforms</div>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                    {[
+                      { id:"youtube_shorts", label:"YouTube Shorts", color:"#FF4444" },
+                      { id:"tiktok",         label:"TikTok",         color:"#69C9D0" },
+                      { id:"instagram",      label:"Instagram Reels", color:"#E1306C" },
+                    ].filter(p => connList.some(c => c.platform === p.id)).map(p => {
+                      const sel = autoClipPlats.includes(p.id);
+                      return (
+                        <div key={p.id} onClick={() => setAutoClipPlats(sel ? autoClipPlats.filter(x => x !== p.id) : [...autoClipPlats, p.id])}
+                          style={{ padding:"8px 16px", borderRadius:10, cursor:"pointer", border:`2px solid ${sel ? p.color : "#2A2A50"}`, background: sel ? `${p.color}18` : "#0C0C1A", color: sel ? p.color : "#9090B8", fontSize:13, fontWeight:600, transition:"all .15s", display:"flex", alignItems:"center", gap:6 }}>
+                          {sel ? "✓" : "○"} {p.label}
+                        </div>
+                      );
+                    })}
+                    {connList.filter(c => ["youtube_shorts","tiktok","instagram"].includes(c.platform)).length === 0 && (
+                      <div style={{ fontSize:13, color:"#7878A8" }}>No short-form platforms connected. Go to <strong>Platforms</strong> to connect TikTok or Instagram.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom:16 }}>
+                  <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>First clip posts at</label>
+                  <input type="datetime-local" value={autoClipStart} onChange={e => setAutoClipStart(e.target.value)} className="inp" style={{ maxWidth:300 }} />
+                  <div style={{ fontSize:12, color:"#6868A8", marginTop:4 }}>Each subsequent clip is scheduled 6 hours later</div>
+                </div>
+
+                {autoClipErr && (
+                  <div style={{ padding:"10px 14px", background:"#EF444410", border:"1px solid #EF444422", borderRadius:8, color:"#EF4444", fontSize:13, marginBottom:14 }}>{autoClipErr}</div>
+                )}
+
+                {autoClipResults.length > 0 && (
+                  <div style={{ background:"#0A0A1A", borderRadius:10, padding:16, marginBottom:14 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:"#22C55E", marginBottom:10 }}>✓ {autoClipResults.length} clips scheduled!</div>
+                    {autoClipResults.map((c, i) => (
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderTop: i ? "1px solid #1A1A2E" : "none" }}>
+                        <div style={{ width:24, height:24, borderRadius:6, background:"#7C5CFC22", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#B09FFF", flexShrink:0 }}>{i+1}</div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:13, color:"#D0D0F0", fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.title}</div>
+                          <div style={{ fontSize:11, color:"#7878A8" }}>{c.duration}s · {c.platforms?.join(", ")} · {c.scheduled_for ? new Date(c.scheduled_for).toLocaleString() : ""}</div>
+                        </div>
+                        {c.clip_url && <a href={`${API}${c.clip_url}`} download style={{ fontSize:12, color:"#9B79FC", textDecoration:"none" }}>↓</a>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button onClick={handleAutoClip} disabled={autoClipLoading || !videoFile || !autoClipPlats.length} className="btn-primary" style={{ padding:"11px 24px", fontSize:14, width:"100%", opacity: (!videoFile || !autoClipPlats.length) && !autoClipLoading ? .5 : 1 }}>
+                  {autoClipLoading ? "⏳ Processing clips… this may take a few minutes" : "✂ Generate & Schedule Clips"}
+                </button>
+              </>
+            )}
+          </div>
+
           <div className="card" style={{ padding:24 }}>
             <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0", marginBottom:16 }}>Select Platforms</div>
             {connList.length === 0 ? (

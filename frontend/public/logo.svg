@@ -1,59 +1,13 @@
 <svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1E1060"/>
-      <stop offset="100%" stop-color="#09061E"/>
-    </linearGradient>
-    <linearGradient id="fuselage" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="65%" stop-color="#DDD6FE"/>
-      <stop offset="100%" stop-color="#A78BFA"/>
-    </linearGradient>
-    <linearGradient id="wings" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#5B21B6"/>
-      <stop offset="42%"  stop-color="#8B5CF6"/>
-      <stop offset="58%"  stop-color="#8B5CF6"/>
-      <stop offset="100%" stop-color="#5B21B6"/>
-    </linearGradient>
-    <radialGradient id="halo" cx="50%" cy="54%" r="40%">
-      <stop offset="0%"   stop-color="#7C5CFC" stop-opacity="0.38"/>
-      <stop offset="100%" stop-color="#7C5CFC" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-
   <!-- Background -->
-  <rect width="500" height="500" rx="115" fill="url(#bg)"/>
+  <rect width="500" height="500" rx="110" fill="#7C5CFC"/>
 
-  <!-- Soft purple halo behind the plane -->
-  <ellipse cx="250" cy="268" rx="180" ry="180" fill="url(#halo)"/>
+  <!-- Upload tray base -->
+  <rect x="130" y="340" width="240" height="28" rx="14" fill="white"/>
 
-  <!-- Outer compass ring — thin, clean -->
-  <circle cx="250" cy="250" r="215" fill="none" stroke="#7C5CFC" stroke-width="3" opacity="0.20"/>
+  <!-- Arrow shaft -->
+  <rect x="229" y="180" width="42" height="140" rx="21" fill="white"/>
 
-  <!-- ── WINGS (bold, wide, swept-back) ── -->
-  <path d="M244 274  L8 368  L92 344  L244 302  L406 344  L492 368  Z"
-        fill="url(#wings)"/>
-
-  <!-- Engine pods on wings -->
-  <ellipse cx="132" cy="352" rx="24" ry="12" fill="#3B0FA0" opacity="0.82"/>
-  <ellipse cx="368" cy="352" rx="24" ry="12" fill="#3B0FA0" opacity="0.82"/>
-
-  <!-- ── FUSELAGE (thick bold pill — the spine of the plane) ── -->
-  <rect x="228" y="98" width="44" height="266" rx="22" fill="url(#fuselage)"/>
-
-  <!-- Nose cone (makes the direction unmistakable) -->
-  <path d="M228 116  L250 74  L272 116  Z" fill="white"/>
-
-  <!-- ── TAIL FINS ── -->
-  <path d="M236 326  L180 388  L224 368  L250 358  L276 368  L320 388  L264 326  Z"
-        fill="#C4B5FD" opacity="0.90"/>
-
-  <!-- ── AMBER HEADING INDICATOR ── -->
-  <!-- The autopilot signature: amber triangle = locked-on heading -->
-  <polygon points="250,50  231,92  269,92" fill="#F59E0B"/>
-  <circle  cx="250" cy="60" r="13"         fill="#FDE68A"/>
-
-  <!-- ── COCKPIT DOT (centre of aircraft) ── -->
-  <circle cx="250" cy="266" r="18" fill="#EC4899"/>
-  <circle cx="250" cy="266" r="8"  fill="white"/>
+  <!-- Arrow head -->
+  <polygon points="250,100 160,230 340,230" fill="white"/>
 </svg>

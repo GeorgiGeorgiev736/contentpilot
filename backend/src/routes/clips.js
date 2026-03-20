@@ -187,6 +187,153 @@ router.post("/trim", requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── POST /api/clips/batch-schedule ────────────────────────────
+// Multipart: video file + title, platforms[], start_time
+// AI detects 4-6 viral moments, trims each to 9:16 with caption,
+// creates scheduled_posts entries spread 6 h apart.
+router.post("/batch-schedule", requireAuth, upload.single("video"), async (req, res, next) => {
+  const videoPath = req.file?.path;
+  try {
+    if (!req.file) return res.status(400).json({ error: "No video file uploaded" });
+
+    const { title, niche, start_time } = req.body;
+    const platforms = Array.isArray(req.body.platforms)
+      ? req.body.platforms
+      : req.body.platforms ? [req.body.platforms] : [];
+    if (!platforms.length) return res.status(400).json({ error: "Select at least one platform" });
+
+    // Credit check
+    const cost        = getCost("batch_clips");
+    const isUnlimited = UNLIMITED_PLANS.includes(req.user.plan);
+    if (!isUnlimited && req.user.credits < cost) {
+      return res.status(402).json({ error: `Auto-clip costs ${cost} credits. You have ${req.user.credits}.`, required: cost, credits: req.user.credits });
+    }
+
+    // 1. Probe duration
+    const meta = await new Promise((resolve, reject) =>
+      ffmpeg.ffprobe(videoPath, (err, m) => err ? reject(err) : resolve(m))
+    );
+    const duration = Math.floor(meta.format?.duration || 0);
+    if (duration < 30) return res.status(400).json({ error: "Video must be at least 30 seconds for auto-clipping" });
+
+    // 2. AI clip suggestions
+    const mins = Math.floor(duration / 60), secs = duration % 60;
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1200,
+      messages: [{
+        role: "user",
+        content: `You are a viral short-form video expert. Find the best moments to clip as TikToks/Reels/Shorts.
+
+Video details:
+- Title: ${title || "Untitled"}
+- Duration: ${duration}s (${mins}m ${secs}s)
+- Niche: ${niche || "general"}
+
+Suggest 4-6 clip segments, each 20-59 seconds, no overlaps, spaced across the video.
+
+Return ONLY valid JSON:
+[{"start":0,"end":45,"title":"Punchy clip title","reason":"why this works","score":90,"type":"hook"}]
+
+Types: hook | tip | reveal | story | cta`,
+      }],
+    });
+
+    let clips = [];
+    try {
+      const text  = message.content[0]?.text || "[]";
+      const match = text.match(/\[[\s\S]*\]/);
+      clips = JSON.parse(match?.[0] || "[]");
+      clips = clips
+        .filter(c => typeof c.start === "number" && typeof c.end === "number" && c.end > c.start)
+        .map(c => ({ ...c, start: Math.max(0, Math.round(c.start)), end: Math.min(duration, Math.round(c.end)) }))
+        .filter(c => (c.end - c.start) >= 15 && (c.end - c.start) <= 60);
+    } catch { clips = []; }
+
+    if (!clips.length) return res.status(500).json({ error: "AI could not suggest clips. Try a longer or more diverse video." });
+
+    // 3. Trim each clip with 9:16 crop + title caption
+    const trimResults = await Promise.allSettled(clips.map(async (clip, i) => {
+      const outName = `${req.user.id}_autoclip_${Date.now() + i}_${i}.mp4`;
+      const outPath = path.join(uploadsDir, outName);
+      const clipDur = clip.end - clip.start;
+
+      // Sanitize text for ffmpeg drawtext
+      const safeText = (clip.title || "")
+        .replace(/['"\\:]/g, " ")
+        .replace(/[^a-zA-Z0-9 .,!?-]/g, " ")
+        .replace(/\s+/g, " ").trim().slice(0, 50);
+
+      const doTrim = (vf) => new Promise((resolve, reject) => {
+        ffmpeg(videoPath)
+          .setStartTime(clip.start)
+          .setDuration(clipDur)
+          .videoCodec("libx264")
+          .audioCodec("aac")
+          .outputOptions(["-crf 23", "-preset fast", "-movflags +faststart", `-vf ${vf}`])
+          .output(outPath)
+          .on("end", resolve)
+          .on("error", reject)
+          .run();
+      });
+
+      const captionVf = safeText
+        ? `crop=ih*9/16:ih,drawtext=text='${safeText}':fontsize=26:fontcolor=white:bordercolor=black:borderw=3:x=(w-text_w)/2:y=h-80`
+        : null;
+
+      try {
+        await doTrim(captionVf || "crop=ih*9/16:ih");
+      } catch {
+        if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
+        await doTrim("crop=ih*9/16:ih"); // fallback without caption
+      }
+
+      return { ...clip, clip_url: `/uploads/${outName}`, filename: outName, duration: clipDur };
+    }));
+
+    const successClips = trimResults
+      .filter(r => r.status === "fulfilled" && r.value)
+      .map(r => r.value);
+
+    if (!successClips.length) return res.status(500).json({ error: "Failed to process any clips. Check the video format." });
+
+    // 4. Create scheduled_posts spread 6 h apart
+    const firstTime  = start_time ? new Date(start_time) : new Date(Date.now() + 3_600_000);
+    const SIX_HOURS  = 6 * 3_600_000;
+
+    for (let i = 0; i < successClips.length; i++) {
+      const clip        = successClips[i];
+      const scheduledFor = new Date(firstTime.getTime() + i * SIX_HOURS).toISOString();
+      for (const platform of platforms) {
+        await query(
+          `INSERT INTO scheduled_posts
+             (user_id, platform, title, description, hashtags, scheduled_for, video_url, status, is_short)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,'scheduled',true) RETURNING *`,
+          [req.user.id, platform, clip.title, `Auto-clipped from: ${title || "video"}`, [], scheduledFor, clip.clip_url]
+        );
+      }
+      clip.scheduled_for = scheduledFor;
+      clip.platforms     = platforms;
+    }
+
+    // 5. Deduct credits + log usage
+    if (!isUnlimited) {
+      await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [cost, req.user.id]);
+    }
+    await query(
+      "INSERT INTO ai_usage (user_id, feature, tokens_used, credits_used) VALUES ($1,$2,$3,$4)",
+      [req.user.id, "batch_clips", (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0), cost]
+    );
+
+    fs.unlink(videoPath, () => {}); // clean up source
+
+    res.json({ clips: successClips, credits_used: cost });
+  } catch (err) {
+    if (videoPath && fs.existsSync(videoPath)) fs.unlink(videoPath, () => {});
+    next(err);
+  }
+});
+
 // ── GET /api/clips/probe?url= ──────────────────────────────────
 router.get("/probe", requireAuth, (req, res) => {
   const { url } = req.query;

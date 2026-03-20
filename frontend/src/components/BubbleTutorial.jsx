@@ -1,90 +1,65 @@
 import { useState, useEffect, useCallback } from "react";
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
-// type: "welcome" | "nav" (highlights sidebar, navigates on Next) | "page" (highlights page element) | "done"
+// type: "welcome" | "nav" (highlights sidebar item, navigates on Next) | "page" (highlights page element) | "done"
 // Skip always jumps to the first step of the next section.
 const STEPS = [
+  // ── Welcome ──────────────────────────────────────────────────────────────────
   {
     section: "welcome", type: "welcome", position: "center",
     title: "Welcome to Autopilot 👋",
-    body: "Turn one piece of content into a full week of posts — automatically. Let's walk through each part in 60 seconds.",
+    body: "Upload one video and let AI turn it into a full week of content — titles, hashtags, Shorts, captions, and scheduled posts handled automatically. Let's walk through it in 60 seconds.",
   },
 
-  // ── Platforms ──────────────────────────────────────────────────────────────
+  // ── Post Content (navigate there) ────────────────────────────────────────────
   {
-    section: "platforms", type: "nav", target: "nav-platforms", page: "platforms", position: "right",
-    title: "Step 1 · Connect your accounts",
-    body: "Start here. Link YouTube, TikTok & Instagram so Autopilot can post on your behalf and analyze your real content performance.",
-    tip: "You can also add a separate YouTube Shorts account — great if you run a long-form and a Shorts channel separately.",
-  },
-  {
-    section: "platforms", type: "page", target: "platforms-connect-btn", position: "below",
-    title: "Connect YouTube first",
-    body: "Click this button to open YouTube's official OAuth screen. Approve the permissions and you're connected — no passwords stored.",
+    section: "postcontent", type: "nav", target: "nav-postcontent", page: "postcontent", position: "right",
+    title: "Step 1 · Post Content is your home base",
+    body: "Everything starts here. Upload a video, trim a clip, generate AI metadata, then schedule — all in one place without leaving the page.",
+    tip: "Your video stays in your browser until you hit Schedule. No file size limit because it uploads directly to YouTube.",
   },
 
-  // ── Trends ─────────────────────────────────────────────────────────────────
+  // ── Choose Video ─────────────────────────────────────────────────────────────
   {
-    section: "trends", type: "nav", target: "nav-trends", page: "trends", position: "right",
-    title: "Step 2 · Spot trends early",
-    body: "Trend Radar scans your niche in real time and surfaces topics gaining traction — before they peak.",
-    tip: '"Act now" topics are in their 24–48 hour peak window. Move fast on those.',
-  },
-  {
-    section: "trends", type: "page", target: "trends-scan-btn", position: "below",
-    title: "Run your first scan",
-    body: 'Type your niche in the box (e.g. "AI tools" or "fitness") then hit Scan. AI surfaces the top trending topics for your niche right now.',
+    section: "postcontent", type: "page", target: "postcontent-drop", position: "below",
+    title: "Drop your video or click Choose Video",
+    body: "Drag any MP4, MOV or AVI file here — or click to browse. Autopilot supports videos of any size because the upload goes straight from your browser to YouTube.",
   },
 
-  // ── Video Clipper ───────────────────────────────────────────────────────────
+  // ── Edit & Clip ───────────────────────────────────────────────────────────────
   {
-    section: "clipper", type: "nav", target: "nav-clipper", page: "clipper", position: "right",
-    title: "Step 3 · One podcast → 10 Shorts",
-    body: "Upload any long-form video. AI finds the best moments, adds captions, then batch-schedules clips to every platform every 6 hours — automatically.",
-    tip: "One 60-minute podcast can fill your whole week of content.",
-  },
-  {
-    section: "clipper", type: "page", target: null, position: "center",
-    title: "Upload your first video",
-    body: "Paste a YouTube URL or upload a file. AI analyzes the content, suggests the best clips, and lets you schedule them all in one click.",
+    section: "edit", type: "page", target: "postcontent-edit-btn", position: "below",
+    title: "Step 2 · Trim & clip",
+    body: "Set a start and end time to trim your video, or tick the Short/Reel box to produce an automatic vertical 9:16 version at the same time. Skip editing if you want to upload the full video as-is.",
+    tip: "Cropping to 9:16 makes the same video eligible for YouTube Shorts, TikTok, and Instagram Reels.",
   },
 
-  // ── Scripts ─────────────────────────────────────────────────────────────────
+  // ── AI Metadata ───────────────────────────────────────────────────────────────
   {
-    section: "scripts", type: "nav", target: "nav-scripts", page: "scripts", position: "right",
-    title: "Step 4 · Scripts, thumbnails & avatars",
-    body: "Pick a trend or type any topic → get a full script, title, and AI thumbnail in one click. Add an AI Avatar to produce a complete hands-free video.",
-    tip: "AI Avatar generates a full talking-head video. No camera needed.",
-  },
-  {
-    section: "scripts", type: "page", target: null, position: "center",
-    title: "Generate your first script",
-    body: "Type a topic or paste a trend, pick your format (Short, Long, Hook + Body), and hit Generate. Script, title, and thumbnail come out together.",
+    section: "ai", type: "page", target: "postcontent-ai-btn", position: "below",
+    title: "Step 3 · AI writes your title & hashtags",
+    body: "Hit Generate with AI and watch it stream a viral-optimised title, 2–3 paragraph description, and 20 hashtags in seconds. Every field is editable before you post.",
+    tip: "AI uses your filename and target platform to tailor the output for maximum reach.",
   },
 
-  // ── Schedule ────────────────────────────────────────────────────────────────
+  // ── Auto-clip ─────────────────────────────────────────────────────────────────
   {
-    section: "schedule", type: "nav", target: "nav-schedule", page: "schedule", position: "right",
-    title: "Step 5 · Schedule everything",
-    body: "All your clips and generated videos land here. Set post times manually or let the batch scheduler spread them across every platform at perfect intervals.",
-    tip: "Best-time slots are pre-filled based on your own platform analytics.",
-  },
-  {
-    section: "schedule", type: "page", target: null, position: "center",
-    title: "Your content calendar",
-    body: "Every scheduled post shows here. Edit, reschedule, or delete any time. Autopilot publishes automatically when the time comes.",
+    section: "autoclip", type: "page", target: "postcontent-autoclip", position: "below",
+    title: "Step 4 · Auto-clip into Shorts",
+    body: "Click Enable on the Auto-clip panel: Autopilot finds 4–6 viral moments in your video, trims each to 9:16, overlays a caption, and batch-schedules them to TikTok, Instagram Reels, and YouTube Shorts — 6 hours apart.",
+    tip: "One 60-minute video can fill your entire week with zero extra editing.",
   },
 
-  // ── Done ────────────────────────────────────────────────────────────────────
+  // ── Done ──────────────────────────────────────────────────────────────────────
   {
     section: "done", type: "done", position: "center", isLast: true,
-    title: "You're all set! 🎉",
-    body: "Start by connecting your platforms → run a Trend scan → generate your first script. Autopilot handles everything from there.",
+    title: "You're ready to go! 🚀",
+    body: "Upload a video → generate AI metadata → hit Schedule. Or use Auto-clip to turn one recording into a week of Shorts automatically.",
   },
 ];
 
 // One progress dot per section
-const SECTION_IDS = ["welcome", "platforms", "trends", "clipper", "scripts", "schedule", "done"];
+const SECTION_IDS = ["welcome", "postcontent", "edit", "ai", "autoclip", "done"];
 
 // Jump to first step of the next section
 function nextSectionIdx(fromIdx) {

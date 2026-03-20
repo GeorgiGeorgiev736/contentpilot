@@ -147,16 +147,51 @@ function AppInner() {
       <main style={{ flex:1, overflowY:"auto", marginLeft:collapsed?68:256, transition:"margin-left .25s cubic-bezier(.4,0,.2,1)" }}>
         {/* ── Video-waiting reminder banner ── */}
         {upload?.file && page !== "postcontent" && (
-          <div
-            onClick={() => setPage("postcontent")}
-            style={{ cursor:"pointer", background:"linear-gradient(90deg,#7C5CFC18,#B45AFD18)", borderBottom:"1px solid #7C5CFC33", padding:"10px 36px", display:"flex", alignItems:"center", gap:12 }}
-          >
-            <span style={{ fontSize:16 }}>🎬</span>
-            <span style={{ fontSize:13, fontWeight:700, color:"#C4B5FD", flex:1 }}>
-              Your video "{upload.file.name}" is ready — continue where you left off
-            </span>
-            <span style={{ fontSize:12, color:"#9B79FC", fontWeight:600, whiteSpace:"nowrap" }}>Continue →</span>
-          </div>
+          <>
+            <style>{`
+              @keyframes bannerPulse {
+                0%,100% { box-shadow: inset 0 -1px 0 #7C5CFC55, 0 2px 24px rgba(124,92,252,0.18); }
+                50%      { box-shadow: inset 0 -1px 0 #B45AFD99, 0 2px 36px rgba(180,90,253,0.35); }
+              }
+              @keyframes dotBlink {
+                0%,100% { opacity:1; } 50% { opacity:.3; }
+              }
+            `}</style>
+            <div
+              onClick={() => setPage("postcontent")}
+              style={{
+                cursor: "pointer",
+                background: "linear-gradient(90deg,#2D1B69 0%,#1E0F4A 40%,#2A1060 100%)",
+                borderBottom: "2px solid #7C5CFC66",
+                padding: "14px 36px",
+                display: "flex", alignItems: "center", gap: 14,
+                animation: "bannerPulse 2.8s ease-in-out infinite",
+                position: "relative", overflow: "hidden",
+              }}
+            >
+              {/* shimmer strip */}
+              <div style={{ position:"absolute", inset:0, background:"linear-gradient(105deg,transparent 40%,rgba(124,92,252,0.08) 50%,transparent 60%)", pointerEvents:"none" }} />
+
+              {/* blinking live dot */}
+              <div style={{ width:10, height:10, borderRadius:"50%", background:"#A78BFA", flexShrink:0, animation:"dotBlink 1.4s ease-in-out infinite", boxShadow:"0 0 8px #A78BFA" }} />
+
+              <span style={{ fontSize:18, flexShrink:0 }}>🎬</span>
+
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:15, fontWeight:800, color:"#E9D5FF", letterSpacing:"-.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  Your video is waiting for you
+                </div>
+                <div style={{ fontSize:12, color:"#9B79FC", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  "{upload.file.name}" — continue where you left off
+                </div>
+              </div>
+
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"linear-gradient(135deg,#7C5CFC,#B45AFD)", padding:"9px 20px", borderRadius:10, boxShadow:"0 2px 14px rgba(124,92,252,0.5)" }}>
+                <span style={{ fontSize:13, fontWeight:800, color:"#fff", letterSpacing:"-.01em" }}>Continue</span>
+                <span style={{ fontSize:14, color:"#fff" }}>→</span>
+              </div>
+            </div>
+          </>
         )}
         <div key={page} className="fade" style={{ padding:"32px 36px", maxWidth:1300, margin:"0 auto" }}>
           <Page

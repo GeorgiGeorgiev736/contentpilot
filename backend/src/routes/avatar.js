@@ -8,8 +8,9 @@ const { query, queryOne } = require("../db/client");
 
 const replicate  = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 const ELEVEN_KEY = process.env.ELEVENLABS_API_KEY;
-const AVATAR_CREDIT_COST = 15;
-const UNLIMITED_PLANS    = ["pro", "business", "max"];
+const AVATAR_CREDIT_COST      = 15;
+const FACE_GEN_CREDIT_COST    = 3;
+const UNLIMITED_PLANS         = ["pro", "business", "max"];
 
 const uploadsDir = path.join(__dirname, "../../uploads");
 const storage = multer.diskStorage({
@@ -89,6 +90,52 @@ router.get("/voices", requireAuth, async (req, res, next) => {
       preview:  v.preview_url,
     }));
     res.json({ voices });
+  } catch (err) { next(err); }
+});
+
+// ── POST /api/avatar/generate-face ───────────────────────────
+// Generates a photorealistic portrait from a text prompt via SDXL,
+// saves it, and sets it as the user's active avatar photo.
+router.post("/generate-face", requireAuth, async (req, res, next) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: "prompt is required" });
+
+    const isUnlimited = UNLIMITED_PLANS.includes(req.user.plan);
+    if (!isUnlimited && req.user.credits < FACE_GEN_CREDIT_COST) {
+      return res.status(402).json({ error: `Face generation costs ${FACE_GEN_CREDIT_COST} credits. You have ${req.user.credits}.` });
+    }
+
+    const fullPrompt = `professional portrait photo of ${prompt}, photorealistic, high quality, studio lighting, neutral background, centered face, sharp focus, 8k`;
+
+    const output = await replicate.run("bytedance/sdxl-lightning-4step:5f24084160c9089501c1b3545d9be3c27883ae2239b6f412990e82d4a6210f8f", {
+      input: {
+        prompt:          fullPrompt,
+        negative_prompt: "cartoon, anime, illustration, blurry, low quality, deformed, extra limbs, watermark, text",
+        width:  768,
+        height: 768,
+        num_inference_steps: 4,
+      },
+    });
+
+    const imageUrl = Array.isArray(output) ? output[0] : output;
+    if (!imageUrl) throw new Error("Image generation returned no output");
+
+    // Download the image and save locally so SadTalker can access it
+    const imgRes    = await fetch(imageUrl);
+    const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
+    const filename  = `${req.user.id}_genface_${Date.now()}.jpg`;
+    const filepath  = path.join(uploadsDir, filename);
+    fs.writeFileSync(filepath, imgBuffer);
+
+    const localUrl = `/uploads/${filename}`;
+    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [localUrl, req.user.id]);
+
+    if (!isUnlimited) {
+      await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [FACE_GEN_CREDIT_COST, req.user.id]);
+    }
+
+    res.json({ photo_url: localUrl, image_url: imageUrl });
   } catch (err) { next(err); }
 });
 
