@@ -97,13 +97,6 @@ export const platforms = {
   stats:      (platform)   => req("GET",    `/api/platforms/${platform}/stats`),
 };
 
-// ── Stripe ───────────────────────────────────────────────────
-export const billing = {
-  plans:    ()     => req("GET",  "/api/stripe/plans"),
-  checkout: (plan) => req("POST", "/api/stripe/checkout", { plan }),
-  portal:   ()     => req("POST", "/api/stripe/portal"),
-};
-
 // ── PayPal ───────────────────────────────────────────────────
 export const paypal = {
   checkout: (plan)           => req("POST", "/api/paypal/checkout", { plan }),

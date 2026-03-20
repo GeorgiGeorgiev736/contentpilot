@@ -15,14 +15,6 @@ function validateEnv() {
     }
   }
 
-  // Warn (not block) about optional Stripe
-  const stripeKeys = ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"];
-  const stripeMissing = stripeKeys.filter(k => !process.env[k] || process.env[k].includes("REPLACE_THIS"));
-  if (stripeMissing.length > 0) {
-    console.warn("\n⚠️  Stripe not configured — payments disabled for now.");
-    console.warn("   Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to enable billing.\n");
-  }
-
   if (errors.length > 0) {
     console.error("\n❌ Missing required environment variables:\n");
     console.error(errors.join("\n\n"));

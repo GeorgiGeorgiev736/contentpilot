@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { user as userApi, billing } from "../services/api";
+import { user as userApi } from "../services/api";
 
 export default function Account({ setPage }) {
   const { user, logout, refreshUser } = useAuth();
@@ -24,15 +24,6 @@ export default function Account({ setPage }) {
       alert(e.message);
     }
     setSaving(false);
-  };
-
-  const openBilling = async () => {
-    try {
-      const { url } = await billing.portal();
-      window.location.href = url;
-    } catch {
-      setPage("pricing");
-    }
   };
 
   const planColor = { free:"#F59E0B", starter:"#3B82F6", pro:"#7C5CFC", agency:"#22C55E" };
@@ -97,13 +88,9 @@ export default function Account({ setPage }) {
           </div>
         </div>
         <div style={{ display:"flex", gap:10 }}>
-          {user?.plan === "free"
-            ? <button onClick={()=>setPage("pricing")} className="btn-primary" style={{ padding:"10px 22px", fontSize:13 }}>⚡ Upgrade Plan</button>
-            : <button onClick={openBilling} className="btn-ghost" style={{ padding:"10px 22px", fontSize:13 }}>Manage Billing →</button>
-          }
-          {user?.plan !== "free" && (
-            <button onClick={()=>setPage("pricing")} className="btn-ghost" style={{ padding:"10px 22px", fontSize:13 }}>View Plans</button>
-          )}
+          <button onClick={()=>setPage("pricing")} className="btn-primary" style={{ padding:"10px 22px", fontSize:13 }}>
+            {user?.plan === "free" ? "⚡ Upgrade Plan" : "Change Plan →"}
+          </button>
         </div>
       </div>
 

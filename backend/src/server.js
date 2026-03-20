@@ -30,8 +30,6 @@ app.use(cors({
 // Static file serving for uploaded videos/thumbnails
 app.use("/uploads", express.static(uploadsDir));
 
-// Stripe webhooks need raw body — must come BEFORE express.json()
-app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "10mb" }));
 
 // Rate limiting
@@ -44,7 +42,6 @@ app.use("/api/user",     require("./routes/user"));
 app.use("/api/ai",       require("./routes/ai"));
 app.use("/api/campaigns",require("./routes/campaigns"));
 app.use("/api/platforms", require("./routes/platforms"));
-app.use("/api/stripe",   require("./routes/stripe"));
 app.use("/api/paypal",   require("./routes/paypal"));
 app.use("/api/oauth",    require("./routes/oauth"));
 app.use("/api/schedule", require("./routes/schedule"));

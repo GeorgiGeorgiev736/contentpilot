@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { billing, paypal } from "../services/api";
+import { paypal } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 
 // 1 AI credit = 1 feature run (script, trend scan, optimize, etc.)
@@ -102,10 +102,6 @@ export default function Pricing({ setPage }) {
   const [notice,  setNotice]  = useState("");
 
   useEffect(() => {
-    billing.plans()
-      .then(({ plans: p }) => { if (p?.length) setPlans(p); })
-      .catch(() => {});
-
     // Handle return from PayPal approval
     const params = new URLSearchParams(window.location.search);
     const ppStatus = params.get("paypal");
@@ -126,24 +122,7 @@ export default function Pricing({ setPage }) {
     if (planId === "free" || user?.plan === planId) return;
     setLoading(planId); setError("");
     try {
-      const { url } = await billing.checkout(planId);
-      window.location.href = url;
-    } catch (err) { setError(err.message); setLoading(null); }
-  };
-
-  const checkoutPayPal = async (planId) => {
-    if (planId === "free" || user?.plan === planId) return;
-    setLoading(`pp_${planId}`); setError("");
-    try {
       const { url } = await paypal.checkout(planId);
-      window.location.href = url;
-    } catch (err) { setError(err.message); setLoading(null); }
-  };
-
-  const openPortal = async () => {
-    setLoading("portal");
-    try {
-      const { url } = await billing.portal();
       window.location.href = url;
     } catch (err) { setError(err.message); setLoading(null); }
   };
@@ -164,8 +143,8 @@ export default function Pricing({ setPage }) {
             You're on the <strong style={{ textTransform: "capitalize" }}>{currentPlan}</strong> plan
             {user?.subscription_status === "active" ? " · Active" : user?.subscription_status ? ` · ${user.subscription_status}` : ""}
           </span>
-          <button onClick={openPortal} disabled={loading === "portal"} className="btn-ghost" style={{ padding: "7px 16px", fontSize: 13 }}>
-            {loading === "portal" ? "Loading…" : "Manage Billing →"}
+          <button onClick={() => setPage("pricing")} className="btn-ghost" style={{ padding: "7px 16px", fontSize: 13 }}>
+            Change Plan →
           </button>
         </div>
       )}
@@ -232,48 +211,23 @@ export default function Pricing({ setPage }) {
                 onClick={() => checkout(plan.id)}
                 disabled={isCurrent || plan.id === "free" || !!loading}
                 style={{
-                  width: "100%", padding: "11px", marginBottom: 18, borderRadius: 9,
-                  border: plan.popular || plan.id === "max" ? "none" : `1px solid ${col}44`,
+                  width: "100%", padding: "11px", marginBottom: 14, borderRadius: 9,
+                  border: "none",
                   background: isCurrent || plan.id === "free"
                     ? "#1A1A2E"
-                    : plan.popular
-                      ? "linear-gradient(135deg,#7C5CFC,#B45AFD)"
-                      : plan.id === "max"
-                        ? "linear-gradient(135deg,#F59E0B,#FCD34D)"
-                        : `${col}22`,
-                  color: isCurrent || plan.id === "free"
-                    ? "#3A3A5A"
-                    : plan.popular || plan.id === "max" ? (plan.id === "max" ? "#000" : "#fff") : col,
+                    : "#FFC439",
+                  color: isCurrent || plan.id === "free" ? "#3A3A5A" : "#003087",
                   fontWeight: 700, cursor: isCurrent || plan.id === "free" ? "default" : "pointer",
                   fontSize: 13, transition: "all .15s",
                   opacity: loading && loading !== plan.id ? .5 : 1,
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 }}>
                 {loading === plan.id
-                  ? <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 1s linear infinite" }} />Loading…</span>
+                  ? <><span style={{ width: 12, height: 12, border: "2px solid #003087", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 1s linear infinite" }} />Loading…</>
                   : isCurrent ? "Current Plan"
                   : plan.id === "free" ? "Free Forever"
-                  : `Get ${plan.name} →`}
+                  : <><span style={{ fontSize: 15, fontWeight: 900 }}>𝐏</span>{`Get ${plan.name} →`}</>}
               </button>
-
-              {/* PayPal button */}
-              {plan.id !== "free" && !isCurrent && (
-                <button
-                  onClick={() => checkoutPayPal(plan.id)}
-                  disabled={!!loading}
-                  style={{
-                    width: "100%", padding: "10px", marginBottom: 14, borderRadius: 9,
-                    border: "none",
-                    background: loading === `pp_${plan.id}` ? "#1A3A1A" : "#FFC439",
-                    color: "#003087", fontWeight: 700, cursor: "pointer",
-                    fontSize: 13, transition: "all .15s",
-                    opacity: loading && loading !== `pp_${plan.id}` ? .5 : 1,
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                  }}>
-                  {loading === `pp_${plan.id}`
-                    ? <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 12, height: 12, border: "2px solid #003087", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 1s linear infinite" }} />Loading…</span>
-                    : <><span style={{ fontSize: 15 }}>𝐏</span> Pay with PayPal</>}
-                </button>
-              )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: 7, flex: 1 }}>
                 {plan.features.map(f => (
@@ -308,11 +262,11 @@ export default function Pricing({ setPage }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {[
             ["What counts as an AI generation?", "Each AI button click (generate script, scan trends, optimize video, create thumbnail, etc.) uses 1 credit. Streaming responses count as one even if long."],
-            ["Can I switch plans anytime?", "Yes. Upgrade or downgrade instantly. Stripe prorates the difference automatically — you only pay for what you use."],
+            ["Can I switch plans anytime?", "Yes. Upgrade or downgrade at any time. Your new plan takes effect immediately."],
             ["What is AI Avatar (Max)?", "Uses HeyGen's API to generate a talking-head video from your script. Set up once with your face/voice and your avatar records videos automatically."],
             ["Are platform API costs included?", "Yes. YouTube, TikTok and Instagram API usage is included. You only need your own developer app credentials (free) from each platform."],
             ["How does the Video Clipper work?", "Upload any long-form video, drag handles to pick your segment (up to 3 min), and we trim it server-side with FFmpeg. Auto-crops to 9:16 for YouTube Shorts."],
-            ["Is my data secure?", "Videos and credentials are stored on your own server. API keys stay server-side only — never sent to the browser. Stripe handles all payment processing."],
+            ["Is my data secure?", "Videos and credentials are stored on your own server. API keys stay server-side only — never sent to the browser. Payments are processed securely via PayPal."],
           ].map(([q, a]) => (
             <div key={q}>
               <div style={{ fontSize: 14, fontWeight: 600, color: "#E0E0F0", marginBottom: 5 }}>{q}</div>
@@ -323,7 +277,7 @@ export default function Pricing({ setPage }) {
       </div>
 
       <div style={{ textAlign: "center", color: "#7878A8", fontSize: 13, paddingBottom: 20 }}>
-        Questions? Email us at hello@autopilot.io · All payments processed securely by Stripe
+        Questions? Email us at hello@autopilot.io · All payments processed securely by PayPal
       </div>
     </div>
   );
