@@ -1,40 +1,81 @@
 const router = require("express").Router();
-const multer = require("multer");
-const path   = require("path");
-const fs     = require("fs");
 const { query, queryOne } = require("../db/client");
 const { requireAuth }     = require("../middleware/auth");
 
-// ── File upload setup ─────────────────────────────────────────
-const uploadsDir = path.join(__dirname, "../../uploads");
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+// ── YouTube token refresh helper ───────────────────────────────
+async function getYouTubeToken(connection) {
+  if (!connection.refresh_token) return connection.access_token;
+  try {
+    const r = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id:     process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        refresh_token: connection.refresh_token,
+        grant_type:    "refresh_token",
+      }),
+    });
+    const d = await r.json();
+    if (d.access_token) {
+      await query("UPDATE platform_connections SET access_token=$1, updated_at=NOW() WHERE id=$2",
+        [d.access_token, connection.id]);
+      return d.access_token;
+    }
+  } catch {}
+  return connection.access_token;
+}
 
-const storage = multer.diskStorage({
-  destination: uploadsDir,
-  filename: (req, file, cb) => {
-    const ext  = path.extname(file.originalname).toLowerCase();
-    const safe = path.basename(file.originalname, ext).replace(/[^a-z0-9]/gi, "_").slice(0, 40);
-    cb(null, `${req.user.id}_${Date.now()}_${safe}${ext}`);
-  },
-});
-const upload = multer({
-  storage,
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
-  fileFilter: (_req, file, cb) => {
-    if (file.mimetype.startsWith("video/") || file.mimetype.startsWith("image/")) cb(null, true);
-    else cb(new Error("Only video and image files are allowed"));
-  },
-});
+// POST /api/schedule/youtube-initiate
+// Step 1: Backend initiates a YouTube resumable upload session on behalf of the user.
+// Returns the upload_url — browser then PUTs the video file directly to YouTube (no server disk).
+router.post("/youtube-initiate", requireAuth, async (req, res, next) => {
+  try {
+    const { title, description, tags, file_size, mime_type } = req.body;
 
-// POST /api/schedule/upload — upload video + optional thumbnail
-router.post("/upload", requireAuth, upload.fields([
-  { name: "video",     maxCount: 1 },
-  { name: "thumbnail", maxCount: 1 },
-]), (req, res) => {
-  const result = {};
-  if (req.files?.video?.[0])     result.video_url     = `/uploads/${req.files.video[0].filename}`;
-  if (req.files?.thumbnail?.[0]) result.thumbnail_url = `/uploads/${req.files.thumbnail[0].filename}`;
-  res.json(result);
+    const connection = await queryOne(
+      "SELECT * FROM platform_connections WHERE user_id=$1 AND platform='youtube' AND connected=true ORDER BY created_at LIMIT 1",
+      [req.user.id]
+    );
+    if (!connection) return res.status(404).json({ error: "YouTube not connected — go to Platforms to connect it first." });
+
+    const token = await getYouTubeToken(connection);
+
+    const initRes = await fetch(
+      "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=UTF-8",
+          "X-Upload-Content-Type": mime_type || "video/mp4",
+          ...(file_size ? { "X-Upload-Content-Length": String(file_size) } : {}),
+        },
+        body: JSON.stringify({
+          snippet: {
+            title:       title || "Untitled",
+            description: description || "",
+            tags:        Array.isArray(tags) ? tags : [],
+            categoryId:  "22", // People & Blogs
+          },
+          status: {
+            privacyStatus:           "private", // we schedule via DB; cron makes it public
+            selfDeclaredMadeForKids: false,
+          },
+        }),
+      }
+    );
+
+    if (!initRes.ok) {
+      const err = await initRes.json().catch(() => ({}));
+      return res.status(400).json({ error: err.error?.message || "YouTube rejected the upload initiation" });
+    }
+
+    const uploadUrl = initRes.headers.get("location");
+    if (!uploadUrl) return res.status(500).json({ error: "YouTube did not return an upload URL" });
+
+    res.json({ upload_url: uploadUrl });
+  } catch (err) { next(err); }
 });
 
 // ── GET /api/schedule — list all scheduled posts ──────────────

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
-import { UploadProvider, useUpload } from "./context/UploadContext";
+import { UploadProvider, useUpload } from "./context/UploadContext"; // eslint-disable-line
 import AuthPage     from "./pages/AuthPage";
 import Sidebar      from "./components/Sidebar";
 import Dashboard    from "./pages/Dashboard";
@@ -28,7 +28,7 @@ const PAGES = {
 
 function AppInner() {
   const { user, loading } = useAuth();
-  const { upload, clearUpload } = useUpload();
+  const { upload } = useUpload();
   const [page,      setPage]      = useState("dashboard");
   const [collapsed, setCollapsed] = useState(false);
   // Show every login unless user has explicitly checked "Don't show again"
@@ -146,32 +146,22 @@ function AppInner() {
 
       <main style={{ flex:1, overflowY:"auto", marginLeft:collapsed?68:256, transition:"margin-left .25s cubic-bezier(.4,0,.2,1)" }}>
         {/* ── Video-waiting reminder banner ── */}
-        {upload && page !== "postcontent" && (
+        {upload?.file && page !== "postcontent" && (
           <div
             onClick={() => setPage("postcontent")}
             style={{ cursor:"pointer", background:"linear-gradient(90deg,#7C5CFC18,#B45AFD18)", borderBottom:"1px solid #7C5CFC33", padding:"10px 36px", display:"flex", alignItems:"center", gap:12 }}
           >
-            <span style={{ fontSize:18 }}>{upload.status === "uploading" ? "⬆" : "🎬"}</span>
-            <div style={{ flex:1 }}>
-              <span style={{ fontSize:13, fontWeight:700, color:"#C4B5FD" }}>
-                {upload.status === "uploading"
-                  ? `Uploading "${upload.file?.name}" — ${upload.progress}%`
-                  : `Your video "${upload.file?.name}" is ready — continue where you left off`}
-              </span>
-            </div>
-            {upload.status === "uploading" && (
-              <div style={{ width:120, height:4, background:"#1A1A3A", borderRadius:3, overflow:"hidden", flexShrink:0 }}>
-                <div style={{ width:`${upload.progress}%`, height:"100%", background:"linear-gradient(90deg,#7C5CFC,#B45AFD)", borderRadius:3, transition:"width .3s" }} />
-              </div>
-            )}
-            <span style={{ fontSize:12, color:"#9B79FC", fontWeight:600, whiteSpace:"nowrap" }}>
-              {upload.status === "uploading" ? "View" : "Continue →"}
+            <span style={{ fontSize:16 }}>🎬</span>
+            <span style={{ fontSize:13, fontWeight:700, color:"#C4B5FD", flex:1 }}>
+              Your video "{upload.file.name}" is ready — continue where you left off
             </span>
+            <span style={{ fontSize:12, color:"#9B79FC", fontWeight:600, whiteSpace:"nowrap" }}>Continue →</span>
           </div>
         )}
         <div key={page} className="fade" style={{ padding:"32px 36px", maxWidth:1300, margin:"0 auto" }}>
           <Page
             setPage={setPage}
+            user={user}
             {...pageProps}
             onNavigate={(pg, props) => { setPageProps(props || {}); setPage(pg); }}
           />
@@ -183,48 +173,6 @@ function AppInner() {
       )}
       <LoginTip />
 
-      {/* ── Global upload toast ── */}
-      {upload && (
-        <div style={{
-          position:"fixed", bottom:24, left: collapsed ? 84 : 272, zIndex:200,
-          background:"#0F0F2A", border:"1px solid #2A2A50", borderRadius:14,
-          padding:"14px 18px", minWidth:280, maxWidth:360,
-          boxShadow:"0 8px 32px rgba(0,0,0,0.6)",
-          transition:"left .25s cubic-bezier(.4,0,.2,1)",
-        }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom: upload.status === "uploading" ? 10 : 0 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <span style={{ fontSize:16 }}>
-                {upload.status === "uploading" ? "⬆" : upload.status === "done" ? "✅" : "❌"}
-              </span>
-              <div>
-                <div style={{ fontSize:13, fontWeight:700, color:"#E0E0F0" }}>
-                  {upload.status === "uploading" ? `Uploading… ${upload.progress}%` : upload.status === "done" ? "Upload complete" : "Upload failed"}
-                </div>
-                <div style={{ fontSize:11, color:"#7878A8", marginTop:1, maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                  {upload.file?.name}
-                </div>
-              </div>
-            </div>
-            {upload.status !== "uploading" && (
-              <button onClick={clearUpload} style={{ background:"none", border:"none", color:"#7878A8", cursor:"pointer", fontSize:18, lineHeight:1, padding:"0 0 0 8px" }}>×</button>
-            )}
-          </div>
-          {upload.status === "uploading" && (
-            <div style={{ height:4, background:"#1A1A3A", borderRadius:3, overflow:"hidden" }}>
-              <div style={{ width:`${upload.progress}%`, height:"100%", background:"linear-gradient(90deg,#7C5CFC,#B45AFD)", borderRadius:3, transition:"width .3s" }} />
-            </div>
-          )}
-          {upload.status === "done" && (
-            <div style={{ fontSize:12, color:"#22C55E", marginTop:4 }}>
-              Ready to schedule — <span style={{ cursor:"pointer", textDecoration:"underline" }} onClick={() => setPage("postcontent")}>Go to Post Content</span>
-            </div>
-          )}
-          {upload.status === "error" && (
-            <div style={{ fontSize:12, color:"#EF4444", marginTop:4 }}>{upload.error}</div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

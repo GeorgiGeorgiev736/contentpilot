@@ -96,6 +96,10 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT;
 
+-- AI Avatar columns
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_photo_url TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_voice_id TEXT;
+
 -- Scheduled posts
 CREATE TABLE IF NOT EXISTS scheduled_posts (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),

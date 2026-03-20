@@ -91,7 +91,10 @@ export default function Sidebar({ page, setPage, user, collapsed, setCollapsed }
         onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 28px #7C5CFC88"; }}
         onMouseLeave={e => { e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow=isPostContent?"0 4px 24px #7C5CFC88":"0 4px 20px #7C5CFC55"; }}
       >
-        <span style={{ fontSize: collapsed ? 22 : 20, flexShrink:0, lineHeight:1 }}>📤</span>
+        <svg width={collapsed ? 22 : 20} height={collapsed ? 22 : 20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
+            <path d="M12 3v13M7 8l5-5 5 5"/>
+            <path d="M5 19h14"/>
+          </svg>
         {!collapsed && (
           <div style={{ textAlign:"left", lineHeight:1.25 }}>
             <div style={{ fontSize:15, fontWeight:800, letterSpacing:"-.01em" }}>Post Content</div>
