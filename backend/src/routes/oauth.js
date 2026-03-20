@@ -33,16 +33,22 @@ async function findOrCreateOAuthUser({ provider, providerId, email, name, avatar
 }
 
 // ─────────────────────────────────────────────────────────────
-// GOOGLE — used for signing INTO the app
+// GOOGLE — login + auto-connect YouTube channel in one flow
 // ─────────────────────────────────────────────────────────────
 router.get("/google", (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.GOOGLE_CLIENT_ID,
     redirect_uri:  process.env.GOOGLE_REDIRECT_URI,
     response_type: "code",
-    scope:         "openid email profile",
-    access_type:   "offline",
-    prompt:        "select_account",
+    scope: [
+      "openid email profile",
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.upload",
+      "https://www.googleapis.com/auth/youtube.readonly",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+    ].join(" "),
+    access_type: "offline",
+    prompt:      "consent",
   });
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 });
@@ -65,16 +71,127 @@ router.get("/google/callback", async (req, res) => {
     const tokens = await tokenRes.json();
     if (tokens.error) throw new Error(tokens.error_description);
 
+    // Get Google profile for login
     const profileRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
     const profile = await profileRes.json();
     const user    = await findOrCreateOAuthUser({ provider:"google", providerId:profile.id, email:profile.email, name:profile.name, avatar:profile.picture });
-    const token   = signToken(user.id);
+
+    // Auto-connect YouTube channel if tokens granted
+    if (tokens.access_token) {
+      try {
+        const channelRes = await fetch(
+          "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
+          { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+        );
+        const channelData = await channelRes.json();
+        const channel = channelData.items?.[0];
+        if (channel) {
+          const handle    = channel.snippet?.customUrl || channel.snippet?.title || "YouTube Channel";
+          const followers = parseInt(channel.statistics?.subscriberCount || 0);
+          const videoCount = parseInt(channel.statistics?.videoCount || 0);
+          await query(
+            `INSERT INTO platform_connections (user_id,platform,handle,access_token,refresh_token,followers,video_count,connected)
+             VALUES ($1,'youtube',$2,$3,$4,$5,$6,true)
+             ON CONFLICT (user_id,platform) DO UPDATE SET
+               handle=$2,access_token=$3,refresh_token=$4,followers=$5,video_count=$6,connected=true,updated_at=NOW()`,
+            [user.id, handle, tokens.access_token, tokens.refresh_token || "", followers, videoCount]
+          );
+        }
+      } catch (e) {
+        console.warn("YouTube auto-connect failed:", e.message);
+      }
+    }
+
+    const token = signToken(user.id);
     res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
   } catch (err) {
     console.error("Google login error:", err.message);
     res.redirect(`${process.env.FRONTEND_URL}?error=google_failed`);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// FACEBOOK — login + auto-connect Instagram Business account
+// ─────────────────────────────────────────────────────────────
+router.get("/facebook", (_req, res) => {
+  const params = new URLSearchParams({
+    client_id:     process.env.INSTAGRAM_CLIENT_ID,  // Facebook App ID
+    redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
+    scope:         "email,pages_show_list,instagram_basic,instagram_content_publish",
+    response_type: "code",
+  });
+  res.redirect(`https://www.facebook.com/dialog/oauth?${params}`);
+});
+
+router.get("/facebook/callback", async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
+  try {
+    // Exchange code for access token
+    const tokenRes = await fetch(
+      `https://graph.facebook.com/v19.0/oauth/access_token?` +
+      new URLSearchParams({
+        client_id:     process.env.INSTAGRAM_CLIENT_ID,
+        client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+        redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
+        code,
+      })
+    );
+    const tokens = await tokenRes.json();
+    if (tokens.error) throw new Error(tokens.error.message);
+
+    // Get Facebook profile for login
+    const profileRes = await fetch(
+      `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture&access_token=${tokens.access_token}`
+    );
+    const profile = await profileRes.json();
+    const user = await findOrCreateOAuthUser({
+      provider:   "facebook",
+      providerId: profile.id,
+      email:      profile.email || `fb_${profile.id}@noemail.com`,
+      name:       profile.name,
+      avatar:     profile.picture?.data?.url || null,
+    });
+
+    // Auto-connect Instagram Business account
+    try {
+      const pagesRes = await fetch(
+        `https://graph.facebook.com/v19.0/me/accounts?access_token=${tokens.access_token}`
+      );
+      const pagesData = await pagesRes.json();
+      for (const page of pagesData.data || []) {
+        const igRes = await fetch(
+          `https://graph.facebook.com/v19.0/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`
+        );
+        const igData = await igRes.json();
+        if (!igData.instagram_business_account) continue;
+
+        const igId = igData.instagram_business_account.id;
+        const profileRes2 = await fetch(
+          `https://graph.facebook.com/v19.0/${igId}?fields=username,media_count,followers_count&access_token=${page.access_token}`
+        );
+        const igProfile = await profileRes2.json();
+
+        await query(
+          `INSERT INTO platform_connections (user_id,platform,handle,access_token,followers,video_count,connected)
+           VALUES ($1,'instagram',$2,$3,$4,$5,true)
+           ON CONFLICT (user_id,platform) DO UPDATE SET
+             handle=$2,access_token=$3,followers=$4,video_count=$5,connected=true,updated_at=NOW()`,
+          [user.id, `@${igProfile.username}`, page.access_token, igProfile.followers_count || 0, igProfile.media_count || 0]
+        );
+        break; // connect first linked account
+      }
+    } catch (e) {
+      console.warn("Instagram auto-connect failed:", e.message);
+    }
+
+    const token = signToken(user.id);
+    res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
+  } catch (err) {
+    console.error("Facebook login error:", err.message);
+    res.redirect(`${process.env.FRONTEND_URL}?error=facebook_failed`);
   }
 });
 
