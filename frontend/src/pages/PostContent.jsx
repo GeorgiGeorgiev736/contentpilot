@@ -195,7 +195,7 @@ export default function PostContent() {
               <div style={{ fontSize:48, marginBottom:16 }}>🎬</div>
               <div style={{ fontSize:18, fontWeight:700, color:"#E0E0F0", marginBottom:8 }}>Drop your video here</div>
               <div style={{ fontSize:14, color:"#7878A8", marginBottom:20 }}>or click to browse · MP4, MOV, AVI up to 500MB</div>
-              <button className="btn-primary" style={{ padding:"11px 28px", fontSize:14" }} onClick={e => { e.stopPropagation(); document.getElementById("vidInput").click(); }}>
+              <button className="btn-primary" style={{ padding:"11px 28px", fontSize:14 }} onClick={e => { e.stopPropagation(); document.getElementById("vidInput").click(); }}>
                 Choose Video
               </button>
             </div>
