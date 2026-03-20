@@ -136,6 +136,13 @@ no_code:         "Authentication was cancelled.",
               Free plan includes 10 AI generations.<br/>No credit card required.
             </div>
           )}
+
+          <div style={{ fontSize:12, color:"#44446A", textAlign:"center", marginTop:20 }}>
+            By continuing you agree to our{" "}
+            <a href="/terms.html" target="_blank" style={{ color:"#6060A8" }}>Terms of Service</a>
+            {" "}and{" "}
+            <a href="/privacy.html" target="_blank" style={{ color:"#6060A8" }}>Privacy Policy</a>
+          </div>
         </div>
       </div>
     </div>
