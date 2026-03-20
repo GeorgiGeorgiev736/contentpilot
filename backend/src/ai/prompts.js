@@ -186,6 +186,15 @@ Return ONLY hashtags (with #), space-separated, no explanation:
 - 5 long-tail specific tags
 - 2 trending/timely tags`,
 
+  video_metadata: ({ filename, platform, duration }) => `Generate viral-optimized metadata for a ${platform || "YouTube"} video upload.
+
+Video filename: "${filename || "video"}"${duration ? `\nDuration: ${duration}` : ""}
+
+Return EXACTLY in this format — nothing else, no markdown:
+TITLE: [one compelling SEO-optimized title, under 70 characters, no quotes]
+DESCRIPTION: [2-3 engaging paragraphs with keywords, timestamps if relevant, call to action at the end]
+HASHTAGS: [exactly 20 relevant hashtags with #, space-separated, mix of broad and niche]`,
+
 };
 
 // Pipeline stage prompts (used by the AI Pipeline page)
