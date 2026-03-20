@@ -11,16 +11,19 @@ const CONFIGS = {
 };
 
 export default function Platforms() {
-  const [connections, setConnections] = useState({});
+  const [connections, setConnections] = useState({}); // { platform: [conn, conn, ...] }
   const [loading,     setLoading]     = useState(true);
   const [stats,       setStats]       = useState({});
-  const [notice,      setNotice]      = useState(null); // { type: "success"|"error", msg }
+  const [notice,      setNotice]      = useState(null);
 
   const refreshConnections = () =>
     platformsApi.list()
       .then(({ connections: list }) => {
         const map = {};
-        list.forEach(c => { map[c.platform] = c; });
+        list.filter(c => c.connected).forEach(c => {
+          if (!map[c.platform]) map[c.platform] = [];
+          map[c.platform].push(c);
+        });
         setConnections(map);
       })
       .finally(() => setLoading(false));
@@ -47,14 +50,18 @@ export default function Platforms() {
     window.location.href = `${API}/api/oauth/${platformId}?token=${getToken()}`;
   };
 
-  const disconnect = async (platformId) => {
-    await platformsApi.disconnect(platformId);
-    setConnections(prev => ({ ...prev, [platformId]: { ...prev[platformId], connected: false } }));
+  const disconnect = async (platformId, channelId) => {
+    await platformsApi.disconnect(`${platformId}${channelId ? `?channel_id=${channelId}` : ""}`);
+    setConnections(prev => {
+      const updated = (prev[platformId] || []).filter(c => c.channel_id !== channelId);
+      return updated.length ? { ...prev, [platformId]: updated } : Object.fromEntries(Object.entries(prev).filter(([k]) => k !== platformId));
+    });
   };
 
-  const loadStats = async (platformId) => {
+  const loadStats = async (platformId, channelId) => {
+    const key = `${platformId}_${channelId || "default"}`;
     const { stats: s } = await platformsApi.stats(platformId).catch(() => ({ stats: {} }));
-    setStats(prev => ({ ...prev, [platformId]: s }));
+    setStats(prev => ({ ...prev, [key]: s }));
   };
 
   if (loading) return <div style={{ color:"#8888B8", padding:40, textAlign:"center" }}>Loading platforms…</div>;
@@ -88,60 +95,64 @@ export default function Platforms() {
 
       {/* Platform cards */}
       {Object.entries(CONFIGS).map(([id, cfg]) => {
-        const conn = connections[id];
-        const isConnected = conn?.connected;
-        const platformStats = stats[id];
+        const conns = connections[id] || [];
+        const isConnected = conns.length > 0;
 
         return (
           <div key={id} className="card" style={{ padding:24, borderLeft:`3px solid ${isConnected?cfg.color:"#1A1A2E"}`, opacity: cfg.isOptional && !isConnected ? 0.85 : 1 }}>
-            <div style={{ display:"flex", alignItems:"flex-start", gap:16, marginBottom:18 }}>
+            <div style={{ display:"flex", alignItems:"flex-start", gap:16, marginBottom: isConnected ? 14 : 18 }}>
               <div style={{ width:52, height:52, borderRadius:14, background:`${cfg.color}18`, border:`2px solid ${cfg.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, color:cfg.color, flexShrink:0 }}>{cfg.icon}</div>
 
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
                   <span style={{ fontSize:18, fontWeight:700, color:"#F5F5FF" }}>{cfg.name}</span>
-                  {isConnected && <span style={{ background:"#22C55E18", color:"#22C55E", fontSize:11, fontWeight:600, padding:"2px 9px", borderRadius:20 }}>● Live</span>}
+                  {isConnected && <span style={{ background:"#22C55E18", color:"#22C55E", fontSize:11, fontWeight:600, padding:"2px 9px", borderRadius:20 }}>● {conns.length} connected</span>}
                   {cfg.isOptional && <span style={{ background:"#F59E0B12", color:"#D4943A", border:"1px solid #F59E0B22", fontSize:11, fontWeight:600, padding:"2px 9px", borderRadius:20 }}>Optional</span>}
                 </div>
                 <div style={{ fontSize:13, color:"#8888B8", marginTop:3 }}>
-                  {cfg.isOptional && !isConnected ? "Optional — only needed if you have a separate channel for Shorts" : isConnected ? `${conn.handle} · ${conn.followers?.toLocaleString()} followers · ${conn.video_count} videos` : "Not connected"}
+                  {cfg.isOptional && !isConnected ? "Optional — only needed if you have a separate channel for Shorts" : !isConnected ? "Not connected" : ""}
                 </div>
               </div>
 
-              <div style={{ display:"flex", gap:10 }}>
-                {isConnected ? (
-                  <>
-                    <button onClick={() => loadStats(id)} className="btn-ghost" style={{ padding:"8px 14px", fontSize:12 }}>
-                      {platformStats ? "Refresh Stats" : "Load Stats"}
-                    </button>
-                    <button onClick={() => disconnect(id)} style={{ padding:"8px 16px", background:"#EF444408", border:"1px solid #EF444422", borderRadius:10, color:"#EF4444", cursor:"pointer", fontSize:12 }}>
-                      Disconnect
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => connect(id)}
-                    className="btn-primary"
-                    style={{ padding:"10px 22px", fontSize:13 }}
-                    data-tutorial={id === "youtube" ? "platforms-connect-btn" : undefined}
-                  >
-                    {`Connect ${cfg.name} →`}
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={() => connect(id)}
+                className="btn-primary"
+                style={{ padding:"10px 22px", fontSize:13 }}
+                data-tutorial={id === "youtube" ? "platforms-connect-btn" : undefined}
+              >
+                {isConnected ? `+ Add Channel` : `Connect ${cfg.name} →`}
+              </button>
             </div>
 
-            {/* Stats panel */}
-            {platformStats && (
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:16, padding:"14px", background:"#080810", borderRadius:10, border:"1px solid #10102A" }}>
-                {Object.entries(platformStats).map(([k, v]) => (
-                  <div key={k}>
-                    <div style={{ fontSize:12, color:"#8080A8", marginBottom:4, textTransform:"capitalize" }}>{k.replace(/([A-Z])/g," $1").toLowerCase()}</div>
-                    <div style={{ fontSize:17, fontWeight:700, color:"#E8E8F8" }}>{typeof v === "number" ? v.toLocaleString() : v}</div>
+            {/* Connected channels list */}
+            {conns.map(conn => {
+              const statsKey = `${id}_${conn.channel_id || "default"}`;
+              const platformStats = stats[statsKey];
+              return (
+                <div key={conn.id || conn.channel_id} style={{ marginBottom:10, padding:"12px 14px", background:"#080810", borderRadius:10, border:"1px solid #10102A" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom: platformStats ? 12 : 0 }}>
+                    <span style={{ fontSize:13, fontWeight:600, color:"#E0E0F0", flex:1 }}>{conn.handle}</span>
+                    <span style={{ fontSize:12, color:"#7878A8" }}>{conn.followers?.toLocaleString()} followers · {conn.video_count} videos</span>
+                    <button onClick={() => loadStats(id, conn.channel_id)} className="btn-ghost" style={{ padding:"5px 12px", fontSize:11 }}>
+                      {platformStats ? "Refresh" : "Stats"}
+                    </button>
+                    <button onClick={() => disconnect(id, conn.channel_id)} style={{ padding:"5px 12px", background:"#EF444408", border:"1px solid #EF444422", borderRadius:8, color:"#EF4444", cursor:"pointer", fontSize:11 }}>
+                      Disconnect
+                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+                  {platformStats && Object.keys(platformStats).length > 0 && (
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginTop:10 }}>
+                      {Object.entries(platformStats).map(([k, v]) => (
+                        <div key={k}>
+                          <div style={{ fontSize:11, color:"#8080A8", marginBottom:3, textTransform:"capitalize" }}>{k.replace(/([A-Z])/g," $1").toLowerCase()}</div>
+                          <div style={{ fontSize:15, fontWeight:700, color:"#E8E8F8" }}>{typeof v === "number" ? v.toLocaleString() : v}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {/* Features & scopes */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>

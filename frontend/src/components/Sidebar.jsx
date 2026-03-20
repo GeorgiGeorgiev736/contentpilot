@@ -1,17 +1,13 @@
 import { useAuth } from "../hooks/useAuth";
 
 const NAV = [
-  ["dashboard", "⊞", "Dashboard"],
-  ["platforms",  "⬡", "Platforms"],
-  ["trends",     "◎", "Trend Radar"],
-  ["optimizer",  "⚡", "Video Optimizer"],
-  ["clipper",    "✂", "Video Clipper"],
-  ["thumbnails", "◈", "Thumbnails"],
-  ["scripts",    "✦", "Script Writer"],
-  ["analytics",  "▦", "Analytics"],
-  ["pipeline",   "⊙", "AI Pipeline"],
-  ["projects",   "◫", "Content Projects"],
-  ["schedule",   "◷", "Scheduler"],
+  ["dashboard",   "⊞", "Dashboard"],
+  ["postcontent", "↑", "Post Content", true], // true = prominent
+  ["scripts",     "✦", "AI Scripts"],
+  ["pipeline",    "⊙", "AI Pipeline"],
+  ["avatar",      "◉", "AI Avatar"],
+  ["analytics",   "▦", "Analytics"],
+  ["platforms",   "⬡", "Platforms"],
 ];
 
 const PLAN_COLOR = {
@@ -73,8 +69,36 @@ export default function Sidebar({ page, setPage, user, collapsed, setCollapsed }
 
       {/* ── Nav ── */}
       <nav style={{ flex:1, display:"flex", flexDirection:"column", gap:3 }}>
-        {NAV.map(([id, ic, lb]) => {
+        {NAV.map(([id, ic, lb, prominent]) => {
           const active = page === id;
+          if (prominent) return (
+            <button
+              key={id}
+              data-tutorial={`nav-${id}`}
+              onClick={() => setPage(id)}
+              title={collapsed ? lb : undefined}
+              style={{
+                display:"flex", alignItems:"center", gap:10,
+                padding: collapsed ? "11px 0" : "11px 12px",
+                justifyContent: collapsed ? "center" : "flex-start",
+                background: active
+                  ? "linear-gradient(135deg,#7C5CFC,#B45AFD)"
+                  : "linear-gradient(135deg,#7C5CFC22,#B45AFD18)",
+                border: `1px solid ${active ? "transparent" : "#7C5CFC44"}`,
+                borderRadius:11, cursor:"pointer",
+                color: active ? "#fff" : "#C4B5FD",
+                fontSize:14, fontWeight:700,
+                transition:"all .15s", whiteSpace:"nowrap",
+                boxShadow: active ? "0 2px 16px #7C5CFC55" : "none",
+                marginBottom:4,
+              }}
+              onMouseEnter={e => { if (!active) { e.currentTarget.style.background="linear-gradient(135deg,#7C5CFC44,#B45AFD33)"; }}}
+              onMouseLeave={e => { if (!active) { e.currentTarget.style.background="linear-gradient(135deg,#7C5CFC22,#B45AFD18)"; }}}
+            >
+              <span style={{ fontSize:17, flexShrink:0 }}>{ic}</span>
+              {!collapsed && <span>{lb}</span>}
+            </button>
+          );
           return (
             <button
               key={id}
@@ -82,30 +106,21 @@ export default function Sidebar({ page, setPage, user, collapsed, setCollapsed }
               onClick={() => setPage(id)}
               title={collapsed ? lb : undefined}
               style={{
-                display:"flex", alignItems:"center",
-                gap:10,
+                display:"flex", alignItems:"center", gap:10,
                 padding: collapsed ? "10px 0" : "10px 12px",
                 justifyContent: collapsed ? "center" : "flex-start",
                 background: active ? "rgba(124,92,252,0.18)" : "transparent",
                 border: `1px solid ${active ? "rgba(124,92,252,0.4)" : "transparent"}`,
-                borderRadius:11,
-                cursor:"pointer",
+                borderRadius:11, cursor:"pointer",
                 color: active ? "#C4B5FD" : "#9090B8",
-                fontSize:14,
-                fontWeight: active ? 700 : 400,
-                transition:"all .15s",
-                whiteSpace:"nowrap",
+                fontSize:14, fontWeight: active ? 700 : 400,
+                transition:"all .15s", whiteSpace:"nowrap",
                 boxShadow: active ? "inset 0 1px 0 rgba(255,255,255,0.05)" : "none",
               }}
               onMouseEnter={e => { if (!active) { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.color="#D0D0F0"; }}}
               onMouseLeave={e => { if (!active) { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#9090B8"; }}}
             >
-              <span style={{
-                fontSize:17,
-                flexShrink:0,
-                color: active ? "#B09FFF" : "#6868A8",
-                transition:"color .15s",
-              }}>{ic}</span>
+              <span style={{ fontSize:17, flexShrink:0, color: active ? "#B09FFF" : "#6868A8", transition:"color .15s" }}>{ic}</span>
               {!collapsed && <span>{lb}</span>}
               {active && !collapsed && (
                 <span style={{ marginLeft:"auto", width:5, height:5, borderRadius:"50%", background:"#9B79FC", flexShrink:0 }}/>

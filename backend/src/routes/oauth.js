@@ -88,15 +88,16 @@ router.get("/google/callback", async (req, res) => {
         const channelData = await channelRes.json();
         const channel = channelData.items?.[0];
         if (channel) {
-          const handle    = channel.snippet?.customUrl || channel.snippet?.title || "YouTube Channel";
-          const followers = parseInt(channel.statistics?.subscriberCount || 0);
+          const handle     = channel.snippet?.customUrl || channel.snippet?.title || "YouTube Channel";
+          const channelId  = channel.id || "default";
+          const followers  = parseInt(channel.statistics?.subscriberCount || 0);
           const videoCount = parseInt(channel.statistics?.videoCount || 0);
           await query(
-            `INSERT INTO platform_connections (user_id,platform,handle,access_token,refresh_token,followers,video_count,connected)
-             VALUES ($1,'youtube',$2,$3,$4,$5,$6,true)
-             ON CONFLICT (user_id,platform) DO UPDATE SET
-               handle=$2,access_token=$3,refresh_token=$4,followers=$5,video_count=$6,connected=true,updated_at=NOW()`,
-            [user.id, handle, tokens.access_token, tokens.refresh_token || "", followers, videoCount]
+            `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,refresh_token,followers,video_count,connected)
+             VALUES ($1,'youtube',$2,$3,$4,$5,$6,$7,true)
+             ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+               handle=$3,access_token=$4,refresh_token=$5,followers=$6,video_count=$7,connected=true,updated_at=NOW()`,
+            [user.id, channelId, handle, tokens.access_token, tokens.refresh_token || "", followers, videoCount]
           );
         }
       } catch (e) {
@@ -222,16 +223,17 @@ router.get("/youtube/callback", async (req, res) => {
     );
     const channelData = await channelRes.json();
     const channel     = channelData.items?.[0];
+    const channelId   = channel?.id || "default";
     const handle      = channel?.snippet?.customUrl || channel?.snippet?.title || (isShorts ? "YouTube Shorts Channel" : "YouTube Channel");
     const followers   = parseInt(channel?.statistics?.subscriberCount || 0);
     const videoCount  = parseInt(channel?.statistics?.videoCount || 0);
 
     await query(
-      `INSERT INTO platform_connections (user_id,platform,handle,access_token,refresh_token,followers,video_count,connected)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,true)
-       ON CONFLICT (user_id,platform) DO UPDATE SET
-         handle=$3,access_token=$4,refresh_token=$5,followers=$6,video_count=$7,connected=true,updated_at=NOW()`,
-      [userId, platform, handle, tokens.access_token, tokens.refresh_token || "", followers, videoCount]
+      `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,refresh_token,followers,video_count,connected)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,true)
+       ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+         handle=$4,access_token=$5,refresh_token=$6,followers=$7,video_count=$8,connected=true,updated_at=NOW()`,
+      [userId, platform, channelId, handle, tokens.access_token, tokens.refresh_token || "", followers, videoCount]
     );
     res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=${platform}`);
   } catch (err) {
@@ -323,11 +325,11 @@ router.get("/tiktok/callback", async (req, res) => {
     const profile  = userData.data?.user || {};
 
     await query(
-      `INSERT INTO platform_connections (user_id,platform,handle,access_token,refresh_token,followers,video_count,connected)
-       VALUES ($1,'tiktok',$2,$3,$4,$5,$6,true)
-       ON CONFLICT (user_id,platform) DO UPDATE SET
-         handle=$2,access_token=$3,refresh_token=$4,followers=$5,video_count=$6,connected=true,updated_at=NOW()`,
-      [userId, profile.display_name || "TikTok Account", tokens.access_token, tokens.refresh_token || "", profile.follower_count || 0, profile.video_count || 0]
+      `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,refresh_token,followers,video_count,connected)
+       VALUES ($1,'tiktok',$2,$3,$4,$5,$6,$7,true)
+       ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+         handle=$3,access_token=$4,refresh_token=$5,followers=$6,video_count=$7,connected=true,updated_at=NOW()`,
+      [userId, tokens.open_id || "default", profile.display_name || "TikTok Account", tokens.access_token, tokens.refresh_token || "", profile.follower_count || 0, profile.video_count || 0]
     );
     res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=tiktok`);
   } catch (err) {
@@ -401,11 +403,11 @@ router.get("/instagram/callback", async (req, res) => {
     if (!igHandle) throw new Error("No Instagram Business account linked to your Facebook Pages.");
 
     await query(
-      `INSERT INTO platform_connections (user_id,platform,handle,access_token,followers,video_count,connected)
-       VALUES ($1,'instagram',$2,$3,$4,$5,true)
-       ON CONFLICT (user_id,platform) DO UPDATE SET
-         handle=$2,access_token=$3,followers=$4,video_count=$5,connected=true,updated_at=NOW()`,
-      [userId, igHandle, igToken, igFollowers, igMediaCount]
+      `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,followers,video_count,connected)
+       VALUES ($1,'instagram',$2,$3,$4,$5,$6,true)
+       ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+         handle=$3,access_token=$4,followers=$5,video_count=$6,connected=true,updated_at=NOW()`,
+      [userId, igId || "default", igHandle, igToken, igFollowers, igMediaCount]
     );
     res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=instagram`);
   } catch (err) {

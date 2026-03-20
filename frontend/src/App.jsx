@@ -1,36 +1,28 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
-import AuthPage   from "./pages/AuthPage";
-import Sidebar    from "./components/Sidebar";
-import Dashboard  from "./pages/Dashboard";
-import Platforms  from "./pages/Platforms";
-import Trends     from "./pages/Trends";
-import Optimizer  from "./pages/Optimizer";
-import Thumbnails from "./pages/Thumbnails";
-import Scripts    from "./pages/Scripts";
-import Analytics  from "./pages/Analytics";
-import Pipeline   from "./pages/Pipeline";
-import Schedule     from "./pages/Schedule";
-import VideoClipper from "./pages/VideoClipper";
+import AuthPage     from "./pages/AuthPage";
+import Sidebar      from "./components/Sidebar";
+import Dashboard    from "./pages/Dashboard";
+import Platforms    from "./pages/Platforms";
+import Scripts      from "./pages/Scripts";
+import Analytics    from "./pages/Analytics";
+import Pipeline     from "./pages/Pipeline";
 import Pricing      from "./pages/Pricing";
 import Account      from "./pages/Account";
-import Projects     from "./pages/Projects";
+import PostContent  from "./pages/PostContent";
+import Avatar       from "./pages/Avatar";
 import { BubbleTutorial, LoginTip } from "./components/BubbleTutorial";
 
 const PAGES = {
-  dashboard: Dashboard,
-  platforms: Platforms,
-  trends:    Trends,
-  optimizer: Optimizer,
-  thumbnails:Thumbnails,
-  scripts:   Scripts,
-  analytics: Analytics,
-  pipeline:  Pipeline,
-  schedule:   Schedule,
-  clipper:    VideoClipper,
-  pricing:    Pricing,
-  account:   Account,
-  projects:  Projects,
+  dashboard:   Dashboard,
+  postcontent: PostContent,
+  scripts:     Scripts,
+  analytics:   Analytics,
+  pipeline:    Pipeline,
+  platforms:   Platforms,
+  pricing:     Pricing,
+  account:     Account,
+  avatar:      Avatar,
 };
 
 function AppInner() {

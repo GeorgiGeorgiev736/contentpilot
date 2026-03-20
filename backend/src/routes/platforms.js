@@ -38,13 +38,21 @@ router.post("/connect", requireAuth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// DELETE /api/platforms/:platform — disconnect a platform
+// DELETE /api/platforms/:platform — disconnect a platform (optionally specific channel)
 router.delete("/:platform", requireAuth, async (req, res, next) => {
   try {
-    await query(
-      "UPDATE platform_connections SET connected = false, access_token = null, refresh_token = null, updated_at = NOW() WHERE user_id = $1 AND platform = $2",
-      [req.user.id, req.params.platform]
-    );
+    const { channel_id } = req.query;
+    if (channel_id) {
+      await query(
+        "UPDATE platform_connections SET connected = false, access_token = null, refresh_token = null, updated_at = NOW() WHERE user_id = $1 AND platform = $2 AND channel_id = $3",
+        [req.user.id, req.params.platform, channel_id]
+      );
+    } else {
+      await query(
+        "UPDATE platform_connections SET connected = false, access_token = null, refresh_token = null, updated_at = NOW() WHERE user_id = $1 AND platform = $2",
+        [req.user.id, req.params.platform]
+      );
+    }
     res.json({ success: true });
   } catch (err) { next(err); }
 });
@@ -135,8 +143,8 @@ router.get("/:platform/stats", requireAuth, async (req, res, next) => {
 
     const platform = req.params.platform;
 
-    // ── YouTube ──────────────────────────────────────────────
-    if (platform === "youtube") {
+    // ── YouTube & YouTube Shorts (same API) ──────────────────
+    if (platform === "youtube" || platform === "youtube_shorts") {
       // Channel totals
       const channelData = await googleFetch(
         "https://www.googleapis.com/youtube/v3/channels?part=statistics&mine=true",

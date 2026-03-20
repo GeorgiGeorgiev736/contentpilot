@@ -77,6 +77,19 @@ CREATE TABLE IF NOT EXISTS payment_events (
   created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Multiple channels support
+ALTER TABLE platform_connections ADD COLUMN IF NOT EXISTS channel_id TEXT NOT NULL DEFAULT 'default';
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'platform_connections_user_id_platform_key') THEN
+    ALTER TABLE platform_connections DROP CONSTRAINT platform_connections_user_id_platform_key;
+  END IF;
+END $$;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'platform_connections_user_platform_channel_key') THEN
+    ALTER TABLE platform_connections ADD CONSTRAINT platform_connections_user_platform_channel_key UNIQUE (user_id, platform, channel_id);
+  END IF;
+END $$;
+
 -- OAuth columns (added after initial launch)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider_id TEXT;
@@ -85,14 +98,22 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT;
 
 -- Scheduled posts
 CREATE TABLE IF NOT EXISTS scheduled_posts (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  platform    TEXT NOT NULL,
-  content     TEXT,
-  media_url   TEXT,
-  scheduled_at TIMESTAMPTZ NOT NULL,
-  status      TEXT DEFAULT 'pending',
-  created_at  TIMESTAMPTZ DEFAULT NOW()
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  campaign_id    UUID REFERENCES campaigns(id) ON DELETE SET NULL,
+  platform       TEXT NOT NULL,
+  title          TEXT,
+  description    TEXT,
+  hashtags       TEXT[],
+  video_url      TEXT,
+  thumbnail_url  TEXT,
+  scheduled_for  TIMESTAMPTZ NOT NULL,
+  status         TEXT DEFAULT 'scheduled',
+  is_short       BOOLEAN DEFAULT FALSE,
+  published_at   TIMESTAMPTZ,
+  error_message  TEXT,
+  created_at     TIMESTAMPTZ DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
