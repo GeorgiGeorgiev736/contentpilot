@@ -77,6 +77,24 @@ CREATE TABLE IF NOT EXISTS payment_events (
   created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- OAuth columns (added after initial launch)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT;
+
+-- Scheduled posts
+CREATE TABLE IF NOT EXISTS scheduled_posts (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  platform    TEXT NOT NULL,
+  content     TEXT,
+  media_url   TEXT,
+  scheduled_at TIMESTAMPTZ NOT NULL,
+  status      TEXT DEFAULT 'pending',
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_platform_connections_user ON platform_connections(user_id);
