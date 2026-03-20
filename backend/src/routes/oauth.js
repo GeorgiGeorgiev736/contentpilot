@@ -108,7 +108,7 @@ router.get("/google/callback", async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
   } catch (err) {
     console.error("Google login error:", err.message);
-    res.redirect(`${process.env.FRONTEND_URL}?error=google_failed`);
+    res.redirect(`${process.env.FRONTEND_URL}?error=google_failed&detail=${encodeURIComponent(err.message)}`);
   }
 });
 

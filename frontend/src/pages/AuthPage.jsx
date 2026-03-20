@@ -23,13 +23,14 @@ export default function AuthPage() {
       refreshUser().then(() => window.history.replaceState({}, "", "/"));
     }
     if (oauthErr) {
+      const detail = params.get("detail");
       const messages = {
-        google_failed:   "Google sign-in failed. Please try again.",
-        facebook_failed: "Facebook sign-in failed. Please try again.",
-        github_failed:   "GitHub sign-in failed. Please try again.",
-no_code:         "Authentication was cancelled.",
+        google_failed:   "Google sign-in failed.",
+        facebook_failed: "Facebook sign-in failed.",
+        github_failed:   "GitHub sign-in failed.",
+        no_code:         "Authentication was cancelled.",
       };
-      setError(messages[oauthErr] || "Sign-in failed.");
+      setError((messages[oauthErr] || "Sign-in failed.") + (detail ? ` (${detail})` : ""));
     }
   }, []);
 
