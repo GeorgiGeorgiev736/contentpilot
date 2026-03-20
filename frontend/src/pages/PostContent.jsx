@@ -371,7 +371,20 @@ export default function PostContent() {
       {step === 2 && (
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <div className="card" style={{ padding:24 }}>
-            <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0", marginBottom:14 }}>Thumbnail</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>Thumbnail</div>
+              {frames.length > 0 && (
+                <a
+                  href={frames[thumbIdx]}
+                  download={`thumbnail-${thumbIdx + 1}.jpg`}
+                  style={{ fontSize:13, fontWeight:600, color:"#9B79FC", textDecoration:"none", padding:"6px 14px", border:"1px solid #9B79FC44", borderRadius:8, display:"flex", alignItems:"center", gap:6, transition:"all .15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background="#9B79FC18"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background="transparent"; }}
+                >
+                  ↓ Download frame
+                </a>
+              )}
+            </div>
             {frames.length === 0 ? (
               <div style={{ color:"#7878A8", fontSize:13 }}>Extracting frames…</div>
             ) : (
@@ -384,7 +397,7 @@ export default function PostContent() {
                 ))}
               </div>
             )}
-            <div style={{ fontSize:12, color:"#7878A8", marginTop:10 }}>Click a frame to use as thumbnail</div>
+            <div style={{ fontSize:12, color:"#7878A8", marginTop:10 }}>Click a frame to select · Download to use as your YouTube thumbnail</div>
           </div>
 
           <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:14 }}>

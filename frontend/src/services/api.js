@@ -56,6 +56,7 @@ export async function streamAI({ feature, context, onToken, onDone, onError }) {
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
+  let doneFired = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -66,11 +67,14 @@ export async function streamAI({ feature, context, onToken, onDone, onError }) {
       if (!line.startsWith("data: ")) continue;
       try {
         const data = JSON.parse(line.slice(6));
-        if (data.text)                    onToken?.(data.text);
-        if (data.feature || data.creditsUsed) onDone?.(data);
+        if (data.text) onToken?.(data.text);
+        if (data.error) { onError?.(data.message || "AI error"); return; }
+        if (data.feature || data.creditsUsed) { doneFired = true; onDone?.(data); }
       } catch {}
     }
   }
+  // Ensure onDone always fires even if the done event was missed
+  if (!doneFired) onDone?.({});
 }
 
 // ── Credits ──────────────────────────────────────────────────

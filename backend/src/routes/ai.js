@@ -42,7 +42,7 @@ router.post("/stream", requireAuth, requireCredits, async (req, res, next) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "http://localhost:5173");
+  res.setHeader("X-Accel-Buffering", "no"); // disable nginx buffering on Railway
   res.flushHeaders();
 
   const send = (event, data) => {
