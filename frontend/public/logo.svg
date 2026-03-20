@@ -2,12 +2,35 @@
   <!-- Background -->
   <rect width="500" height="500" rx="110" fill="#7C5CFC"/>
 
-  <!-- Upload tray base -->
-  <rect x="130" y="340" width="240" height="28" rx="14" fill="white"/>
+  <!-- Rocket body + nose (one solid white shape) -->
+  <!-- Bullet-shaped body: rounded top tapering to a point, straight sides, flat base -->
+  <path d="
+    M250 70
+    C250 70 200 140 200 255
+    L300 255
+    C300 140 250 70 250 70
+    Z
+  " fill="white"/>
 
-  <!-- Arrow shaft -->
-  <rect x="229" y="180" width="42" height="140" rx="21" fill="white"/>
+  <!-- Left fin -->
+  <path d="M200 240 L158 300 L200 285 Z" fill="white"/>
 
-  <!-- Arrow head -->
-  <polygon points="250,100 160,230 340,230" fill="white"/>
+  <!-- Right fin -->
+  <path d="M300 240 L342 300 L300 285 Z" fill="white"/>
+
+  <!-- Nozzle -->
+  <rect x="220" y="255" width="60" height="20" rx="8" fill="white"/>
+
+  <!-- Porthole ring (purple cutout so the white shows as a ring) -->
+  <circle cx="250" cy="195" r="26" fill="#7C5CFC"/>
+  <circle cx="250" cy="195" r="18" fill="#7C5CFC"/>
+
+  <!-- Porthole white ring -->
+  <circle cx="250" cy="195" r="26" fill="none" stroke="white" stroke-width="9"/>
+
+  <!-- Flame: outer glow -->
+  <ellipse cx="250" cy="305" rx="28" ry="42" fill="white" opacity="0.45"/>
+
+  <!-- Flame: inner bright -->
+  <ellipse cx="250" cy="300" rx="16" ry="30" fill="white" opacity="0.85"/>
 </svg>
