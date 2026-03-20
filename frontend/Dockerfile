@@ -13,17 +13,12 @@ RUN npm run build
 FROM nginx:alpine AS runner
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Default config for local dev (production mounts nginx/nginx.conf via volume)
+# Serve React app — API calls go directly to VITE_API_URL (external backend)
 RUN echo 'server { \
   listen 80; \
   root /usr/share/nginx/html; \
   index index.html; \
   location / { try_files $uri $uri/ /index.html; } \
-  location /api { \
-    proxy_pass http://backend:3001; \
-    proxy_read_timeout 120s; \
-    proxy_buffering off; \
-  } \
 }' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
