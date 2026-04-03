@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { UploadProvider, useUpload } from "./context/UploadContext"; // eslint-disable-line
 import AuthPage     from "./pages/AuthPage";
@@ -36,6 +36,21 @@ function AppInner() {
   // Show every login unless user has explicitly checked "Don't show again"
   const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem("autopilot_tutorial_v1") !== "done");
   const [pageProps, setPageProps] = useState({});
+
+  // Handle OAuth redirects that land on /platforms?connected=...
+  useEffect(() => {
+    const path   = window.location.pathname.replace("/", "");
+    const params = new URLSearchParams(window.location.search);
+    if (path && PAGES[path]) {
+      setPage(path);
+      window.history.replaceState({}, "", "/");
+    }
+    const connected = params.get("connected");
+    if (connected) {
+      setPage("platforms");
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
 
   if (loading) return (
     <div style={{ minHeight:"100vh", background:"#06060F", display:"flex", alignItems:"center", justifyContent:"center" }}>
