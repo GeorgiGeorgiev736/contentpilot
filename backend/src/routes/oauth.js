@@ -122,7 +122,7 @@ router.get("/facebook", (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.INSTAGRAM_CLIENT_ID,
     redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
-    scope:         "public_profile,email",
+    scope:         "public_profile",
     response_type: "code",
     ...(state ? { state } : {}),
   });
