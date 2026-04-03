@@ -140,12 +140,28 @@ function Spotlight({ rect }) {
 // ─── Bubble tooltip ─────────────────────────────────────────────────────────
 const BW = { right: 360, below: 380, center: 500 };
 
+function isMobile() { return window.innerWidth < 600; }
+
 function getBubbleStyle(step, rect) {
+  // On mobile always center
+  if (isMobile()) {
+    const vw = window.innerWidth;
+    const w  = Math.min(vw - 32, 420);
+    return {
+      style: { position: "fixed", left: (vw - w) / 2, top: "50%", transform: "translateY(-50%)", width: w, maxHeight: "80vh", overflowY: "auto" },
+      arrowLeft: null,
+    };
+  }
+
   const { position } = step;
   if (position === "center" || !rect) {
     return { style: { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: BW.center }, arrowLeft: null };
   }
   if (position === "right") {
+    // If not enough room on right, fall back to center
+    if (rect.right + 24 + BW.right > window.innerWidth - 8) {
+      return { style: { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: Math.min(BW.right, window.innerWidth - 32) }, arrowLeft: null };
+    }
     return {
       style: { position: "fixed", left: rect.right + 24, top: Math.max(16, Math.min(rect.top + rect.height / 2 - 140, window.innerHeight - 390)), width: BW.right },
       arrowLeft: null,
@@ -417,10 +433,11 @@ export function LoginTip() {
     <>
       <style>{`@keyframes tipSlideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:none } }`}</style>
       <div style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+        position: "fixed", bottom: 16, right: 16, left: 16, zIndex: 1000,
+        maxWidth: 340, marginLeft: "auto",
         background: "linear-gradient(155deg,#141432,#0F0F28)",
         border: "1px solid #3A2A8A",
-        borderRadius: 16, padding: "16px 18px", width: 340,
+        borderRadius: 16, padding: "16px 18px",
         boxShadow: "0 8px 44px rgba(0,0,0,0.65), 0 0 0 1px rgba(124,92,252,0.1)",
         animation: "tipSlideUp .35s cubic-bezier(.22,1,.36,1)",
         display: "flex", gap: 13, alignItems: "flex-start",

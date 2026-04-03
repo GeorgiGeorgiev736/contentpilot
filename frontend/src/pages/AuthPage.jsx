@@ -153,16 +153,6 @@ export default function AuthPage() {
               Continue with Google · YouTube
             </button>
 
-            <button onClick={() => oauthLogin("facebook")} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", padding:"11px", background:"#0082FB", border:"1px solid #0082FB", borderRadius:10, color:"#fff", cursor:"pointer", fontSize:14, fontWeight:500, fontFamily:"inherit", transition:"opacity .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              {/* Meta infinity logo */}
-              <svg width="28" height="16" viewBox="0 0 60 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 17C6 11 9 7 13 7C16 7 18.5 9 21 13C23.5 17 26 22 30 22C34 22 37 19 37 17C37 15 34 12 30 12C27.5 12 25.5 13.5 24 15.5" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none"/>
-                <path d="M54 17C54 11 51 7 47 7C44 7 41.5 9 39 13C36.5 17 34 22 30 22C26 22 23 19 23 17C23 15 26 12 30 12C32.5 12 34.5 13.5 36 15.5" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none"/>
-              </svg>
-              Continue with Meta · Instagram
-            </button>
-
           </div>
 
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:22 }}>

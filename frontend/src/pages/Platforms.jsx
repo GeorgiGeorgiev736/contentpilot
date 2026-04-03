@@ -47,9 +47,7 @@ export default function Platforms() {
 
   // Redirect to real OAuth — backend handles the full flow
   const connect = (platformId) => {
-    // For instagram, route through facebook OAuth with token so it links to existing account
-    const route = platformId === "instagram" ? "facebook" : platformId;
-    window.location.href = `${API}/api/oauth/${route}?token=${getToken()}`;
+    window.location.href = `${API}/api/oauth/${platformId}?token=${getToken()}`;
   };
 
   const disconnect = async (platformId, channelId) => {
