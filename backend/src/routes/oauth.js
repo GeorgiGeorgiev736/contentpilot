@@ -429,6 +429,7 @@ router.get("/instagram/callback", async (req, res) => {
       `https://graph.facebook.com/v19.0/me/accounts?access_token=${tokens.access_token}`
     );
     const pagesData = await pagesRes.json();
+    console.log("Facebook pages response:", JSON.stringify(pagesData));
     if (!pagesData.data?.length) throw new Error("No Facebook Pages found. Connect a Page linked to your Instagram Business account.");
 
     // Find the first Page with a linked Instagram Business account
