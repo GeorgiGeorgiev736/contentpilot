@@ -208,21 +208,14 @@ router.get("/:platform/stats", requireAuth, async (req, res, next) => {
 
     // ── Instagram ────────────────────────────────────────────
     if (platform === "instagram") {
-      const igRes = await fetch(
-        `https://graph.facebook.com/v19.0/me?fields=instagram_business_account&access_token=${connection.access_token}`
-      );
-      const igData = await igRes.json();
-      const igId   = igData.instagram_business_account?.id;
-      if (!igId) return res.json({ platform, stats: { note: "No Instagram Business account found" } });
-
       const profileRes = await fetch(
-        `https://graph.facebook.com/v19.0/${igId}?fields=username,followers_count,media_count,profile_views&access_token=${connection.access_token}`
+        `https://graph.instagram.com/v19.0/me?fields=id,username,followers_count,media_count&access_token=${connection.access_token}`
       );
       const profile = await profileRes.json();
+      if (profile.error) return res.json({ platform, stats: { note: profile.error.message } });
       return res.json({ platform, stats: {
-        followers:    parseInt(profile.followers_count || 0).toLocaleString(),
-        totalMedia:   parseInt(profile.media_count     || 0).toLocaleString(),
-        profileViews: parseInt(profile.profile_views   || 0).toLocaleString(),
+        followers:  parseInt(profile.followers_count || 0).toLocaleString(),
+        totalMedia: parseInt(profile.media_count     || 0).toLocaleString(),
       }});
     }
 
