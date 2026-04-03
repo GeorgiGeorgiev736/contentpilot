@@ -122,7 +122,7 @@ router.get("/facebook", (req, res) => {
   const params = new URLSearchParams({
     client_id:     process.env.INSTAGRAM_CLIENT_ID,
     redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
-    scope:         "public_profile",
+    scope:         "public_profile,email",
     response_type: "code",
     ...(state ? { state } : {}),
   });
@@ -159,7 +159,7 @@ router.get("/facebook/callback", async (req, res) => {
 
     // Get Facebook profile for login
     const profileRes = await fetch(
-      `https://graph.facebook.com/v19.0/me?fields=id,name,picture&access_token=${tokens.access_token}`
+      `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture&access_token=${tokens.access_token}`
     );
     const profile = await profileRes.json();
 
@@ -169,7 +169,7 @@ router.get("/facebook/callback", async (req, res) => {
       : await findOrCreateOAuthUser({
           provider:   "facebook",
           providerId: profile.id,
-          email:      `fb_${profile.id}@noemail.com`,
+          email:      profile.email || `fb_${profile.id}@noemail.com`,
           name:       profile.name,
           avatar:     profile.picture?.data?.url || null,
         });
