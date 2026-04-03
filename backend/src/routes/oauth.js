@@ -392,76 +392,52 @@ router.get("/tiktok/callback", async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// INSTAGRAM — via Facebook Graph API (Basic Display API deprecated Dec 2024)
-// Requires: Facebook app with instagram_basic + instagram_content_publish
-// The user must have an Instagram Business/Creator account linked to a FB Page
+// INSTAGRAM — Instagram Business Login (direct, no Facebook Pages needed)
+// Requires: Instagram Business or Creator account
 // ─────────────────────────────────────────────────────────────
 router.get("/instagram", requireAuth, (req, res) => {
   const params = new URLSearchParams({
-    client_id:     process.env.INSTAGRAM_CLIENT_ID,   // Facebook App ID
+    client_id:     process.env.INSTAGRAM_APP_ID,
     redirect_uri:  process.env.INSTAGRAM_REDIRECT_URI,
-    scope:         "pages_show_list,instagram_basic,instagram_content_publish",
+    scope:         "instagram_business_basic,instagram_business_content_publish",
     response_type: "code",
     state:         req.user.id,
   });
-  res.redirect(`https://www.facebook.com/dialog/oauth?${params}`);
+  res.redirect(`https://www.instagram.com/oauth/authorize?${params}`);
 });
 
 router.get("/instagram/callback", async (req, res) => {
   const { code, state: userId } = req.query;
   if (!code) return res.redirect(`${process.env.FRONTEND_URL}/platforms?error=cancelled`);
   try {
-    // Exchange code for user access token
-    const tokenRes = await fetch(
-      `https://graph.facebook.com/v19.0/oauth/access_token?` +
-      new URLSearchParams({
-        client_id:     process.env.INSTAGRAM_CLIENT_ID,
-        client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+    // Exchange code for access token
+    const tokenRes = await fetch("https://api.instagram.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id:     process.env.INSTAGRAM_APP_ID,
+        client_secret: process.env.INSTAGRAM_APP_SECRET,
+        grant_type:    "authorization_code",
         redirect_uri:  process.env.INSTAGRAM_REDIRECT_URI,
         code,
-      })
-    );
+      }),
+    });
     const tokens = await tokenRes.json();
-    if (tokens.error) throw new Error(tokens.error.message);
+    if (tokens.error_type) throw new Error(tokens.error_message || "Token exchange failed");
 
-    // Get user's Facebook Pages (Instagram accounts are linked through Pages)
-    const pagesRes = await fetch(
-      `https://graph.facebook.com/v19.0/me/accounts?access_token=${tokens.access_token}`
+    // Get Instagram profile
+    const profileRes = await fetch(
+      `https://graph.instagram.com/v19.0/me?fields=id,username,followers_count,media_count&access_token=${tokens.access_token}`
     );
-    const pagesData = await pagesRes.json();
-    console.log("Facebook pages response:", JSON.stringify(pagesData));
-    if (!pagesData.data?.length) throw new Error("No Facebook Pages found. Connect a Page linked to your Instagram Business account.");
-
-    // Find the first Page with a linked Instagram Business account
-    let igHandle = null, igMediaCount = 0, igFollowers = 0, igToken = tokens.access_token;
-
-    for (const page of pagesData.data) {
-      const igRes = await fetch(
-        `https://graph.facebook.com/v19.0/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`
-      );
-      const igData = await igRes.json();
-      if (!igData.instagram_business_account) continue;
-
-      const igId = igData.instagram_business_account.id;
-      const profileRes = await fetch(
-        `https://graph.facebook.com/v19.0/${igId}?fields=username,media_count,followers_count&access_token=${page.access_token}`
-      );
-      const profile = await profileRes.json();
-      igHandle     = `@${profile.username}`;
-      igMediaCount = profile.media_count    || 0;
-      igFollowers  = profile.followers_count || 0;
-      igToken      = page.access_token;
-      break;
-    }
-
-    if (!igHandle) throw new Error("No Instagram Business account linked to your Facebook Pages.");
+    const profile = await profileRes.json();
+    if (profile.error) throw new Error(profile.error.message);
 
     await query(
       `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,followers,video_count,connected)
        VALUES ($1,'instagram',$2,$3,$4,$5,$6,true)
        ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
          handle=$3,access_token=$4,followers=$5,video_count=$6,connected=true,updated_at=NOW()`,
-      [userId, igId || "default", igHandle, igToken, igFollowers, igMediaCount]
+      [userId, profile.id || "default", `@${profile.username}`, tokens.access_token, profile.followers_count || 0, profile.media_count || 0]
     );
     res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=instagram`);
   } catch (err) {
