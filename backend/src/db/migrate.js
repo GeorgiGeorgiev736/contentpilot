@@ -146,6 +146,9 @@ INSERT INTO feature_flags (key, label, enabled) VALUES
   ('paypal_payments',  'PayPal Payments',                true)
 ON CONFLICT (key) DO NOTHING;
 
+-- AI usage credits_used column
+ALTER TABLE ai_usage ADD COLUMN IF NOT EXISTS credits_used INTEGER DEFAULT 0;
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_platform_connections_user ON platform_connections(user_id);
