@@ -99,7 +99,7 @@ export const platforms = {
   list:       ()           => req("GET",    "/api/platforms"),
   connect:    (data)       => req("POST",   "/api/platforms/connect", data),
   disconnect: (platform)   => req("DELETE", `/api/platforms/${platform}`),
-  stats:      (platform)   => req("GET",    `/api/platforms/${platform}/stats`),
+  stats:      (platformPath) => req("GET",  `/api/platforms/${platformPath}/stats`),
 };
 
 // ── PayPal ───────────────────────────────────────────────────

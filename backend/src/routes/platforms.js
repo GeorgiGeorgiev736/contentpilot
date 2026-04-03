@@ -6,7 +6,7 @@ const { requireAuth } = require("../middleware/auth");
 router.get("/", requireAuth, async (req, res, next) => {
   try {
     const connections = await query(
-      "SELECT platform, handle, followers, video_count, connected, created_at FROM platform_connections WHERE user_id = $1",
+      "SELECT id, platform, channel_id, handle, followers, video_count, connected, created_at FROM platform_connections WHERE user_id = $1",
       [req.user.id]
     );
     res.json({ connections });
@@ -135,10 +135,16 @@ router.get("/youtube/top-videos", requireAuth, async (req, res, next) => {
 // GET /api/platforms/:platform/stats — real stats from platform APIs
 router.get("/:platform/stats", requireAuth, async (req, res, next) => {
   try {
-    const connection = await queryOne(
-      "SELECT * FROM platform_connections WHERE user_id = $1 AND platform = $2 AND connected = true",
-      [req.user.id, req.params.platform]
-    );
+    const { channel_id } = req.query;
+    const connection = channel_id
+      ? await queryOne(
+          "SELECT * FROM platform_connections WHERE user_id = $1 AND platform = $2 AND channel_id = $3 AND connected = true",
+          [req.user.id, req.params.platform, channel_id]
+        )
+      : await queryOne(
+          "SELECT * FROM platform_connections WHERE user_id = $1 AND platform = $2 AND connected = true ORDER BY created_at ASC LIMIT 1",
+          [req.user.id, req.params.platform]
+        );
     if (!connection) return res.status(404).json({ error: "Platform not connected" });
 
     const platform = req.params.platform;

@@ -60,7 +60,8 @@ export default function Platforms() {
 
   const loadStats = async (platformId, channelId) => {
     const key = `${platformId}_${channelId || "default"}`;
-    const { stats: s } = await platformsApi.stats(platformId).catch(() => ({ stats: {} }));
+    const path = channelId ? `${platformId}?channel_id=${channelId}` : platformId;
+    const { stats: s } = await platformsApi.stats(path).catch(() => ({ stats: {} }));
     setStats(prev => ({ ...prev, [key]: s }));
   };
 

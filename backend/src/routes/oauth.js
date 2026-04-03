@@ -78,16 +78,15 @@ router.get("/google/callback", async (req, res) => {
     const profile = await profileRes.json();
     const user    = await findOrCreateOAuthUser({ provider:"google", providerId:profile.id, email:profile.email, name:profile.name, avatar:profile.picture });
 
-    // Auto-connect YouTube channel if tokens granted
+    // Auto-connect ALL YouTube channels
     if (tokens.access_token) {
       try {
         const channelRes = await fetch(
-          "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
+          "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true&maxResults=50",
           { headers: { Authorization: `Bearer ${tokens.access_token}` } }
         );
         const channelData = await channelRes.json();
-        const channel = channelData.items?.[0];
-        if (channel) {
+        for (const channel of (channelData.items || [])) {
           const handle     = channel.snippet?.customUrl || channel.snippet?.title || "YouTube Channel";
           const channelId  = channel.id || "default";
           const followers  = parseInt(channel.statistics?.subscriberCount || 0);
@@ -118,9 +117,9 @@ router.get("/google/callback", async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get("/facebook", (_req, res) => {
   const params = new URLSearchParams({
-    client_id:     process.env.INSTAGRAM_CLIENT_ID,  // Facebook App ID
+    client_id:     process.env.INSTAGRAM_CLIENT_ID,
     redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
-    scope:         "email,public_profile",
+    scope:         "public_profile,pages_show_list,instagram_basic,instagram_content_publish",
     response_type: "code",
   });
   res.redirect(`https://www.facebook.com/dialog/oauth?${params}`);
@@ -155,6 +154,37 @@ router.get("/facebook/callback", async (req, res) => {
       name:       profile.name,
       avatar:     profile.picture?.data?.url || null,
     });
+
+    // Auto-connect Instagram Business account if permissions granted
+    try {
+      const pagesRes = await fetch(
+        `https://graph.facebook.com/v19.0/me/accounts?access_token=${tokens.access_token}`
+      );
+      const pagesData = await pagesRes.json();
+      for (const page of (pagesData.data || [])) {
+        const igRes = await fetch(
+          `https://graph.facebook.com/v19.0/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`
+        );
+        const igData = await igRes.json();
+        if (!igData.instagram_business_account) continue;
+        const igId = igData.instagram_business_account.id;
+        const profileRes = await fetch(
+          `https://graph.facebook.com/v19.0/${igId}?fields=username,media_count,followers_count&access_token=${page.access_token}`
+        );
+        const profile = await profileRes.json();
+        if (!profile.username) continue;
+        await query(
+          `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,followers,video_count,connected)
+           VALUES ($1,'instagram',$2,$3,$4,$5,$6,true)
+           ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+             handle=$3,access_token=$4,followers=$5,video_count=$6,connected=true,updated_at=NOW()`,
+          [user.id, igId, `@${profile.username}`, page.access_token, profile.followers_count || 0, profile.media_count || 0]
+        );
+        break; // connect first linked Instagram account
+      }
+    } catch (e) {
+      console.warn("Instagram auto-connect failed:", e.message);
+    }
 
     const token = signToken(user.id);
     res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
