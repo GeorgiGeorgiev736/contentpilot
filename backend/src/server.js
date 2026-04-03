@@ -13,6 +13,7 @@ const path = require("path");
 const fs   = require("fs");
 
 const app = express();
+app.set("trust proxy", 1); // Railway sits behind a proxy
 const PORT = process.env.PORT || 3001;
 
 // Ensure uploads dir exists
