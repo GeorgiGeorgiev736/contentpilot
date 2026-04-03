@@ -1,12 +1,16 @@
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend = null;
+function getResend() {
+  if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
+  return resend;
+}
 const FROM   = "Autopilot <noreply@contentautopilot.up.railway.app>";
 const FRONT  = process.env.FRONTEND_URL || "https://contentautopilot.up.railway.app";
 
 async function sendVerificationEmail(email, name, token) {
   const link = `${FRONT}/verify-email?token=${token}`;
-  await resend.emails.send({
+  await getResend().emails.send({
     from:    FROM,
     to:      email,
     subject: "Verify your Autopilot account",
