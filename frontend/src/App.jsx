@@ -12,6 +12,7 @@ import Pricing      from "./pages/Pricing";
 import Account      from "./pages/Account";
 import PostContent  from "./pages/PostContent";
 import Avatar       from "./pages/Avatar";
+import Admin        from "./pages/Admin";
 import { BubbleTutorial, LoginTip } from "./components/BubbleTutorial";
 
 const PAGES = {
@@ -24,6 +25,7 @@ const PAGES = {
   pricing:     Pricing,
   account:     Account,
   avatar:      Avatar,
+  admin:       Admin,
 };
 
 function AppInner() {

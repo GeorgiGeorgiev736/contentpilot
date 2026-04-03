@@ -7,7 +7,7 @@ const CONFIGS = {
   youtube:        { name:"YouTube",                color:"#FF0000", icon:"▶", scopes:["Channel analytics","Video metadata","Comments","Upload & schedule"],                        features:["Video SEO optimization","Thumbnail A/B testing","Comment sentiment","Best time prediction"] },
   youtube_shorts: { name:"YouTube Shorts Channel", color:"#FF0000", icon:"▶", note:"Separate channel dedicated to Shorts", isOptional:true, scopes:["Upload Shorts","Channel analytics","Shorts scheduling"], features:["Auto-tag as Short","Shorts feed optimization","Separate analytics","Cross-post from Video Clipper"] },
   tiktok:         { name:"TikTok",                 color:"#69C9D0", icon:"♪", scopes:["Video analytics","Follower demographics","Trending sounds","Post scheduling"],              features:["FYP trend detection","Sound & hashtag analysis","Viral pattern matching","Duet opportunities"] },
-  instagram:      { name:"Instagram",              color:"#E1306C", icon:"◈", scopes:["Media insights","Audience demographics","Story analytics","Hashtag data"],                 features:["Reel performance tracking","Hashtag optimization","Audience overlap","Cross-platform repurposing"] },
+  instagram:      { name:"Instagram (via Meta)",   color:"#E1306C", icon:"◈", scopes:["Media insights","Audience demographics","Story analytics","Hashtag data"],                 features:["Reel performance tracking","Hashtag optimization","Audience overlap","Cross-platform repurposing"] },
 };
 
 export default function Platforms() {
@@ -47,7 +47,9 @@ export default function Platforms() {
 
   // Redirect to real OAuth — backend handles the full flow
   const connect = (platformId) => {
-    window.location.href = `${API}/api/oauth/${platformId}?token=${getToken()}`;
+    // For instagram, route through facebook OAuth with token so it links to existing account
+    const route = platformId === "instagram" ? "facebook" : platformId;
+    window.location.href = `${API}/api/oauth/${route}?token=${getToken()}`;
   };
 
   const disconnect = async (platformId, channelId) => {

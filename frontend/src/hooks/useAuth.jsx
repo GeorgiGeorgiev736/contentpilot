@@ -33,10 +33,11 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (name, email, password) => {
-    const { token, user } = await auth.register(name, email, password);
-    setToken(token);
-    setUser(user);
-    return user;
+    const res = await auth.register(name, email, password);
+    if (res.pendingVerification) return res; // email verification required
+    setToken(res.token);
+    setUser(res.user);
+    return res.user;
   };
 
   const logout = () => {

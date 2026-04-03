@@ -47,9 +47,21 @@ app.use("/api/oauth",    require("./routes/oauth"));
 app.use("/api/schedule", require("./routes/schedule"));
 app.use("/api/clips",    require("./routes/clips"));
 app.use("/api/avatar",   require("./routes/avatar"));
+app.use("/api/admin",    require("./routes/admin"));
 
 // ── Health checks ────────────────────────────────────────────
 app.get("/health", (_req, res) => res.json({ status: "ok", env: process.env.NODE_ENV }));
+
+// Public feature flags endpoint
+app.get("/api/flags", async (_req, res) => {
+  try {
+    const { query: dbQuery } = require("./db/client");
+    const flags = await dbQuery("SELECT key, enabled FROM feature_flags");
+    const map = {};
+    flags.forEach(f => { map[f.key] = f.enabled; });
+    res.json(map);
+  } catch { res.json({}); }
+});
 
 // ── Error handler ─────────────────────────────────────────────
 app.use((err, _req, res, _next) => {

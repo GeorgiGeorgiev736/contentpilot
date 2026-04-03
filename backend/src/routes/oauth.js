@@ -115,19 +115,34 @@ router.get("/google/callback", async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 // FACEBOOK — login + auto-connect Instagram Business account
 // ─────────────────────────────────────────────────────────────
-router.get("/facebook", (_req, res) => {
+router.get("/facebook", (req, res) => {
+  // If called with a token (from Platforms page), encode userId in state so callback knows
+  const userId = req.query.token ? (() => { try { const jwt = require("jsonwebtoken"); return jwt.verify(req.query.token, process.env.JWT_SECRET).userId; } catch { return null; } })() : null;
+  const state  = userId ? Buffer.from(JSON.stringify({ userId, fromPlatforms: true })).toString("base64url") : "";
   const params = new URLSearchParams({
     client_id:     process.env.INSTAGRAM_CLIENT_ID,
     redirect_uri:  process.env.FACEBOOK_REDIRECT_URI,
     scope:         "public_profile,pages_show_list,instagram_basic,instagram_content_publish",
     response_type: "code",
+    ...(state ? { state } : {}),
   });
   res.redirect(`https://www.facebook.com/dialog/oauth?${params}`);
 });
 
 router.get("/facebook/callback", async (req, res) => {
-  const { code } = req.query;
+  const { code, state: rawState } = req.query;
   if (!code) return res.redirect(`${process.env.FRONTEND_URL}?error=no_code`);
+
+  // Decode state to check if this came from Platforms page
+  let fromPlatforms = false, existingUserId = null;
+  try {
+    if (rawState) {
+      const parsed = JSON.parse(Buffer.from(rawState, "base64url").toString());
+      fromPlatforms  = !!parsed.fromPlatforms;
+      existingUserId = parsed.userId || null;
+    }
+  } catch {}
+
   try {
     // Exchange code for access token
     const tokenRes = await fetch(
@@ -144,16 +159,20 @@ router.get("/facebook/callback", async (req, res) => {
 
     // Get Facebook profile for login
     const profileRes = await fetch(
-      `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture&access_token=${tokens.access_token}`
+      `https://graph.facebook.com/v19.0/me?fields=id,name,picture&access_token=${tokens.access_token}`
     );
     const profile = await profileRes.json();
-    const user = await findOrCreateOAuthUser({
-      provider:   "facebook",
-      providerId: profile.id,
-      email:      profile.email || `fb_${profile.id}@noemail.com`,
-      name:       profile.name,
-      avatar:     profile.picture?.data?.url || null,
-    });
+
+    // If coming from Platforms, use existing user — otherwise create/find by OAuth
+    const user = existingUserId
+      ? await queryOne("SELECT * FROM users WHERE id = $1", [existingUserId])
+      : await findOrCreateOAuthUser({
+          provider:   "facebook",
+          providerId: profile.id,
+          email:      `fb_${profile.id}@noemail.com`,
+          name:       profile.name,
+          avatar:     profile.picture?.data?.url || null,
+        });
 
     // Auto-connect Instagram Business account if permissions granted
     try {
@@ -186,8 +205,12 @@ router.get("/facebook/callback", async (req, res) => {
       console.warn("Instagram auto-connect failed:", e.message);
     }
 
-    const token = signToken(user.id);
-    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
+    if (fromPlatforms) {
+      res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=instagram`);
+    } else {
+      const token = signToken(user.id);
+      res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
+    }
   } catch (err) {
     console.error("Facebook login error:", err.message);
     res.redirect(`${process.env.FRONTEND_URL}?error=facebook_failed`);

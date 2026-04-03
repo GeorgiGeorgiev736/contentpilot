@@ -100,6 +100,14 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS paypal_subscription_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_photo_url TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_voice_id TEXT;
 
+-- Email verification
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_token TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS verify_token_expires TIMESTAMPTZ;
+
+-- Mark OAuth users as pre-verified
+UPDATE users SET email_verified = TRUE WHERE oauth_provider IS NOT NULL AND email_verified = FALSE;
+
 -- Scheduled posts
 CREATE TABLE IF NOT EXISTS scheduled_posts (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -119,6 +127,24 @@ CREATE TABLE IF NOT EXISTS scheduled_posts (
   created_at     TIMESTAMPTZ DEFAULT NOW(),
   updated_at     TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Admin & feature flags
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE TABLE IF NOT EXISTS feature_flags (
+  key         TEXT PRIMARY KEY,
+  enabled     BOOLEAN NOT NULL DEFAULT TRUE,
+  label       TEXT,
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
+INSERT INTO feature_flags (key, label, enabled) VALUES
+  ('ai_generation',    'AI Generation (Claude)',         true),
+  ('youtube_upload',   'YouTube Upload & Scheduling',    true),
+  ('tiktok_posting',   'TikTok Posting',                 true),
+  ('instagram_posting','Instagram Posting',              true),
+  ('avatar_studio',    'AI Avatar Studio',               true),
+  ('email_verify',     'Email Verification',             true),
+  ('paypal_payments',  'PayPal Payments',                true)
+ON CONFLICT (key) DO NOTHING;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

@@ -11,24 +11,33 @@ export default function AuthPage() {
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [error,    setError]    = useState("");
+  const [success,  setSuccess]  = useState("");
   const [loading,  setLoading]  = useState(false);
+  const [pendingEmail, setPendingEmail] = useState(null);
+  const [resent,   setResent]   = useState(false);
 
-  // Handle OAuth callback
+  // Handle OAuth callback + email verification redirect
   useEffect(() => {
     const params   = new URLSearchParams(window.location.search);
     const token    = params.get("token");
     const oauthErr = params.get("error");
+    const verified = params.get("verified");
     if (token) {
       setToken(token);
       refreshUser().then(() => window.history.replaceState({}, "", "/"));
+    }
+    if (verified === "1") {
+      window.history.replaceState({}, "", "/");
+      setSuccess("Email verified! You can now sign in.");
     }
     if (oauthErr) {
       const detail = params.get("detail");
       const messages = {
         google_failed:   "Google sign-in failed.",
         facebook_failed: "Facebook sign-in failed.",
-        github_failed:   "GitHub sign-in failed.",
         no_code:         "Authentication was cancelled.",
+        token_expired:   "Verification link expired. Please register again.",
+        invalid_token:   "Invalid verification link.",
       };
       setError((messages[oauthErr] || "Sign-in failed.") + (detail ? ` (${detail})` : ""));
     }
@@ -38,18 +47,62 @@ export default function AuthPage() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      if (mode === "login") { await login(email, password); }
-      else {
+      if (mode === "login") {
+        await login(email, password);
+      } else {
         if (!name) { setError("Name is required"); setLoading(false); return; }
-        await register(name, email, password);
+        const res = await register(name, email, password);
+        if (res?.pendingVerification) { setPendingEmail(email); setLoading(false); return; }
       }
-    } catch (err) { setError(err.message); }
+    } catch (err) {
+      if (err.pendingVerification) { setPendingEmail(err.email || email); }
+      else setError(err.message);
+    }
     finally { setLoading(false); }
+  };
+
+  const resendVerification = async () => {
+    setResent(false);
+    await fetch(`${API}/api/auth/resend-verification`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingEmail }),
+    });
+    setResent(true);
   };
 
   const oauthLogin = (provider) => {
     window.location.href = `${API}/api/oauth/${provider}`;
   };
+
+  // ── Pending verification screen ──────────────────────────────
+  if (pendingEmail) return (
+    <div style={{ minHeight:"100vh", background:"#07071C", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700;9..40,800&display=swap');`}</style>
+      <div style={{ width:"100%", maxWidth:420, padding:"0 20px", textAlign:"center" }}>
+        <div style={{ fontSize:56, marginBottom:16 }}>📧</div>
+        <h1 style={{ fontSize:24, fontWeight:800, color:"#F5F5FF", marginBottom:10 }}>Check your email</h1>
+        <p style={{ color:"#7070A0", fontSize:15, lineHeight:1.7, marginBottom:28 }}>
+          We sent a verification link to<br/>
+          <strong style={{ color:"#B09FFF" }}>{pendingEmail}</strong><br/>
+          Click the link to activate your account.
+        </p>
+        <div style={{ background:"#0F0F2A", border:"1px solid #2A2A50", borderRadius:16, padding:24 }}>
+          {resent
+            ? <p style={{ color:"#22C55E", fontSize:14, marginBottom:0 }}>✓ Verification email resent!</p>
+            : <>
+                <p style={{ color:"#5A5A88", fontSize:13, marginBottom:16 }}>Didn't get it? Check your spam folder or resend.</p>
+                <button onClick={resendVerification} style={{ width:"100%", padding:"12px", background:"linear-gradient(135deg,#7C5CFC,#B45AFD)", border:"none", borderRadius:10, color:"#fff", fontWeight:700, cursor:"pointer", fontSize:14 }}>
+                  Resend verification email
+                </button>
+              </>
+          }
+          <button onClick={() => setPendingEmail(null)} style={{ marginTop:14, background:"none", border:"none", color:"#5A5A88", cursor:"pointer", fontSize:13, textDecoration:"underline" }}>
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   const inp = { width:"100%", background:"#0C0C24", border:"1px solid #2A2A50", borderRadius:10, color:"#E8E8FC", padding:"13px 15px", fontSize:15, outline:"none", marginBottom:12, boxSizing:"border-box", fontFamily:"inherit", transition:"border-color .15s" };
 
@@ -100,10 +153,14 @@ export default function AuthPage() {
               Continue with Google · YouTube
             </button>
 
-            <button onClick={() => oauthLogin("facebook")} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", padding:"11px", background:"#1877F2", border:"1px solid #1877F2", borderRadius:10, color:"#fff", cursor:"pointer", fontSize:14, fontWeight:500, fontFamily:"inherit", transition:"opacity .15s" }}
+            <button onClick={() => oauthLogin("facebook")} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, width:"100%", padding:"11px", background:"#0082FB", border:"1px solid #0082FB", borderRadius:10, color:"#fff", cursor:"pointer", fontSize:14, fontWeight:500, fontFamily:"inherit", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              Continue with Facebook
+              {/* Meta infinity logo */}
+              <svg width="20" height="12" viewBox="0 0 60 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.5 18C8.5 14.5 10.2 11.5 12.5 11.5C14.5 11.5 15.8 12.8 17.5 15.5C19.5 18.8 21.5 23.5 25 23.5C28 23.5 30.5 21 30.5 18C30.5 15 28 12.5 25 12.5C23 12.5 21.2 13.5 19.8 15" stroke="white" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+                <path d="M51.5 18C51.5 14.5 49.8 11.5 47.5 11.5C45.5 11.5 44.2 12.8 42.5 15.5C40.5 18.8 38.5 23.5 35 23.5C32 23.5 29.5 21 29.5 18C29.5 15 32 12.5 35 12.5C37 12.5 38.8 13.5 40.2 15" stroke="white" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
+              </svg>
+              Continue with Meta · Instagram
             </button>
 
           </div>
@@ -121,6 +178,9 @@ export default function AuthPage() {
             <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" type="email" style={inp} required />
             <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password (min 8 chars)" type="password" style={{ ...inp, marginBottom:18 }} required minLength={8} />
 
+            {success && (
+              <div style={{ background:"#22C55E10", border:"1px solid #22C55E33", borderRadius:8, padding:"10px 14px", color:"#22C55E", fontSize:13, marginBottom:14 }}>✓ {success}</div>
+            )}
             {error && (
               <div style={{ background:"#EF444410", border:"1px solid #EF444422", borderRadius:8, padding:"10px 14px", color:"#EF4444", fontSize:13, marginBottom:14 }}>{error}</div>
             )}

@@ -198,6 +198,17 @@ export default function Sidebar({ page, setPage, user, collapsed, setCollapsed }
             ⚙ Account Settings
           </button>
 
+          {user?.is_admin && (
+            <button
+              onClick={() => setPage("admin")}
+              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"9px 12px", background: page==="admin" ? "#7C5CFC22" : "transparent", border:"none", borderRadius:10, cursor:"pointer", color: page==="admin" ? "#B09FFF" : "#7878A8", fontSize:13, transition:"all .15s", textAlign:"left" }}
+              onMouseEnter={e => { e.currentTarget.style.background="rgba(124,92,252,0.12)"; e.currentTarget.style.color="#B09FFF"; }}
+              onMouseLeave={e => { e.currentTarget.style.background=page==="admin"?"#7C5CFC22":"transparent"; e.currentTarget.style.color=page==="admin"?"#B09FFF":"#7878A8"; }}
+            >
+              🛡 Admin
+            </button>
+          )}
+
           <button
             onClick={logout}
             style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"9px 12px", background:"transparent", border:"none", borderRadius:10, cursor:"pointer", color:"#7878A8", fontSize:13, transition:"all .15s", textAlign:"left" }}

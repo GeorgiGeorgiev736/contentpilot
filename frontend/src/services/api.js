@@ -21,7 +21,9 @@ async function req(method, path, body) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const e = new Error(err.error || `HTTP ${res.status}`);
+    if (err.pendingVerification) { e.pendingVerification = true; e.email = err.email; }
+    throw e;
   }
   return res.json();
 }
