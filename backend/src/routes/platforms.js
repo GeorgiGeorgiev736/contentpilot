@@ -151,9 +151,12 @@ router.get("/:platform/stats", requireAuth, async (req, res, next) => {
 
     // ── YouTube & YouTube Shorts (same API) ──────────────────
     if (platform === "youtube" || platform === "youtube_shorts") {
-      // Channel totals
+      // Fetch by specific channel ID so multi-channel accounts work correctly
+      const channelParam = connection.channel_id && connection.channel_id !== "default"
+        ? `id=${connection.channel_id}`
+        : "mine=true";
       const channelData = await googleFetch(
-        "https://www.googleapis.com/youtube/v3/channels?part=statistics&mine=true",
+        `https://www.googleapis.com/youtube/v3/channels?part=statistics&${channelParam}`,
         connection
       );
       const s = channelData.items?.[0]?.statistics || {};

@@ -7,9 +7,16 @@ export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(true); // checking existing session
 
-  // On app load: check if there's a saved token
+  // On app load: check URL for OAuth token, then fall back to saved token
   useEffect(() => {
-    const token = getToken();
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if (urlToken) {
+      setToken(urlToken);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
+    const token = urlToken || getToken();
     if (!token) { setLoading(false); return; }
 
     auth.me()

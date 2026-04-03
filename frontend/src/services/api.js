@@ -99,7 +99,7 @@ export const platforms = {
   list:       ()           => req("GET",    "/api/platforms"),
   connect:    (data)       => req("POST",   "/api/platforms/connect", data),
   disconnect: (platform)   => req("DELETE", `/api/platforms/${platform}`),
-  stats:      (platformPath) => req("GET",  `/api/platforms/${platformPath}/stats`),
+  stats:      (platform, channelId) => req("GET", `/api/platforms/${platform}/stats${channelId ? `?channel_id=${channelId}` : ""}`),
 };
 
 // ── PayPal ───────────────────────────────────────────────────

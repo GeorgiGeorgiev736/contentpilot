@@ -105,7 +105,7 @@ router.get("/google/callback", async (req, res) => {
     }
 
     const token = signToken(user.id);
-    res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
   } catch (err) {
     console.error("Google login error:", err.message);
     res.redirect(`${process.env.FRONTEND_URL}?error=google_failed&detail=${encodeURIComponent(err.message)}`);
@@ -187,7 +187,7 @@ router.get("/facebook/callback", async (req, res) => {
     }
 
     const token = signToken(user.id);
-    res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}`);
   } catch (err) {
     console.error("Facebook login error:", err.message);
     res.redirect(`${process.env.FRONTEND_URL}?error=facebook_failed`);
