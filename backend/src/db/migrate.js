@@ -149,12 +149,23 @@ ON CONFLICT (key) DO NOTHING;
 -- AI usage credits_used column
 ALTER TABLE ai_usage ADD COLUMN IF NOT EXISTS credits_used INTEGER DEFAULT 0;
 
+-- User achievements
+CREATE TABLE IF NOT EXISTS user_achievements (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  achievement_key TEXT NOT NULL,
+  discount_code   TEXT,
+  unlocked_at     TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, achievement_key)
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_platform_connections_user ON platform_connections(user_id);
 CREATE INDEX IF NOT EXISTS idx_campaigns_user ON campaigns(user_id);
 CREATE INDEX IF NOT EXISTS idx_pipeline_outputs_campaign ON pipeline_outputs(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_ai_usage_user ON ai_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_achievements ON user_achievements(user_id);
 
 SELECT 'Migration complete ✅' AS result;
 `;

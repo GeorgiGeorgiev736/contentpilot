@@ -1,12 +1,14 @@
 import { useAuth } from "../hooks/useAuth";
 
 const NAV_TOP = [
-  ["dashboard", "⊞", "Dashboard"],
-  ["scripts",   "✦", "AI Scripts"],
-  ["pipeline",  "⊙", "AI Pipeline"],
-  ["avatar",    "◉", "AI Avatar"],
-  ["analytics", "▦", "Analytics"],
-  ["platforms", "⬡", "Platforms"],
+  ["dashboard",    "⊞", "Dashboard"],
+  ["scripts",      "✦", "AI Scripts"],
+  ["pipeline",     "⊙", "AI Pipeline"],
+  ["avatar",       "◉", "AI Avatar"],
+  ["analytics",    "▦", "Analytics"],
+  ["platforms",    "⬡", "Platforms"],
+  ["calendar",     "◫", "Calendar"],
+  ["achievements", "◆", "Achievements"],
 ];
 
 const PLAN_COLOR = {

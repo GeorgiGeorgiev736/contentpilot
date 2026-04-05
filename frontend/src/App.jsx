@@ -13,19 +13,23 @@ import Account      from "./pages/Account";
 import PostContent  from "./pages/PostContent";
 import Avatar       from "./pages/Avatar";
 import Admin        from "./pages/Admin";
+import Calendar     from "./pages/Calendar";
+import Achievements from "./pages/Achievements";
 import { BubbleTutorial, LoginTip } from "./components/BubbleTutorial";
 
 const PAGES = {
-  dashboard:   Dashboard,
-  postcontent: PostContent,
-  scripts:     Scripts,
-  analytics:   Analytics,
-  pipeline:    Pipeline,
-  platforms:   Platforms,
-  pricing:     Pricing,
-  account:     Account,
-  avatar:      Avatar,
-  admin:       Admin,
+  dashboard:    Dashboard,
+  postcontent:  PostContent,
+  scripts:      Scripts,
+  analytics:    Analytics,
+  pipeline:     Pipeline,
+  platforms:    Platforms,
+  pricing:      Pricing,
+  account:      Account,
+  avatar:       Avatar,
+  admin:        Admin,
+  calendar:     Calendar,
+  achievements: Achievements,
 };
 
 function AppInner() {
@@ -64,7 +68,7 @@ function AppInner() {
   const Page = PAGES[page] || Dashboard;
 
   return (
-    <div style={{ display:"flex", minHeight:"100vh", background:"#07071C", color:"#E2E2F5", fontSize:15, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+    <div style={{ display:"flex", minHeight:"100vh", background:"#060606", color:"#E2E2F5", fontSize:15, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
@@ -74,48 +78,72 @@ function AppInner() {
         ::-webkit-scrollbar-thumb{background:#2E2E54;border-radius:4px}
         ::-webkit-scrollbar-thumb:hover{background:#4A4A80}
 
+        :root { --g-red:#FF2040; --g-blue:#2060FF; }
+
         @keyframes spin    {to{transform:rotate(360deg)}}
         @keyframes fadeUp  {from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shimmer {0%,100%{opacity:.4}50%{opacity:1}}
         @keyframes pulse   {0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
         @keyframes glow    {0%,100%{box-shadow:0 0 12px #7C5CFC44}50%{box-shadow:0 0 22px #7C5CFC88}}
+        @keyframes glitchBorder {
+          0%,100% { box-shadow:-3px 0 0 var(--g-red),3px 0 0 var(--g-blue); }
+          33%     { box-shadow:3px 0 0 var(--g-red),-3px 0 0 var(--g-blue); }
+          66%     { box-shadow:-1px 0 0 var(--g-red),1px 0 0 var(--g-blue); }
+        }
+        @keyframes glitchShake {
+          0%,100% { transform:translateX(0); }
+          25%     { transform:translateX(-2px); }
+          75%     { transform:translateX(2px); }
+        }
 
         .fade{animation:fadeUp .28s cubic-bezier(.22,1,.36,1) both}
 
         /* ── Cards ── */
         .card{
-          background:#0F0F2A;
-          border:1px solid #2A2A50;
-          border-radius:18px;
-          box-shadow:0 4px 32px rgba(0,0,0,0.55);
+          background:#0e0e0e;
+          border:1px solid #1e1e1e;
+          border-radius:16px;
+          box-shadow:0 2px 20px rgba(0,0,0,0.5);
         }
-        .card-hover:hover{border-color:#3E3E72;background:#111130}
+        .card-hover:hover{border-color:#2a2a2a;background:#111}
 
         /* ── Primary button ── */
         .btn-primary{
-          background:linear-gradient(135deg,#7C5CFC,#B45AFD);
-          border:none;border-radius:11px;color:#fff;
-          font-weight:700;font-size:14px;
+          background:#ffffff;
+          border:1px solid transparent;
+          border-radius:10px;
+          color:#000000;
+          font-weight:800;
+          font-size:14px;
           cursor:pointer;
-          transition:opacity .15s,transform .12s,box-shadow .15s;
-          box-shadow:0 2px 16px rgba(124,92,252,0.35);
+          transition:none;
+          box-shadow:none;
         }
-        .btn-primary:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 4px 24px rgba(124,92,252,0.5)}
-        .btn-primary:active{transform:translateY(0);opacity:1}
-        .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-primary:hover{
+          animation:glitchBorder .1s steps(2) infinite,glitchShake .15s steps(3) infinite;
+          border-color:rgba(255,255,255,0.8)!important;
+        }
+        .btn-primary:active{transform:none;opacity:1}
+        .btn-primary:disabled{opacity:.3;cursor:not-allowed;animation:none}
 
         /* ── Ghost button ── */
         .btn-ghost{
           background:transparent;
-          border:1px solid #333360;
-          border-radius:11px;
-          color:#B8B8D8;
+          border:1px solid #2a2a2a;
+          border-radius:10px;
+          color:#777;
           cursor:pointer;
           font-size:14px;
-          transition:all .15s;
+          transition:none;
         }
-        .btn-ghost:hover{border-color:#6060A8;color:#E8E8F8;background:#14143A}
-        .btn-ghost:active{background:#1A1A44}
+        .btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,0.4);animation:glitchBorder .1s steps(2) infinite}
+        .btn-ghost:active{background:#111}
+
+        /* ── Glitch utility ── */
+        .btn-glitch:hover{
+          border-color:rgba(255,255,255,0.7)!important;
+          animation:glitchBorder 0.1s steps(2) infinite,glitchShake 0.15s steps(3) infinite;
+        }
 
         /* ── Inputs ── */
         .inp{
