@@ -116,8 +116,8 @@ export default function AuthPage() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700;9..40,800&display=swap');
         @keyframes spin{to{transform:rotate(360deg)}}
         :root{--g-red:#C060A0;--g-blue:#40A0C0}
-        @keyframes glitchBorder{0%,100%{box-shadow:-3px 0 0 var(--g-red),3px 0 0 var(--g-blue)}33%{box-shadow:3px 0 0 var(--g-red),-3px 0 0 var(--g-blue)}66%{box-shadow:-1px 0 0 var(--g-red),1px 0 0 var(--g-blue)}}
-        @keyframes glitchShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+        @keyframes glitchBorder{0%,100%{box-shadow:-8px 0 0 var(--g-red),8px 0 0 var(--g-blue)}33%{box-shadow:8px 0 0 var(--g-red),-8px 0 0 var(--g-blue)}66%{box-shadow:-4px 0 0 var(--g-red),4px 0 0 var(--g-blue)}}
+        @keyframes glitchShake{0%,100%{transform:translateX(0) skewX(0deg)}10%{transform:translateX(-2px) skewX(-8deg)}20%{transform:translateX(2px) skewX(14deg)}30%{transform:translateX(-2px) skewX(-28deg)}40%{transform:translateX(1px) skewX(10deg)}50%{transform:translateX(-1px) skewX(-18deg)}60%{transform:translateX(0) skewX(3deg)}80%{transform:translateX(1px) skewX(-2deg)}}
       `}</style>
       <div style={{ width:"100%", maxWidth:440, padding:"0 24px", textAlign:"center" }}>
         <div style={{ fontSize:52, marginBottom:18 }}>📧</div>
@@ -152,12 +152,12 @@ export default function AuthPage() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
         @keyframes spin{to{transform:rotate(360deg)}}
         :root{--g-red:#C060A0;--g-blue:#40A0C0}
-        @keyframes glitchBorder{0%,100%{box-shadow:-3px 0 0 var(--g-red),3px 0 0 var(--g-blue)}33%{box-shadow:3px 0 0 var(--g-red),-3px 0 0 var(--g-blue)}66%{box-shadow:-1px 0 0 var(--g-red),1px 0 0 var(--g-blue)}}
-        @keyframes glitchShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+        @keyframes glitchBorder{0%,100%{box-shadow:-8px 0 0 var(--g-red),8px 0 0 var(--g-blue)}33%{box-shadow:8px 0 0 var(--g-red),-8px 0 0 var(--g-blue)}66%{box-shadow:-4px 0 0 var(--g-red),4px 0 0 var(--g-blue)}}
+        @keyframes glitchShake{0%,100%{transform:translateX(0) skewX(0deg)}10%{transform:translateX(-2px) skewX(-8deg)}20%{transform:translateX(2px) skewX(14deg)}30%{transform:translateX(-2px) skewX(-28deg)}40%{transform:translateX(1px) skewX(10deg)}50%{transform:translateX(-1px) skewX(-18deg)}60%{transform:translateX(0) skewX(3deg)}80%{transform:translateX(1px) skewX(-2deg)}}
         .auth-tab:hover{color:#fff!important}
         .auth-tab.active{background:#fff!important;color:#000!important}
         .auth-google:hover{opacity:.85}
-        .auth-submit:hover:not(:disabled){animation:glitchBorder .1s steps(2) infinite,glitchShake .15s steps(3) infinite;border-color:rgba(255,255,255,0.8)!important}
+        .auth-submit:hover:not(:disabled){animation:glitchBorder .1s steps(2) infinite,glitchShake .2s steps(8) infinite;border-color:rgba(255,255,255,0.8)!important;text-shadow:14px 5px rgba(246,0,153,0.85),-16px -3px rgba(15,210,255,0.85),-2px -2px rgba(255,210,0,0.9)}
         .auth-input{width:100%;background:#111;border:1px solid #222;border-radius:10px;color:#e0e0e0;padding:14px 16px;font-size:16px;outline:none;transition:none;box-sizing:border-box;font-family:inherit;margin-bottom:12px}
         .auth-input:focus{border-color:rgba(255,255,255,0.3);box-shadow:-2px 0 0 #C060A0,2px 0 0 #40A0C0}
         .auth-input::placeholder{color:#444}
@@ -171,7 +171,7 @@ export default function AuthPage() {
             <GlitchLogo size={52}/>
           </div>
           <div style={{ fontSize:34, fontWeight:900, color:"#fff", letterSpacing:"-.04em", lineHeight:1 }}>AUTOPILOT</div>
-          <div style={{ fontSize:15, color:"#555", marginTop:8, letterSpacing:".05em", textTransform:"uppercase" }}>Creator OS · AI Content Platform</div>
+          <div style={{ fontSize:15, color:"#777", marginTop:8, letterSpacing:".05em", textTransform:"uppercase" }}>Creator OS · AI Content Platform</div>
         </div>
 
         <div style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:20, padding:32 }}>
@@ -234,12 +234,12 @@ export default function AuthPage() {
           </form>
 
           {mode === "register" && (
-            <div style={{ fontSize:14, color:"#444", textAlign:"center", marginTop:18, lineHeight:1.7 }}>
+            <div style={{ fontSize:14, color:"#666", textAlign:"center", marginTop:18, lineHeight:1.7 }}>
               Free plan includes 10 AI generations.<br/>No credit card required.
             </div>
           )}
 
-          <div style={{ fontSize:12, color:"#333", textAlign:"center", marginTop:20 }}>
+          <div style={{ fontSize:13, color:"#555", textAlign:"center", marginTop:20 }}>
             By continuing you agree to our{" "}
             <a href="/terms.html" target="_blank" style={{ color:"#666" }}>Terms of Service</a>
             {" "}and{" "}
