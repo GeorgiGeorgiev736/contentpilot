@@ -74,9 +74,9 @@ function AppInner() {
         *{box-sizing:border-box;margin:0;padding:0}
         input,textarea,select,button{font-family:inherit}
         ::-webkit-scrollbar{width:4px}
-        ::-webkit-scrollbar-track{background:#0A0A22}
-        ::-webkit-scrollbar-thumb{background:#2E2E54;border-radius:4px}
-        ::-webkit-scrollbar-thumb:hover{background:#4A4A80}
+        ::-webkit-scrollbar-track{background:#080808}
+        ::-webkit-scrollbar-thumb{background:#222;border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:#444}
 
         :root { --g-red:#FF2040; --g-blue:#2060FF; }
 
@@ -148,17 +148,17 @@ function AppInner() {
         /* ── Inputs ── */
         .inp{
           width:100%;
-          background:#0C0C24;
-          border:1px solid #2A2A50;
+          background:#0a0a0a;
+          border:1px solid #222;
           border-radius:10px;
-          color:#E8E8FC;
+          color:#e0e0e0;
           padding:11px 14px;
           font-size:15px;
           outline:none;
-          transition:border-color .15s,box-shadow .15s;
+          transition:none;
         }
-        .inp:focus{border-color:#7C5CFC;box-shadow:0 0 0 3px rgba(124,92,252,0.15)}
-        .inp::placeholder{color:#5A5A88}
+        .inp:focus{border-color:rgba(255,255,255,0.3);box-shadow:-2px 0 0 #FF2040,2px 0 0 #2060FF}
+        .inp::placeholder{color:#444}
 
         /* ── Tags / badges ── */
         .tag{display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.03em}
@@ -189,7 +189,7 @@ function AppInner() {
 
       <Sidebar page={page} setPage={setPage} user={user} collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main style={{ flex:1, overflowY:"auto", marginLeft:collapsed?68:256, transition:"margin-left .25s cubic-bezier(.4,0,.2,1)" }}>
+      <main style={{ flex:1, overflowY:"auto", marginLeft: window.innerWidth < 768 ? 0 : (collapsed ? 64 : 240), marginTop: window.innerWidth < 768 ? 54 : 0, transition:"margin-left .2s cubic-bezier(.4,0,.2,1)" }}>
         {/* ── Video-waiting reminder banner ── */}
         {upload?.file && page !== "postcontent" && (
           <>
