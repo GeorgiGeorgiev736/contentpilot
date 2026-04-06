@@ -68,7 +68,7 @@ function AppInner() {
   const Page = PAGES[page] || Dashboard;
 
   return (
-    <div style={{ display:"flex", minHeight:"100vh", background:"#060606", color:"#E2E2F5", fontSize:15, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+    <div style={{ display:"flex", minHeight:"100vh", background:"#0e0e0e", color:"#d0d0d0", fontSize:16, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
@@ -78,17 +78,17 @@ function AppInner() {
         ::-webkit-scrollbar-thumb{background:#222;border-radius:4px}
         ::-webkit-scrollbar-thumb:hover{background:#444}
 
-        :root { --g-red:#FF2040; --g-blue:#2060FF; }
+        :root { --g-red:#C060A0; --g-blue:#40A0C0; }
 
         @keyframes spin    {to{transform:rotate(360deg)}}
         @keyframes fadeUp  {from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes shimmer {0%,100%{opacity:.4}50%{opacity:1}}
         @keyframes pulse   {0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-        @keyframes glow    {0%,100%{box-shadow:0 0 12px #7C5CFC44}50%{box-shadow:0 0 22px #7C5CFC88}}
+        @keyframes glow    {0%,100%{box-shadow:0 0 12px rgba(192,96,160,0.3)}50%{box-shadow:0 0 22px rgba(64,160,192,0.4)}}
         @keyframes glitchBorder {
-          0%,100% { box-shadow:-3px 0 0 var(--g-red),3px 0 0 var(--g-blue); }
-          33%     { box-shadow:3px 0 0 var(--g-red),-3px 0 0 var(--g-blue); }
-          66%     { box-shadow:-1px 0 0 var(--g-red),1px 0 0 var(--g-blue); }
+          0%,100% { box-shadow:-4px 0 0 var(--g-red),4px 0 0 var(--g-blue); }
+          33%     { box-shadow:4px 0 0 var(--g-red),-4px 0 0 var(--g-blue); }
+          66%     { box-shadow:-2px 0 0 var(--g-red),2px 0 0 var(--g-blue); }
         }
         @keyframes glitchShake {
           0%,100% { transform:translateX(0); }
@@ -100,12 +100,12 @@ function AppInner() {
 
         /* ── Cards ── */
         .card{
-          background:#0e0e0e;
-          border:1px solid #1e1e1e;
+          background:#141414;
+          border:1px solid #242424;
           border-radius:16px;
-          box-shadow:0 2px 20px rgba(0,0,0,0.5);
+          box-shadow:0 2px 20px rgba(0,0,0,0.4);
         }
-        .card-hover:hover{border-color:#2a2a2a;background:#111}
+        .card-hover:hover{border-color:#333;background:#181818}
 
         /* ── Primary button ── */
         .btn-primary{
@@ -179,12 +179,12 @@ function AppInner() {
         .cursor{color:#9B79FC;animation:shimmer .8s ease infinite}
 
         /* ── Typography helpers ── */
-        .page-title{font-size:28px;font-weight:800;color:#F5F5FF;letter-spacing:-.04em;line-height:1.2}
-        .page-sub{font-size:15px;color:#9090B8;margin-top:5px}
-        .section-title{font-size:16px;font-weight:700;color:#E0E0F8}
-        .label-upper{font-size:12px;color:#8888AA;text-transform:uppercase;letter-spacing:.09em;font-weight:600}
-        .text-muted{color:#9090B8}
-        .text-dim{color:#7070A0}
+        .page-title{font-size:36px;font-weight:900;color:#fff;letter-spacing:-.04em;line-height:1.1}
+        .page-sub{font-size:16px;color:#666;margin-top:6px}
+        .section-title{font-size:18px;font-weight:700;color:#ccc}
+        .label-upper{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
+        .text-muted{color:#888}
+        .text-dim{color:#666}
       `}</style>
 
       <Sidebar page={page} setPage={setPage} user={user} collapsed={collapsed} setCollapsed={setCollapsed} />

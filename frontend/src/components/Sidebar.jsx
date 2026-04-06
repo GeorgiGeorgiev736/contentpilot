@@ -24,33 +24,34 @@ const PLAN_COLOR = {
 
 // ── Glitch Logo SVG ──────────────────────────────────────────
 function GlitchLogo({ size = 40 }) {
+  const w = Math.round(size * 1.5);
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Base background */}
-      <rect width="40" height="40" rx="10" fill="#0a0a0a" stroke="#222" strokeWidth="1"/>
-
-      {/* Red ghost layer */}
-      <g opacity="0.6" transform="translate(-1.5, 0)">
-        <rect x="8" y="10" width="10" height="14" rx="1" fill="#FF2040" opacity="0.7"/>
-        <rect x="10" y="10" width="14" height="3" rx="1" fill="#FF2040" opacity="0.5"/>
+    <svg width={w} height={size} viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="60" height="40" rx="9" fill="#111" stroke="#222" strokeWidth="1"/>
+      {/* Soft magenta ghost */}
+      <g transform="translate(-2,0)" opacity="0.5">
+        <rect x="8" y="10" width="8" height="14" rx="1.5" fill="#C060A0"/>
+        <rect x="10" y="10" width="12" height="3.5" rx="1.5" fill="#C060A0"/>
       </g>
-
-      {/* Blue ghost layer */}
-      <g opacity="0.6" transform="translate(1.5, 0)">
-        <rect x="22" y="16" width="10" height="14" rx="1" fill="#2060FF" opacity="0.7"/>
-        <rect x="16" y="27" width="14" height="3" rx="1" fill="#2060FF" opacity="0.5"/>
+      {/* Soft cyan ghost */}
+      <g transform="translate(2,0)" opacity="0.5">
+        <rect x="20" y="16" width="8" height="14" rx="1.5" fill="#40A0C0"/>
+        <rect x="14" y="26" width="12" height="3.5" rx="1.5" fill="#40A0C0"/>
       </g>
-
-      {/* Main white shape — stylized "A" or arrow */}
-      <rect x="9" y="11" width="9" height="13" rx="1.5" fill="#fff"/>
-      <rect x="11" y="11" width="13" height="3" rx="1.5" fill="#fff"/>
-      <rect x="23" y="17" width="9" height="13" rx="1.5" fill="#fff"/>
-      <rect x="15" y="26" width="11" height="3" rx="1.5" fill="#fff"/>
-
+      {/* White main — left side P/autopilot mark */}
+      <rect x="9" y="11" width="7" height="13" rx="1.5" fill="#fff"/>
+      <rect x="11" y="11" width="11" height="3.5" rx="1.5" fill="#fff"/>
+      <rect x="21" y="17" width="7" height="13" rx="1.5" fill="#fff"/>
+      <rect x="13" y="26" width="11" height="3.5" rx="1.5" fill="#fff"/>
+      {/* Right side A mark */}
+      <rect x="36" y="11" width="3.5" height="18" rx="1.5" fill="#fff" opacity="0.9"/>
+      <rect x="49" y="11" width="3.5" height="18" rx="1.5" fill="#fff" opacity="0.9"/>
+      <rect x="36" y="11" width="17" height="3.5" rx="1.5" fill="#fff" opacity="0.9"/>
+      <rect x="36" y="20" width="17" height="2.5" rx="1" fill="#fff" opacity="0.5"/>
       {/* Pixel glitch strips */}
-      <rect x="9" y="18" width="4" height="1" fill="#FF2040" opacity="0.9"/>
-      <rect x="28" y="22" width="3" height="1" fill="#2060FF" opacity="0.9"/>
-      <rect x="18" y="14" width="5" height="1" fill="#fff" opacity="0.4"/>
+      <rect x="9" y="17" width="4" height="1.5" fill="#C060A0" opacity="0.9"/>
+      <rect x="27" y="22" width="3" height="1.5" fill="#40A0C0" opacity="0.9"/>
+      <rect x="41" y="15" width="6" height="1.5" fill="#fff" opacity="0.25"/>
     </svg>
   );
 }
@@ -67,8 +68,8 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
     <div style={{
       position:"fixed", left:0, top:0, bottom:0,
       width: collapsed ? 64 : 240,
-      background:"#080808",
-      borderRight:"1px solid #1a1a1a",
+      background:"#0e0e0e",
+      borderRight:"1px solid #222",
       display:"flex", flexDirection:"column",
       padding: collapsed ? "16px 10px" : "20px 14px",
       zIndex:50,
@@ -281,7 +282,7 @@ function MobileNav({ page, setPage, user }) {
       `}</style>
 
       {/* Fixed top bar */}
-      <div style={{ position:"fixed", top:0, left:0, right:0, height:54, background:"#080808", borderBottom:"1px solid #1a1a1a", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", zIndex:200 }}>
+      <div style={{ position:"fixed", top:0, left:0, right:0, height:54, background:"#0e0e0e", borderBottom:"1px solid #222", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", zIndex:200 }}>
         {/* Logo */}
         <div onClick={() => { setPage("dashboard"); setOpen(false); }} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
           <GlitchLogo size={32}/>
