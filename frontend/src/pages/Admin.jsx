@@ -175,17 +175,6 @@ export default function Admin({ user }) {
             </div>
           </div>
 
-          <div style={card}>
-            <div style={{ fontSize:11, color:"#555", textTransform:"uppercase", letterSpacing:".12em", fontWeight:700, marginBottom:14, fontFamily:"'DM Mono',monospace" }}>Connected Platforms</div>
-            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-              {(stats.platformStats || []).map(p => (
-                <div key={p.platform} style={{ background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:9, padding:"8px 16px", display:"flex", alignItems:"center", gap:10 }}>
-                  <span style={{ fontSize:13, color:"#aaa", textTransform:"capitalize" }}>{p.platform}</span>
-                  <span style={{ fontSize:16, fontWeight:900, color:"#40A0C0" }}>{p.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
