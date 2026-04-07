@@ -232,11 +232,54 @@ function AppInner() {
         .label-upper{font-size:12px;color:#777;text-transform:uppercase;letter-spacing:.15em;font-weight:700}
         .text-muted{color:#aaa}
         .text-dim{color:#777}
+
+        @keyframes px1 {
+          0%,89%,100%{opacity:0} 90%{opacity:1;transform:translate(0,0)} 91%{opacity:1;transform:translate(-3px,1px)} 92%{opacity:0} 94%{opacity:1;transform:translate(2px,-2px)} 95%{opacity:0}
+        }
+        @keyframes px2 {
+          0%,74%,100%{opacity:0} 75%{opacity:1;transform:translate(0,0)} 76%{opacity:0} 78%{opacity:1;transform:translate(3px,2px)} 79%{opacity:0}
+        }
+        @keyframes px3 {
+          0%,55%,100%{opacity:0} 56%{opacity:1;transform:translate(0,0)} 57%{opacity:1;transform:translate(-2px,-3px)} 58%{opacity:0} 60%{opacity:1;transform:translate(4px,1px)} 61%{opacity:0}
+        }
+        @keyframes px4 {
+          0%,40%,100%{opacity:0} 41%{opacity:1} 42%{opacity:0} 43%{opacity:1;transform:translate(-4px,2px)} 44%{opacity:0}
+        }
+        @keyframes px5 {
+          0%,20%,100%{opacity:0} 21%{opacity:1;transform:translate(0,0)} 22%{opacity:0} 24%{opacity:1;transform:translate(2px,3px)} 25%{opacity:0}
+        }
       `}</style>
+
+      {/* ── Glitch pixel overlay ── */}
+      <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
+        {[
+          { top:"12%",  left:"23%",  w:3, h:8,  color:"#40A0C0", anim:"px1 7.3s steps(1) infinite",          delay:"0s"    },
+          { top:"8%",   left:"23.4%",w:2, h:2,  color:"#C060A0", anim:"px1 7.3s steps(1) infinite",          delay:"-.05s" },
+          { top:"34%",  left:"71%",  w:5, h:2,  color:"#40A0C0", anim:"px2 5.8s steps(1) infinite",          delay:"-1.2s" },
+          { top:"34.4%",left:"71%",  w:2, h:2,  color:"#C060A0", anim:"px2 5.8s steps(1) infinite",          delay:"-1.1s" },
+          { top:"61%",  left:"44%",  w:4, h:3,  color:"#C060A0", anim:"px3 9.1s steps(1) infinite",          delay:"-3s"   },
+          { top:"61.3%",left:"44.4%",w:2, h:2,  color:"#40C4C0", anim:"px3 9.1s steps(1) infinite",          delay:"-2.9s" },
+          { top:"78%",  left:"82%",  w:6, h:2,  color:"#40A0C0", anim:"px4 6.4s steps(1) infinite",          delay:"-2s"   },
+          { top:"22%",  left:"88%",  w:3, h:5,  color:"#C060A0", anim:"px5 11.2s steps(1) infinite",         delay:"-4s"   },
+          { top:"22.4%",left:"88.3%",w:2, h:2,  color:"#40A0C0", anim:"px5 11.2s steps(1) infinite",         delay:"-3.9s" },
+          { top:"50%",  left:"9%",   w:2, h:6,  color:"#40C4C0", anim:"px1 8.7s steps(1) infinite",          delay:"-2.5s" },
+          { top:"88%",  left:"31%",  w:4, h:2,  color:"#C060A0", anim:"px3 7.9s steps(1) infinite",          delay:"-1s"   },
+          { top:"15%",  left:"57%",  w:2, h:4,  color:"#40A0C0", anim:"px4 10.3s steps(1) infinite",         delay:"-5s"   },
+        ].map((p, i) => (
+          <div key={i} style={{
+            position:"absolute", top:p.top, left:p.left,
+            width:p.w, height:p.h,
+            background:p.color,
+            opacity:0,
+            animation:p.anim,
+            animationDelay:p.delay,
+          }} />
+        ))}
+      </div>
 
       <Sidebar page={page} setPage={setPage} user={user} collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main style={{ flex:1, overflowY:"auto", marginLeft: window.innerWidth < 768 ? 0 : (collapsed ? 64 : 240), marginTop: window.innerWidth < 768 ? 54 : 0, transition:"margin-left .2s cubic-bezier(.4,0,.2,1)" }}>
+      <main style={{ flex:1, overflowY:"auto", position:"relative", zIndex:1, marginLeft: window.innerWidth < 768 ? 0 : (collapsed ? 64 : 240), marginTop: window.innerWidth < 768 ? 54 : 0, transition:"margin-left .2s cubic-bezier(.4,0,.2,1)" }}>
         {/* ── Video-waiting reminder banner ── */}
         {upload?.file && page !== "postcontent" && (
           <>
