@@ -47,9 +47,9 @@ export default function Calendar() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:28 }}>
       <style>{`
-        .cal-cell:hover { border-color: rgba(255,255,255,0.3) !important; background: #141414 !important; }
-        .cal-cell.sel { border-color: rgba(255,255,255,0.6) !important; background: #1a1a1a !important; animation: glitchBorder 0.1s steps(2) infinite; }
-        .cal-nav-btn:hover { animation: glitchBorder 0.12s steps(2) infinite; border-color: rgba(255,255,255,0.5) !important; color:#fff !important; }
+        .cal-cell:hover { border-color: rgba(64,160,192,0.25) !important; background: #111 !important; }
+        .cal-cell.sel { border-color: rgba(64,160,192,0.15) !important; background: rgba(64,160,192,0.04) !important; border-left: 2px solid #40A0C0 !important; }
+        .cal-nav-btn:hover { border-color: rgba(64,160,192,0.5) !important; color:#40A0C0 !important; }
       `}</style>
 
       {/* Header */}
