@@ -109,6 +109,8 @@ export default function AuthPage() {
         :root{--g-red:#C060A0;--g-blue:#40A0C0}
         @keyframes glitchBorder{0%,100%{box-shadow:-8px 0 0 var(--g-red),8px 0 0 var(--g-blue)}33%{box-shadow:8px 0 0 var(--g-red),-8px 0 0 var(--g-blue)}66%{box-shadow:-4px 0 0 var(--g-red),4px 0 0 var(--g-blue)}}
         @keyframes glitchShake{0%,100%{transform:translateX(0) skewX(0deg)}10%{transform:translateX(-2px) skewX(-8deg)}20%{transform:translateX(2px) skewX(14deg)}30%{transform:translateX(-2px) skewX(-28deg)}40%{transform:translateX(1px) skewX(10deg)}50%{transform:translateX(-1px) skewX(-18deg)}60%{transform:translateX(0) skewX(3deg)}80%{transform:translateX(1px) skewX(-2deg)}}
+        @keyframes logoGlitch{0%,68%,100%{filter:none;transform:none;clip-path:none}69%{filter:drop-shadow(-6px 0 0 rgba(192,96,160,0.95)) drop-shadow(6px 0 0 rgba(64,160,192,0.95));transform:skewX(-7deg) translateX(-3px) scaleY(1.02);clip-path:polygon(0 10%,100% 10%,100% 48%,0 48%)}70%{filter:drop-shadow(7px 0 0 rgba(192,96,160,0.95)) drop-shadow(-6px 0 0 rgba(64,160,192,0.95)) brightness(1.7);transform:skewX(5deg) translateX(4px);clip-path:none}71%{filter:drop-shadow(-3px 0 0 rgba(192,96,160,0.7)) drop-shadow(3px 0 0 rgba(64,160,192,0.7));transform:translateX(-1px) skewX(-1deg)}72%,83%{filter:none;transform:none;clip-path:none}84%{filter:drop-shadow(10px 0 0 rgba(192,96,160,0.95)) drop-shadow(-10px 0 0 rgba(64,160,192,0.95)) brightness(1.5);transform:skewX(-11deg) scaleY(0.97);clip-path:polygon(0 0,100% 0,100% 35%,0 35%)}85%{filter:drop-shadow(-8px 0 0 rgba(192,96,160,0.95)) drop-shadow(8px 0 0 rgba(64,160,192,0.95));transform:skewX(7deg) translateX(7px);clip-path:polygon(0 35%,100% 35%,100% 100%,0 100%)}86%{filter:drop-shadow(4px 0 0 rgba(192,96,160,0.5));transform:translateX(-2px);clip-path:none}87%{filter:none;transform:none}}
+        .logo-glitch{animation:logoGlitch 6s steps(1) infinite;display:inline-block}
       `}</style>
       <div style={{ width:"100%", maxWidth:440, padding:"0 24px", textAlign:"center" }}>
         <div style={{ fontSize:52, marginBottom:18 }}>📧</div>
@@ -145,6 +147,8 @@ export default function AuthPage() {
         :root{--g-red:#C060A0;--g-blue:#40A0C0}
         @keyframes glitchBorder{0%,100%{box-shadow:-8px 0 0 var(--g-red),8px 0 0 var(--g-blue)}33%{box-shadow:8px 0 0 var(--g-red),-8px 0 0 var(--g-blue)}66%{box-shadow:-4px 0 0 var(--g-red),4px 0 0 var(--g-blue)}}
         @keyframes glitchShake{0%,100%{transform:translateX(0) skewX(0deg)}10%{transform:translateX(-2px) skewX(-8deg)}20%{transform:translateX(2px) skewX(14deg)}30%{transform:translateX(-2px) skewX(-28deg)}40%{transform:translateX(1px) skewX(10deg)}50%{transform:translateX(-1px) skewX(-18deg)}60%{transform:translateX(0) skewX(3deg)}80%{transform:translateX(1px) skewX(-2deg)}}
+        @keyframes logoGlitch{0%,68%,100%{filter:none;transform:none;clip-path:none}69%{filter:drop-shadow(-6px 0 0 rgba(192,96,160,0.95)) drop-shadow(6px 0 0 rgba(64,160,192,0.95));transform:skewX(-7deg) translateX(-3px) scaleY(1.02);clip-path:polygon(0 10%,100% 10%,100% 48%,0 48%)}70%{filter:drop-shadow(7px 0 0 rgba(192,96,160,0.95)) drop-shadow(-6px 0 0 rgba(64,160,192,0.95)) brightness(1.7);transform:skewX(5deg) translateX(4px);clip-path:none}71%{filter:drop-shadow(-3px 0 0 rgba(192,96,160,0.7)) drop-shadow(3px 0 0 rgba(64,160,192,0.7));transform:translateX(-1px) skewX(-1deg)}72%,83%{filter:none;transform:none;clip-path:none}84%{filter:drop-shadow(10px 0 0 rgba(192,96,160,0.95)) drop-shadow(-10px 0 0 rgba(64,160,192,0.95)) brightness(1.5);transform:skewX(-11deg) scaleY(0.97);clip-path:polygon(0 0,100% 0,100% 35%,0 35%)}85%{filter:drop-shadow(-8px 0 0 rgba(192,96,160,0.95)) drop-shadow(8px 0 0 rgba(64,160,192,0.95));transform:skewX(7deg) translateX(7px);clip-path:polygon(0 35%,100% 35%,100% 100%,0 100%)}86%{filter:drop-shadow(4px 0 0 rgba(192,96,160,0.5));transform:translateX(-2px);clip-path:none}87%{filter:none;transform:none}}
+        .logo-glitch{animation:logoGlitch 6s steps(1) infinite;display:inline-block}
         .auth-tab:hover{color:#fff!important}
         .auth-tab.active{background:#fff!important;color:#000!important}
         .auth-google:hover{opacity:.85}
@@ -158,7 +162,7 @@ export default function AuthPage() {
 
         {/* Logo + title */}
         <div style={{ textAlign:"center", marginBottom:40 }}>
-          <div style={{ display:"inline-block", marginBottom:20 }}>
+          <div className="logo-glitch" style={{ display:"inline-block", marginBottom:20 }}>
             <GlitchLogo size={52}/>
           </div>
           <div style={{ fontSize:34, fontWeight:900, color:"#fff", letterSpacing:"-.04em", lineHeight:1 }}>AUTOPILOT</div>

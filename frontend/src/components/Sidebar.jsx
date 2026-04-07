@@ -234,7 +234,7 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
       <div style={{ marginBottom:24 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, justifyContent: collapsed ? "center" : "space-between" }}>
           <div onClick={() => setPage("dashboard")} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", flex: collapsed ? "none" : 1, minWidth:0 }}>
-            <div style={{ flexShrink:0 }}><GlitchLogo size={38}/></div>
+            <div className="logo-glitch" style={{ flexShrink:0 }}><GlitchLogo size={38}/></div>
             {!collapsed && (
               <div style={{ minWidth:0 }}>
                 <div style={{ fontWeight:900, fontSize:16, color:"#fff", whiteSpace:"nowrap", letterSpacing:"-.02em", lineHeight:1.1 }}>AUTOPILOT</div>
@@ -412,7 +412,7 @@ function MobileNav({ page, setPage, user }) {
       <div style={{ position:"fixed", top:0, left:0, right:0, height:54, background:"#0e0e0e", borderBottom:"1px solid #222", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", zIndex:200 }}>
         {/* Logo */}
         <div onClick={() => { setPage("dashboard"); setOpen(false); }} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-          <GlitchLogo size={32}/>
+          <span className="logo-glitch"><GlitchLogo size={32}/></span>
           <span style={{ fontWeight:900, fontSize:14, color:"#fff", letterSpacing:"-.01em" }}>AUTOPILOT</span>
         </div>
 

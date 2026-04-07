@@ -185,6 +185,46 @@ function AppInner() {
         }
         .cursor{color:#40A0C0;animation:shimmer .8s ease infinite}
 
+        /* ── Logo periodic glitch ── */
+        @keyframes logoGlitch {
+          0%, 68%, 100% { filter:none; transform:none; clip-path:none; }
+          69% {
+            filter: drop-shadow(-6px 0 0 rgba(192,96,160,0.95)) drop-shadow(6px 0 0 rgba(64,160,192,0.95));
+            transform: skewX(-7deg) translateX(-3px) scaleY(1.02);
+            clip-path: polygon(0 10%, 100% 10%, 100% 48%, 0 48%);
+          }
+          70% {
+            filter: drop-shadow(7px 0 0 rgba(192,96,160,0.95)) drop-shadow(-6px 0 0 rgba(64,160,192,0.95)) brightness(1.7);
+            transform: skewX(5deg) translateX(4px);
+            clip-path: none;
+          }
+          71% {
+            filter: drop-shadow(-3px 0 0 rgba(192,96,160,0.7)) drop-shadow(3px 0 0 rgba(64,160,192,0.7));
+            transform: translateX(-1px) skewX(-1deg);
+          }
+          72%, 83% { filter:none; transform:none; clip-path:none; }
+          84% {
+            filter: drop-shadow(10px 0 0 rgba(192,96,160,0.95)) drop-shadow(-10px 0 0 rgba(64,160,192,0.95)) brightness(1.5);
+            transform: skewX(-11deg) scaleY(0.97);
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+          }
+          85% {
+            filter: drop-shadow(-8px 0 0 rgba(192,96,160,0.95)) drop-shadow(8px 0 0 rgba(64,160,192,0.95));
+            transform: skewX(7deg) translateX(7px);
+            clip-path: polygon(0 35%, 100% 35%, 100% 100%, 0 100%);
+          }
+          86% {
+            filter: drop-shadow(4px 0 0 rgba(192,96,160,0.5)) drop-shadow(-2px 0 0 rgba(64,160,192,0.5));
+            transform: translateX(-2px);
+            clip-path: none;
+          }
+          87% { filter:none; transform:none; }
+        }
+        .logo-glitch {
+          animation: logoGlitch 6s steps(1) infinite;
+          display: inline-block;
+        }
+
         /* ── Typography helpers ── */
         .page-title{font-size:42px;font-weight:900;color:#fff;letter-spacing:-.04em;line-height:1.1}
         .page-sub{font-size:17px;color:#888;margin-top:6px}
