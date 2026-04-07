@@ -81,13 +81,13 @@ export default function Platforms() {
       )}
 
       {/* How it works */}
-      <div style={{ padding:"18px 22px", background:"#7C5CFC08", border:"1px solid #7C5CFC22", borderRadius:14 }}>
-        <div style={{ fontSize:13, fontWeight:600, color:"#B09FFF", marginBottom:10 }}>🔒 How authentication works</div>
+      <div style={{ padding:"18px 22px", background:"rgba(64,160,192,0.05)", border:"1px solid rgba(64,160,192,0.13)", borderRadius:14 }}>
+        <div style={{ fontSize:13, fontWeight:600, color:"#40A0C0", marginBottom:10 }}>🔒 How authentication works</div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
           {["Click Connect to open the platform's official OAuth dialog","Approve read + write permissions in the official popup","Token stored encrypted in the database on your server","AI analyzes your content and syncs every 30 minutes"].map((t,i) => (
             <div key={i} style={{ display:"flex", gap:8 }}>
-              <div style={{ width:20, height:20, borderRadius:"50%", background:"#7C5CFC22", color:"#B09FFF", fontSize:10, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{i+1}</div>
-              <span style={{ fontSize:12, color:"#9898C0", lineHeight:1.5 }}>{t}</span>
+              <div style={{ width:20, height:20, borderRadius:"50%", background:"rgba(64,160,192,0.13)", color:"#40A0C0", fontSize:10, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{i+1}</div>
+              <span style={{ fontSize:12, color:"#888", lineHeight:1.5 }}>{t}</span>
             </div>
           ))}
         </div>
@@ -99,7 +99,7 @@ export default function Platforms() {
         const isConnected = conns.length > 0;
 
         return (
-          <div key={id} className="card" style={{ padding:24, borderLeft:`3px solid ${isConnected?cfg.color:"#1A1A2E"}`, opacity: cfg.isOptional && !isConnected ? 0.85 : 1 }}>
+          <div key={id} className="card" style={{ padding:24, borderLeft:`3px solid ${isConnected?cfg.color:"#1a1a1a"}`, opacity: cfg.isOptional && !isConnected ? 0.85 : 1 }}>
             <div style={{ display:"flex", alignItems:"flex-start", gap:16, marginBottom: isConnected ? 14 : 18 }}>
               <div style={{ width:52, height:52, borderRadius:14, background:`${cfg.color}18`, border:`2px solid ${cfg.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, color:cfg.color, flexShrink:0 }}>{cfg.icon}</div>
 
@@ -168,7 +168,7 @@ export default function Platforms() {
                 <div style={{ fontSize:11, color:"#7878A8", textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>Permissions</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
                   {cfg.scopes.map(s => (
-                    <span key={s} style={{ background:isConnected?`${cfg.color}12`:"#10102A", color:isConnected?cfg.color:"#7878A8", border:`1px solid ${isConnected?cfg.color+"22":"#1A1A2E"}`, fontSize:11, fontWeight:600, padding:"3px 9px", borderRadius:20 }}>{s}</span>
+                    <span key={s} style={{ background:isConnected?`${cfg.color}12`:"#10102A", color:isConnected?cfg.color:"#7878A8", border:`1px solid ${isConnected?cfg.color+"22":"#1a1a1a"}`, fontSize:11, fontWeight:600, padding:"3px 9px", borderRadius:20 }}>{s}</span>
                   ))}
                 </div>
               </div>
@@ -182,7 +182,7 @@ export default function Platforms() {
         <div style={{ fontSize:12, color:"#7878A8", marginBottom:10, fontWeight:600, textTransform:"uppercase", letterSpacing:".06em" }}>Coming Soon</div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           {["X / Twitter","LinkedIn","Pinterest","Snapchat","Twitch","YouTube Shorts"].map(p => (
-            <span key={p} style={{ background:"#10102A", color:"#7878A8", border:"1px solid #1A1A2E", fontSize:11, fontWeight:600, padding:"4px 12px", borderRadius:20 }}>{p}</span>
+            <span key={p} style={{ background:"#10102A", color:"#7878A8", border:"1px solid #1a1a1a", fontSize:11, fontWeight:600, padding:"4px 12px", borderRadius:20 }}>{p}</span>
           ))}
         </div>
       </div>

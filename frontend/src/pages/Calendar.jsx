@@ -12,18 +12,14 @@ export default function Calendar() {
   const [cur, setCur] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
   const [posts, setPosts] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [loading, setLoading] = useState(false);
-
   useEffect(() => { fetchPosts(); }, [cur.month, cur.year]);
 
   const fetchPosts = async () => {
-    setLoading(true);
     try {
       const r = await fetch(`${API}/api/schedule/calendar?month=${cur.month+1}&year=${cur.year}`, { headers:{ Authorization:`Bearer ${getToken()}` } });
       const d = await r.json();
       setPosts(d.posts || []);
     } catch {}
-    setLoading(false);
   };
 
   const nav = (dir) => setCur(c => {
@@ -81,7 +77,7 @@ export default function Calendar() {
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns: selected ? "1fr 300px" : "1fr", gap:16, alignItems:"start" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:16, alignItems:"start" }}>
         <div>
           {/* Day headers */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:3, marginBottom:3 }}>
@@ -129,34 +125,38 @@ export default function Calendar() {
           </div>
         </div>
 
-        {/* Side panel */}
-        {selected && (
-          <div style={{ background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:12, padding:18, position:"sticky", top:20 }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-              <div>
-                <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>{MONTHS[cur.month].slice(0,3)} {selected}</div>
-                <div style={{ fontSize:11, color:"#444", marginTop:2, textTransform:"uppercase", letterSpacing:".1em" }}>{selPosts.length} post{selPosts.length!==1?"s":""}</div>
-              </div>
-              <button onClick={()=>setSelected(null)} style={{ background:"none",border:"1px solid #222",borderRadius:6,color:"#555",cursor:"pointer",padding:"3px 9px",fontSize:14 }}>×</button>
+        {/* Side panel — always in grid, fades in/out smoothly */}
+        <div style={{
+          opacity: selected ? 1 : 0,
+          transform: selected ? "translateX(0)" : "translateX(14px)",
+          transition: "opacity .22s ease, transform .22s ease",
+          pointerEvents: selected ? "auto" : "none",
+          background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:12, padding:18, position:"sticky", top:20,
+        }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+            <div>
+              <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>{MONTHS[cur.month].slice(0,3)} {selected}</div>
+              <div style={{ fontSize:11, color:"#555", marginTop:2, textTransform:"uppercase", letterSpacing:".1em" }}>{selPosts.length} post{selPosts.length!==1?"s":""}</div>
             </div>
-            {selPosts.length===0 ? (
-              <div style={{ textAlign:"center",padding:"28px 0",color:"#333",fontSize:12 }}>No posts scheduled</div>
-            ) : (
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {selPosts.map((p,i) => (
-                  <div key={i} style={{ background:"#161616",border:"1px solid #222",borderRadius:8,padding:12 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7 }}>
-                      <span style={{ fontSize:9,fontWeight:800,color:PLATFORM_COLORS[p.platform]||"#888",background:`${PLATFORM_COLORS[p.platform]||"#333"}18`,padding:"2px 7px",borderRadius:20,textTransform:"uppercase",letterSpacing:".1em" }}>{p.platform}</span>
-                      <span style={{ marginLeft:"auto",fontSize:9,color:p.status==="published"?"#22C55E":p.status==="failed"?"#EF4444":"#555" }}>● {p.status}</span>
-                    </div>
-                    <div style={{ fontSize:12,fontWeight:600,color:"#e0e0e0",marginBottom:4,lineHeight:1.4 }}>{p.title}</div>
-                    <div style={{ fontSize:10,color:"#444" }}>{new Date(p.scheduled_for).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <button onClick={()=>setSelected(null)} style={{ background:"none",border:"1px solid #222",borderRadius:6,color:"#555",cursor:"pointer",padding:"3px 9px",fontSize:14 }}>×</button>
           </div>
-        )}
+          {selPosts.length===0 ? (
+            <div style={{ textAlign:"center",padding:"28px 0",color:"#444",fontSize:13 }}>No posts scheduled</div>
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {selPosts.map((p,i) => (
+                <div key={i} style={{ background:"#161616",border:"1px solid #222",borderRadius:8,padding:12 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7 }}>
+                    <span style={{ fontSize:11,fontWeight:800,color:PLATFORM_COLORS[p.platform]||"#888",background:`${PLATFORM_COLORS[p.platform]||"#333"}18`,padding:"2px 7px",borderRadius:20,textTransform:"uppercase",letterSpacing:".1em" }}>{p.platform}</span>
+                    <span style={{ marginLeft:"auto",fontSize:11,color:p.status==="published"?"#22C55E":p.status==="failed"?"#EF4444":"#666" }}>● {p.status}</span>
+                  </div>
+                  <div style={{ fontSize:14,fontWeight:600,color:"#e0e0e0",marginBottom:4,lineHeight:1.4 }}>{p.title}</div>
+                  <div style={{ fontSize:12,color:"#555" }}>{new Date(p.scheduled_for).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -34,8 +34,8 @@ export function Optimizer() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Video Optimizer</h1>
-        <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>AI-powered SEO, tags, titles, descriptions for maximum reach</p>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Video Optimizer</h1>
+        <p style={{ color:"#888", fontSize:15, marginTop:5 }}>AI-powered SEO, tags, titles, descriptions for maximum reach</p>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:20, alignItems:"start" }}>
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -43,7 +43,7 @@ export function Optimizer() {
             <div style={{ fontSize:15, fontWeight:700, color:"#C0C0E0", marginBottom:12 }}>Analyze New Video</div>
             <div style={{ display:"flex", gap:6, marginBottom:10 }}>
               {["youtube","tiktok","instagram"].map(p=>(
-                <button key={p} onClick={()=>setPlatform(p)} style={{ flex:1, padding:"7px 4px", borderRadius:8, border:`1px solid ${platform===p?"#7C5CFC":"#1E1E32"}`, background:platform===p?"#7C5CFC22":"transparent", color:platform===p?"#B09FFF":"#7878A8", cursor:"pointer", fontSize:11, fontWeight:600 }}>{p}</button>
+                <button key={p} onClick={()=>setPlatform(p)} style={{ flex:1, padding:"7px 4px", borderRadius:8, border:`1px solid ${platform===p?"#40A0C0":"#1a1a1a"}`, background:platform===p?"#40A0C022":"transparent", color:platform===p?"#40A0C0":"#777", cursor:"pointer", fontSize:11, fontWeight:600 }}>{p}</button>
               ))}
             </div>
             <input value={title} onChange={e=>setTitle(e.target.value)} className="inp" placeholder="Video title…" style={{ marginBottom:8 }}/>
@@ -52,27 +52,27 @@ export function Optimizer() {
               Optimize → <CreditBadge cost={getCost("optimize_video")}/>
             </button>
           </div>
-          <div style={{ fontSize:12, color:"#9090B8", textTransform:"uppercase", letterSpacing:".08em", paddingLeft:4 }}>Your Videos</div>
+          <div style={{ fontSize:12, color:"#888", textTransform:"uppercase", letterSpacing:".08em", paddingLeft:4 }}>Your Videos</div>
           {VIDEOS.map(v=>(
-            <div key={v.id} onClick={()=>{ setSelected(v); reset(); optimize(v.t,v.p,v.v,v.issues); }} className="card" style={{ padding:14, cursor:"pointer", borderLeft:`3px solid ${sc(v.s)}44`, transition:"all .15s", background:selected?.id===v.id?"#7C5CFC08":"#0C0C1A" }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="#2A2A4A"} onMouseLeave={e=>e.currentTarget.style.borderColor="#16162A"}>
+            <div key={v.id} onClick={()=>{ setSelected(v); reset(); optimize(v.t,v.p,v.v,v.issues); }} className="card" style={{ padding:14, cursor:"pointer", borderLeft:`3px solid ${sc(v.s)}44`, transition:"all .15s", background:selected?.id===v.id?"#40A0C008":"#0e0e0e" }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="#2a2a2a"} onMouseLeave={e=>e.currentTarget.style.borderColor="#161616"}>
               <div style={{ display:"flex", justifyContent:"space-between", gap:8, marginBottom:6 }}>
-                <span style={{ fontSize:13, fontWeight:500, color:"#D8D8F0", flex:1, lineHeight:1.4 }}>{v.t}</span>
+                <span style={{ fontSize:13, fontWeight:500, color:"#e0e0e0", flex:1, lineHeight:1.4 }}>{v.t}</span>
                 <span style={{ fontSize:13, fontWeight:700, color:sc(v.s), background:`${sc(v.s)}18`, padding:"2px 8px", borderRadius:6, flexShrink:0, height:"fit-content" }}>{v.s}</span>
               </div>
-              <div style={{ fontSize:13, color:"#8888B8" }}>{v.v} views · {v.p}</div>
+              <div style={{ fontSize:13, color:"#888" }}>{v.v} views · {v.p}</div>
               {v.issues.length>0 && <div style={{ marginTop:8, display:"flex", flexWrap:"wrap", gap:4 }}>
                 {v.issues.slice(0,2).map(iss=><span key={iss} style={{ background:"#EF444408", color:"#EF4444", border:"1px solid #EF444418", fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:20 }}>⚠ {iss}</span>)}
-                {v.issues.length>2 && <span style={{ background:"#10102A", color:"#8888B8", fontSize:10, padding:"2px 8px", borderRadius:20 }}>+{v.issues.length-2}</span>}
+                {v.issues.length>2 && <span style={{ background:"#111", color:"#888", fontSize:10, padding:"2px 8px", borderRadius:20 }}>+{v.issues.length-2}</span>}
               </div>}
             </div>
           ))}
         </div>
         <div className="card" style={{ padding:24 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
-            <div style={{ fontSize:15, fontWeight:600, color:"#E0E0F0" }}>Optimization Report</div>
+            <div style={{ fontSize:15, fontWeight:600, color:"#e0e0e0" }}>Optimization Report</div>
             <div style={{ display:"flex", gap:8 }}>
-              {(loading||streaming) && <div style={{ fontSize:12, color:"#7C5CFC" }}>Analyzing…</div>}
+              {(loading||streaming) && <div style={{ fontSize:12, color:"#40A0C0" }}>Analyzing…</div>}
               {!loading&&output&&<>
                 <button onClick={()=>navigator.clipboard?.writeText(output)} className="btn-ghost" style={{ padding:"6px 14px", fontSize:12 }}>Copy</button>
                 <button className="btn-primary" style={{ padding:"6px 16px", fontSize:12 }}>Apply All</button>
@@ -102,18 +102,18 @@ export function Thumbnails() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Thumbnail Designer</h1>
-        <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>AI thumbnail concepts, CTR analysis and A/B testing</p>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Thumbnail Designer</h1>
+        <p style={{ color:"#888", fontSize:15, marginTop:5 }}>AI thumbnail concepts, CTR analysis and A/B testing</p>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"280px 1fr", gap:20 }}>
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <div className="card" style={{ padding:18 }}>
             <input value={title} onChange={e=>setTitle(e.target.value)} className="inp" placeholder="Video title…" style={{ marginBottom:12 }}/>
-            <div style={{ fontSize:12, color:"#9090B8", marginBottom:8 }}>Style</div>
+            <div style={{ fontSize:12, color:"#888", marginBottom:8 }}>Style</div>
             {styles.map(([id,lb,ds])=>(
-              <div key={id} onClick={()=>setStyle(id)} style={{ padding:"9px 11px", borderRadius:8, cursor:"pointer", marginBottom:4, background:style===id?"#7C5CFC18":"#080810", border:`1px solid ${style===id?"#7C5CFC44":"#1E1E32"}` }}>
-                <div style={{ fontSize:12, color:style===id?"#B09FFF":"#A0A0C0", fontWeight:style===id?600:400 }}>{lb}</div>
-                <div style={{ fontSize:12, color:"#8888A8" }}>{ds}</div>
+              <div key={id} onClick={()=>setStyle(id)} style={{ padding:"9px 11px", borderRadius:8, cursor:"pointer", marginBottom:4, background:style===id?"#40A0C018":"#080810", border:`1px solid ${style===id?"#40A0C044":"#1a1a1a"}` }}>
+                <div style={{ fontSize:12, color:style===id?"#40A0C0":"#aaa", fontWeight:style===id?600:400 }}>{lb}</div>
+                <div style={{ fontSize:12, color:"#888" }}>{ds}</div>
               </div>
             ))}
             <button onClick={()=>{ reset(); run({ feature:"generate_thumbnail", context:{ title, style } }); }} disabled={!title||loading} className="btn-primary" style={{ width:"100%", padding:"11px", fontSize:13, marginTop:8, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
@@ -121,13 +121,13 @@ export function Thumbnails() {
             </button>
           </div>
           <div className="card" style={{ padding:14 }}>
-            <div style={{ fontSize:12, color:"#9090B8", textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Analyze Existing</div>
+            <div style={{ fontSize:12, color:"#888", textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>Analyze Existing</div>
             {examples.map(ex=>(
               <div key={ex.t} onClick={()=>{ reset(); run({ feature:"analyze_thumbnail", context:{ title:ex.t, style:ex.s, ctr:ex.ctr, score:ex.score } }); }} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 8px", borderRadius:9, cursor:"pointer", marginBottom:4, transition:"background .15s" }}
-                onMouseEnter={e=>e.currentTarget.style.background="#10102A"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <div style={{ width:52, height:34, borderRadius:6, background:ex.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, border:"1px solid #2A2A4A", flexShrink:0 }}>{ex.e}</div>
+                onMouseEnter={e=>e.currentTarget.style.background="#111"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <div style={{ width:52, height:34, borderRadius:6, background:ex.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, border:"1px solid #2a2a2a", flexShrink:0 }}>{ex.e}</div>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:12, color:"#B0B0CC" }}>{ex.t}</div>
+                  <div style={{ fontSize:12, color:"#bbb" }}>{ex.t}</div>
                   <div style={{ fontSize:11, color:sc(ex.score), marginTop:2 }}>CTR {ex.ctr} · Score {ex.score}</div>
                 </div>
               </div>
@@ -136,8 +136,8 @@ export function Thumbnails() {
         </div>
         <div className="card" style={{ padding:24 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
-            <div style={{ fontSize:15, fontWeight:600, color:"#E0E0F0" }}>AI Thumbnail Concepts</div>
-            {(loading||streaming)&&<div style={{ fontSize:12, color:"#EC4899" }}>Designing…</div>}
+            <div style={{ fontSize:15, fontWeight:600, color:"#e0e0e0" }}>AI Thumbnail Concepts</div>
+            {(loading||streaming)&&<div style={{ fontSize:12, color:"#C060A0" }}>Designing…</div>}
           </div>
           <AIPanel output={output} loading={loading} streaming={streaming} placeholder="◈ Enter a title and click Generate" minHeight={440}/>
         </div>
@@ -275,8 +275,8 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Script Writer</h1>
-        <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>AI scripts with visual cues, b-roll notes, and editing markers</p>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Script Writer</h1>
+        <p style={{ color:"#888", fontSize:15, marginTop:5 }}>AI scripts with visual cues, b-roll notes, and editing markers</p>
       </div>
       {prefillTopic && (
         <div style={{ padding:"11px 16px", background:"#F59E0B08", border:"1px solid #F59E0B33", borderRadius:11, fontSize:13, color:"#D4A540", display:"flex", alignItems:"center", gap:8 }}>
@@ -288,15 +288,15 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           <div className="card" style={{ padding:18 }}>
             <textarea value={topic} onChange={e=>setTopic(e.target.value)} className="inp" placeholder="Topic or title idea…" rows={3} style={{ marginBottom:12, resize:"none", lineHeight:1.5 }}/>
-            <div style={{ fontSize:12, color:"#9090B8", marginBottom:7 }}>Format</div>
+            <div style={{ fontSize:12, color:"#888", marginBottom:7 }}>Format</div>
             {formats.map(f=>(
-              <div key={f} onClick={()=>setFormat(f)} style={{ padding:"9px 11px", borderRadius:8, cursor:"pointer", marginBottom:4, background:format===f?"#7C5CFC18":"#080810", border:`1px solid ${format===f?"#7C5CFC44":"#1E1E32"}`, fontSize:12, color:format===f?"#B09FFF":"#A0A0C0", fontWeight:format===f?600:400 }}>{f}</div>
+              <div key={f} onClick={()=>setFormat(f)} style={{ padding:"9px 11px", borderRadius:8, cursor:"pointer", marginBottom:4, background:format===f?"#40A0C018":"#080810", border:`1px solid ${format===f?"#40A0C044":"#1a1a1a"}`, fontSize:12, color:format===f?"#40A0C0":"#aaa", fontWeight:format===f?600:400 }}>{f}</div>
             ))}
             <div style={{ marginTop:12, marginBottom:8 }}>
-              <div style={{ fontSize:12, color:"#9090B8", marginBottom:6 }}>Tone</div>
+              <div style={{ fontSize:12, color:"#888", marginBottom:6 }}>Tone</div>
               <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
                 {["conversational","educational","entertaining","controversial"].map(t=>(
-                  <button key={t} onClick={()=>setTone(t)} style={{ padding:"4px 10px", borderRadius:20, border:`1px solid ${tone===t?"#7C5CFC":"#1E1E32"}`, background:tone===t?"#7C5CFC22":"transparent", color:tone===t?"#B09FFF":"#8888B8", cursor:"pointer", fontSize:11, fontWeight:tone===t?600:400 }}>{t}</button>
+                  <button key={t} onClick={()=>setTone(t)} style={{ padding:"4px 10px", borderRadius:20, border:`1px solid ${tone===t?"#40A0C0":"#1a1a1a"}`, background:tone===t?"#40A0C022":"transparent", color:tone===t?"#40A0C0":"#888", cursor:"pointer", fontSize:11, fontWeight:tone===t?600:400 }}>{t}</button>
                 ))}
               </div>
             </div>
@@ -306,10 +306,10 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
             </button>
           </div>
           <div className="card" style={{ padding:14 }}>
-            <div style={{ fontSize:12, color:"#9090B8", textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>🔥 Hot Topics</div>
+            <div style={{ fontSize:12, color:"#888", textTransform:"uppercase", letterSpacing:".08em", marginBottom:10 }}>🔥 Hot Topics</div>
             {hot.map(t=>(
               <div key={t} onClick={()=>setTopic(t)} style={{ padding:"9px 8px", borderRadius:8, cursor:"pointer", fontSize:13, color:"#A8A8C8", transition:"all .15s", marginBottom:2 }}
-                onMouseEnter={e=>{ e.currentTarget.style.background="#10102A"; e.currentTarget.style.color="#E0E0F0"; }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#111"; e.currentTarget.style.color="#e0e0e0"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#A8A8C8"; }}>{t}</div>
             ))}
           </div>
@@ -317,7 +317,7 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <div className="card" style={{ padding:24 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
-              <div style={{ fontSize:15, fontWeight:600, color:"#E0E0F0" }}>Generated Script</div>
+              <div style={{ fontSize:15, fontWeight:600, color:"#e0e0e0" }}>Generated Script</div>
               <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                 {(loading||streaming) && <div style={{ fontSize:12, color:"#22C55E" }}>Writing…</div>}
                 {!loading&&output&&<>
@@ -330,38 +330,38 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
           </div>
 
           {/* AI Avatar section */}
-          <div className="card" style={{ padding:24, border:`1px solid ${isPro?"#7C5CFC22":"#16162A"}`, background:isPro?"#0E0E1A":"#0C0C1A" }}>
+          <div className="card" style={{ padding:24, border:`1px solid ${isPro?"#40A0C022":"#161616"}`, background:isPro?"#0E0E1A":"#0e0e0e" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                 <div style={{ fontSize:22 }}>🤖</div>
                 <div>
-                  <div style={{ fontSize:15, fontWeight:700, color:"#F5F5FF" }}>AI Avatar Video</div>
-                  <div style={{ fontSize:13, color:"#9090B8" }}>Turn this script into a talking-head video — no camera needed</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:"#fff" }}>AI Avatar Video</div>
+                  <div style={{ fontSize:13, color:"#888" }}>Turn this script into a talking-head video — no camera needed</div>
                 </div>
               </div>
               {isPro ? (
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                   <CreditBadge cost={getCost("avatar_generate") || 15}/>
-                  <div style={{ display:"flex", background:"#080810", border:"1px solid #1E1E32", borderRadius:8, overflow:"hidden" }}>
+                  <div style={{ display:"flex", background:"#080810", border:"1px solid #1a1a1a", borderRadius:8, overflow:"hidden" }}>
                     {["generate","settings"].map(tab=>(
-                      <button key={tab} onClick={()=>setAvatarTab(tab)} style={{ padding:"6px 14px", border:"none", background:avatarTab===tab?"#7C5CFC22":"transparent", color:avatarTab===tab?"#B09FFF":"#8888B8", cursor:"pointer", fontSize:12, fontFamily:"inherit", textTransform:"capitalize" }}>{tab}</button>
+                      <button key={tab} onClick={()=>setAvatarTab(tab)} style={{ padding:"6px 14px", border:"none", background:avatarTab===tab?"#40A0C022":"transparent", color:avatarTab===tab?"#40A0C0":"#888", cursor:"pointer", fontSize:12, fontFamily:"inherit", textTransform:"capitalize" }}>{tab}</button>
                     ))}
                   </div>
                 </div>
               ) : (
-                <span style={{ background:"#7C5CFC18", color:"#B09FFF", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20 }}>PRO+</span>
+                <span style={{ background:"#40A0C018", color:"#40A0C0", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20 }}>PRO+</span>
               )}
             </div>
 
             {!isPro ? (
-              <div style={{ padding:"20px", background:"#080810", borderRadius:12, textAlign:"center", border:"1px dashed #7C5CFC22" }}>
+              <div style={{ padding:"20px", background:"#080810", borderRadius:12, textAlign:"center", border:"1px dashed #40A0C022" }}>
                 <div style={{ fontSize:13, color:"#9898C0", marginBottom:12, lineHeight:1.6 }}>
                   Generate realistic talking-head videos with your own AI avatar.<br/>
                   Upload your photo once, pick a voice, post forever.
                 </div>
                 <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap", marginBottom:16 }}>
                   {["No camera required","ElevenLabs voices","Vertical 9:16","Direct to scheduler"].map(f=>(
-                    <span key={f} style={{ background:"#7C5CFC10", border:"1px solid #7C5CFC22", color:"#B09FFF", fontSize:11, padding:"3px 10px", borderRadius:20 }}>{f}</span>
+                    <span key={f} style={{ background:"#40A0C010", border:"1px solid #40A0C022", color:"#40A0C0", fontSize:11, padding:"3px 10px", borderRadius:20 }}>{f}</span>
                   ))}
                 </div>
                 {setPage && <button onClick={()=>setPage("pricing")} className="btn-primary" style={{ padding:"10px 24px", fontSize:13 }}>Upgrade to Pro →</button>}
@@ -370,9 +370,9 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
               <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
                 {/* Photo upload */}
                 <div>
-                  <div style={{ fontSize:12, color:"#8888B8", marginBottom:8 }}>Your Photo</div>
+                  <div style={{ fontSize:12, color:"#888", marginBottom:8 }}>Your Photo</div>
                   <div style={{ display:"flex", gap:14, alignItems:"center" }}>
-                    <div style={{ width:72, height:72, borderRadius:12, border:"2px dashed #2A2A4A", overflow:"hidden", background:"#080810", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <div style={{ width:72, height:72, borderRadius:12, border:"2px dashed #2a2a2a", overflow:"hidden", background:"#080810", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                       {(photoPreview || avatarPhoto) ? (
                         <img src={photoPreview || `${API}${avatarPhoto}`} alt="avatar" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
                       ) : (
@@ -380,17 +380,17 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
                       )}
                     </div>
                     <div style={{ flex:1 }}>
-                      <label style={{ display:"block", padding:"9px 14px", borderRadius:8, border:"1px solid #2A2A4A", background:"#080810", color:"#9898C0", cursor:"pointer", fontSize:12, textAlign:"center" }}>
+                      <label style={{ display:"block", padding:"9px 14px", borderRadius:8, border:"1px solid #2a2a2a", background:"#080810", color:"#9898C0", cursor:"pointer", fontSize:12, textAlign:"center" }}>
                         {photoPreview || avatarPhoto ? "Change Photo" : "Upload Photo"}
                         <input type="file" accept="image/*" onChange={onPhotoChange} style={{ display:"none" }}/>
                       </label>
-                      <div style={{ fontSize:11, color:"#7878A8", marginTop:5 }}>JPG/PNG, up to 10 MB. Face should be clearly visible.</div>
+                      <div style={{ fontSize:11, color:"#777", marginTop:5 }}>JPG/PNG, up to 10 MB. Face should be clearly visible.</div>
                     </div>
                   </div>
                 </div>
                 {/* Voice selection */}
                 <div>
-                  <div style={{ fontSize:12, color:"#8888B8", marginBottom:6 }}>Voice</div>
+                  <div style={{ fontSize:12, color:"#888", marginBottom:6 }}>Voice</div>
                   <select value={avatarVoice} onChange={e=>setAvatarVoice(e.target.value)} className="inp">
                     {avatarVoices.length > 0 ? (
                       avatarVoices.map(v => <option key={v.voice_id} value={v.voice_id}>{v.name}{v.category ? ` (${v.category})` : ""}</option>)
@@ -419,7 +419,7 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
                 {avatarErr && <div style={{ color:"#EF4444", fontSize:13, padding:"10px 13px", background:"#EF444410", borderRadius:8 }}>{avatarErr}</div>}
                 {/* Status */}
                 {avatarJob && (
-                  <div style={{ padding:"14px", background:"#7C5CFC08", border:"1px solid #7C5CFC22", borderRadius:10 }}>
+                  <div style={{ padding:"14px", background:"#40A0C008", border:"1px solid #40A0C022", borderRadius:10 }}>
                     {avatarJob.status === "done" ? (
                       <div>
                         <div style={{ fontSize:13, color:"#22C55E", fontWeight:600, marginBottom:10 }}>✓ Avatar video ready!</div>
@@ -431,14 +431,14 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
                     ) : (
                       <div>
                         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-                          <div style={{ width:16, height:16, border:"2px solid #7C5CFC44", borderTopColor:"#7C5CFC", borderRadius:"50%", animation:"spin 1s linear infinite", flexShrink:0 }}/>
-                          <span style={{ fontSize:13, color:"#B09FFF" }}>
+                          <div style={{ width:16, height:16, border:"2px solid #40A0C044", borderTopColor:"#40A0C0", borderRadius:"50%", animation:"spin 1s linear infinite", flexShrink:0 }}/>
+                          <span style={{ fontSize:13, color:"#40A0C0" }}>
                             Rendering{avatarJob.progress > 0 ? ` — ${avatarJob.progress}%` : "…"}
                           </span>
                         </div>
                         {avatarJob.progress > 0 && (
-                          <div style={{ height:4, background:"#10102A", borderRadius:2 }}>
-                            <div style={{ width:`${avatarJob.progress}%`, height:"100%", background:"linear-gradient(90deg,#7C5CFC,#B45AFD)", borderRadius:2, transition:"width .5s" }}/>
+                          <div style={{ height:4, background:"#111", borderRadius:2 }}>
+                            <div style={{ width:`${avatarJob.progress}%`, height:"100%", background:"linear-gradient(90deg,#40A0C0,#B45AFD)", borderRadius:2, transition:"width .5s" }}/>
                           </div>
                         )}
                       </div>
@@ -457,7 +457,7 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
                   </button>
                   <button onClick={()=>setAvatarTab("settings")} className="btn-ghost" style={{ padding:"11px 14px", fontSize:13 }}>⚙</button>
                 </div>
-                <div style={{ fontSize:11, color:"#7878A8" }}>
+                <div style={{ fontSize:11, color:"#777" }}>
                   Powered by ElevenLabs + SadTalker · ~2-4 min render time
                 </div>
               </div>
@@ -524,13 +524,13 @@ export function Analytics() {
     { id:"analyze_growth",   icon:"◈", label:"Audience Insights", ctx:{ ...aiCtx } },
   ];
 
-  if (dataLoading) return <div style={{ color:"#8888B8", padding:40, textAlign:"center" }}>Loading analytics…</div>;
+  if (dataLoading) return <div style={{ color:"#888", padding:40, textAlign:"center" }}>Loading analytics…</div>;
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Analytics</h1>
-        <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Performance insights across all connected platforms</p>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Analytics</h1>
+        <p style={{ color:"#888", fontSize:15, marginTop:5 }}>Performance insights across all connected platforms</p>
       </div>
 
       {connectedPlatforms.length === 0 && (
@@ -554,7 +554,7 @@ export function Analytics() {
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   <span style={{ fontSize:18, color:cfg.color }}>{cfg.icon}</span>
-                  <span style={{ fontSize:15, fontWeight:600, color:"#E0E0F0" }}>{cfg.name}</span>
+                  <span style={{ fontSize:15, fontWeight:600, color:"#e0e0e0" }}>{cfg.name}</span>
                 </div>
                 <span style={{ background:`${cfg.color}18`, color:cfg.color, fontSize:11, fontWeight:600, padding:"2px 9px", borderRadius:20 }}>● Live</span>
               </div>
@@ -562,8 +562,8 @@ export function Analytics() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                 {statEntries.map(([k, v]) => (
                   <div key={k}>
-                    <div style={{ fontSize:11, color:"#8888B8", marginBottom:3, textTransform:"capitalize" }}>{k.replace(/([A-Z])/g," $1").toLowerCase()}</div>
-                    <div style={{ fontSize:17, fontWeight:700, color:"#E0E0F0" }}>{v}</div>
+                    <div style={{ fontSize:11, color:"#888", marginBottom:3, textTransform:"capitalize" }}>{k.replace(/([A-Z])/g," $1").toLowerCase()}</div>
+                    <div style={{ fontSize:17, fontWeight:700, color:"#e0e0e0" }}>{v}</div>
                   </div>
                 ))}
               </div>
@@ -578,9 +578,9 @@ export function Analytics() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:16 }}>
           {analyses.map((a, i) => (
             <button key={i} onClick={() => { setActive(i); reset(); run({ feature:a.id, context:a.ctx }); }}
-              style={{ padding:16, borderRadius:12, cursor:"pointer", textAlign:"left", border:`1px solid ${active===i?"#7C5CFC44":"#16162A"}`, background:active===i?"#7C5CFC08":"#0C0C1A" }}>
-              <div style={{ fontSize:20, color:"#7C5CFC", marginBottom:8 }}>{a.icon}</div>
-              <div style={{ fontSize:13, fontWeight:600, color:"#D8D8F0" }}>{a.label}</div>
+              style={{ padding:16, borderRadius:12, cursor:"pointer", textAlign:"left", border:`1px solid ${active===i?"#40A0C044":"#161616"}`, background:active===i?"#40A0C008":"#0e0e0e" }}>
+              <div style={{ fontSize:20, color:"#40A0C0", marginBottom:8 }}>{a.icon}</div>
+              <div style={{ fontSize:13, fontWeight:600, color:"#e0e0e0" }}>{a.label}</div>
             </button>
           ))}
         </div>
@@ -589,25 +589,25 @@ export function Analytics() {
 
       {/* Top YouTube videos */}
       <div className="card" style={{ padding:22 }}>
-        <div style={{ fontSize:15, fontWeight:600, color:"#E0E0F0", marginBottom:18 }}>Top Performing Videos</div>
+        <div style={{ fontSize:15, fontWeight:600, color:"#e0e0e0", marginBottom:18 }}>Top Performing Videos</div>
         {!connections.youtube ? (
-          <div style={{ color:"#8888B8", fontSize:13, padding:"14px 0" }}>Connect YouTube to see your top performing videos.</div>
+          <div style={{ color:"#888", fontSize:13, padding:"14px 0" }}>Connect YouTube to see your top performing videos.</div>
         ) : videos.length === 0 ? (
-          <div style={{ color:"#8888B8", fontSize:13, padding:"14px 0" }}>No videos found or YouTube Analytics API not enabled in your Google Cloud project.</div>
+          <div style={{ color:"#888", fontSize:13, padding:"14px 0" }}>No videos found or YouTube Analytics API not enabled in your Google Cloud project.</div>
         ) : (
           <>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 80px 80px 80px 80px", gap:14, paddingBottom:10, borderBottom:"1px solid #10102A", marginBottom:4 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 80px 80px 80px 80px", gap:14, paddingBottom:10, borderBottom:"1px solid #111", marginBottom:4 }}>
               {["Video","Views","Duration","Likes","Comments"].map(h => (
-                <div key={h} style={{ fontSize:11, color:"#7878A8", textTransform:"uppercase", letterSpacing:".06em" }}>{h}</div>
+                <div key={h} style={{ fontSize:11, color:"#777", textTransform:"uppercase", letterSpacing:".06em" }}>{h}</div>
               ))}
             </div>
             {videos.map((v, i) => (
               <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr 80px 80px 80px 80px", gap:14, padding:"12px 0", borderBottom:i<videos.length-1?"1px solid #0A0A18":"none", alignItems:"center" }}>
-                <div style={{ fontSize:13, fontWeight:500, color:"#D8D8F0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{v.title}</div>
-                <div style={{ fontSize:13, color:"#B0B0CC" }}>{v.views}</div>
-                <div style={{ fontSize:13, color:"#B0B0CC" }}>{v.duration}</div>
-                <div style={{ fontSize:13, color:"#B0B0CC" }}>{v.likes}</div>
-                <div style={{ fontSize:13, color:"#B0B0CC" }}>{v.comments}</div>
+                <div style={{ fontSize:13, fontWeight:500, color:"#e0e0e0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{v.title}</div>
+                <div style={{ fontSize:13, color:"#bbb" }}>{v.views}</div>
+                <div style={{ fontSize:13, color:"#bbb" }}>{v.duration}</div>
+                <div style={{ fontSize:13, color:"#bbb" }}>{v.likes}</div>
+                <div style={{ fontSize:13, color:"#bbb" }}>{v.comments}</div>
               </div>
             ))}
           </>
@@ -629,11 +629,11 @@ export function Pipeline() {
   const [isAll,   setIsAll]   = useState(false);
 
   const STAGES = [
-    { id:"trend",     label:"Detect Trend",    icon:"◎", color:"#7C5CFC" },
+    { id:"trend",     label:"Detect Trend",    icon:"◎", color:"#40A0C0" },
     { id:"virality",  label:"Predict Virality",icon:"⚡", color:"#F59E0B" },
     { id:"idea",      label:"Generate Idea",   icon:"✦", color:"#22C55E" },
     { id:"script",    label:"Write Script",    icon:"⊡", color:"#3B82F6" },
-    { id:"thumbnail", label:"Design Thumbnail",icon:"◈", color:"#EC4899" },
+    { id:"thumbnail", label:"Design Thumbnail",icon:"◈", color:"#C060A0" },
     { id:"tags",      label:"Optimize Tags",   icon:"⬡", color:"#69C9D0" },
     { id:"schedule",  label:"Schedule Post",   icon:"◷", color:"#8B5CF6" },
   ];
@@ -665,8 +665,8 @@ export function Pipeline() {
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
         <div>
-          <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>AI Pipeline</h1>
-          <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Full autopilot — trend → script → thumbnail → scheduled post</p>
+          <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>AI Pipeline</h1>
+          <p style={{ color:"#888", fontSize:15, marginTop:5 }}>Full autopilot — trend → script → thumbnail → scheduled post</p>
         </div>
         <div style={{ display:"flex", gap:10 }}>
           {done.length>0 && <button onClick={()=>{ setDone([]); setOutputs({}); setRunning(null); setActive(null); reset(); }} className="btn-ghost" style={{ padding:"10px 18px", fontSize:13 }}>Reset</button>}
@@ -678,11 +678,11 @@ export function Pipeline() {
       <div className="card" style={{ padding:18 }}>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
           <div>
-            <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:5 }}>Channel Niche</label>
+            <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:5 }}>Channel Niche</label>
             <input value={niche} onChange={e=>setNiche(e.target.value)} className="inp"/>
           </div>
           <div>
-            <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:5 }}>Seed Topic (optional — leave blank for AI to find trends)</label>
+            <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:5 }}>Seed Topic (optional — leave blank for AI to find trends)</label>
             <input value={topic} onChange={e=>setTopic(e.target.value)} className="inp" placeholder="e.g. AI productivity tools"/>
           </div>
         </div>
@@ -693,13 +693,13 @@ export function Pipeline() {
             const isDone=done.includes(s.id); const isRun=running===s.id;
             return (
               <div key={s.id} onClick={()=>{ if(!isAll){ if(outputs[s.id]) setActive(s.id); else runStage(s.id); }}}
-                style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 14px", borderRadius:12, cursor:isAll?"default":"pointer", background:active===s.id?`${s.color}0A`:"#0C0C1A", border:`1px solid ${active===s.id?s.color+"33":"#16162A"}`, transition:"all .15s" }}>
-                <div style={{ width:36, height:36, borderRadius:"50%", background:isDone?`${s.color}22`:"#080810", border:`2px solid ${isRun?s.color:isDone?s.color+"66":"#1A1A2E"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:isDone?s.color:"#7878A8", boxShadow:isRun?`0 0 14px ${s.color}44`:"none", flexShrink:0, transition:"all .3s" }}>
+                style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 14px", borderRadius:12, cursor:isAll?"default":"pointer", background:active===s.id?`${s.color}0A`:"#0e0e0e", border:`1px solid ${active===s.id?s.color+"33":"#161616"}`, transition:"all .15s" }}>
+                <div style={{ width:36, height:36, borderRadius:"50%", background:isDone?`${s.color}22`:"#080810", border:`2px solid ${isRun?s.color:isDone?s.color+"66":"#1A1A2E"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, color:isDone?s.color:"#777", boxShadow:isRun?`0 0 14px ${s.color}44`:"none", flexShrink:0, transition:"all .3s" }}>
                   {isRun ? <span style={{ width:12,height:12,border:`2px solid ${s.color}44`,borderTopColor:s.color,borderRadius:"50%",display:"inline-block",animation:"spin 1s linear infinite" }}/> : isDone?"✓":s.icon}
                 </div>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:14, fontWeight:isDone?600:400, color:isDone?"#E8E8FC":"#9090B8" }}>{s.label}</div>
-                  <div style={{ fontSize:11, color:isRun?s.color:isDone?"#8888B8":"#5A5A80", marginTop:2 }}>{isRun?"Processing…":isDone?"Done — click to view":"Pending"}</div>
+                  <div style={{ fontSize:14, fontWeight:isDone?600:400, color:isDone?"#E8E8FC":"#888" }}>{s.label}</div>
+                  <div style={{ fontSize:11, color:isRun?s.color:isDone?"#888":"#5A5A80", marginTop:2 }}>{isRun?"Processing…":isDone?"Done — click to view":"Pending"}</div>
                 </div>
                 {isDone && <div style={{ width:6,height:6,borderRadius:"50%",background:"#22C55E" }}/>}
               </div>
@@ -708,11 +708,11 @@ export function Pipeline() {
           {done.length>0 && (
             <div className="card" style={{ padding:"13px 14px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", marginBottom:7 }}>
-                <span style={{ fontSize:12, color:"#8888B8" }}>Progress</span>
-                <span style={{ fontSize:12, color:"#7C5CFC", fontWeight:600 }}>{done.length}/{STAGES.length}</span>
+                <span style={{ fontSize:12, color:"#888" }}>Progress</span>
+                <span style={{ fontSize:12, color:"#40A0C0", fontWeight:600 }}>{done.length}/{STAGES.length}</span>
               </div>
-              <div style={{ height:4, background:"#10102A", borderRadius:2 }}>
-                <div style={{ width:`${(done.length/STAGES.length)*100}%`,height:"100%",background:"linear-gradient(90deg,#7C5CFC,#B45AFD)",borderRadius:2,transition:"width .5s" }}/>
+              <div style={{ height:4, background:"#111", borderRadius:2 }}>
+                <div style={{ width:`${(done.length/STAGES.length)*100}%`,height:"100%",background:"linear-gradient(90deg,#40A0C0,#B45AFD)",borderRadius:2,transition:"width .5s" }}/>
               </div>
             </div>
           )}
@@ -722,18 +722,18 @@ export function Pipeline() {
             <>
               <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
                 <div>
-                  <div style={{ fontSize:15, fontWeight:600, color:"#E0E0F0" }}>{STAGES.find(s=>s.id===active)?.label}</div>
-                  <div style={{ fontSize:12, color:"#8888B8", marginTop:2 }}>{running===active?"Generating…":"Complete"}</div>
+                  <div style={{ fontSize:15, fontWeight:600, color:"#e0e0e0" }}>{STAGES.find(s=>s.id===active)?.label}</div>
+                  <div style={{ fontSize:12, color:"#888", marginTop:2 }}>{running===active?"Generating…":"Complete"}</div>
                 </div>
                 {streaming&&running===active && <div style={{ fontSize:12, color:STAGES.find(s=>s.id===active)?.color }}>AI Writing</div>}
               </div>
               <AIPanel output={running===active?output:(outputs[active]||"")} loading={loading&&running===active} streaming={streaming&&running===active} minHeight={420}/>
             </>
           ) : (
-            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:420, color:"#7878A8", gap:14 }}>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:420, color:"#777", gap:14 }}>
               <span style={{ fontSize:52 }}>⊙</span>
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:15, fontWeight:500, color:"#C0C0D8", marginBottom:6 }}>Set your niche and launch the autopilot</div>
+                <div style={{ fontSize:15, fontWeight:500, color:"#d0d0d0", marginBottom:6 }}>Set your niche and launch the autopilot</div>
                 <div style={{ fontSize:13 }}>Or click any stage to run individually</div>
               </div>
               <button onClick={runAll} className="btn-primary" style={{ padding:"12px 28px", fontSize:14, marginTop:8 }}>▶ Start Full Pipeline</button>

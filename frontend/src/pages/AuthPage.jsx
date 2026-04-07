@@ -4,38 +4,29 @@ import { setToken } from "../services/api";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-// Soft glitch logo — wider, rectangular, muted cyan/magenta
+// Glitch logo — square, left half only (matches sidebar)
 function GlitchLogo({ size = 56 }) {
-  const w = Math.round(size * 1.6);
-  const h = size;
   return (
-    <svg width={w} height={h} viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="80" height="50" rx="12" fill="#111"/>
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="9" fill="#111" stroke="#222" strokeWidth="1"/>
       {/* Soft magenta ghost */}
-      <g transform="translate(-2, 0)" opacity="0.5">
-        <rect x="10" y="13" width="11" height="18" rx="2" fill="#C060A0"/>
-        <rect x="12" y="13" width="16" height="4" rx="2" fill="#C060A0"/>
+      <g transform="translate(-2,0)" opacity="0.5">
+        <rect x="8" y="10" width="8" height="14" rx="1.5" fill="#C060A0"/>
+        <rect x="10" y="10" width="12" height="3.5" rx="1.5" fill="#C060A0"/>
       </g>
       {/* Soft cyan ghost */}
-      <g transform="translate(2, 0)" opacity="0.5">
-        <rect x="27" y="19" width="11" height="18" rx="2" fill="#40A0C0"/>
-        <rect x="21" y="33" width="16" height="4" rx="2" fill="#40A0C0"/>
+      <g transform="translate(2,0)" opacity="0.5">
+        <rect x="20" y="16" width="8" height="14" rx="1.5" fill="#40A0C0"/>
+        <rect x="14" y="26" width="12" height="3.5" rx="1.5" fill="#40A0C0"/>
       </g>
-      {/* White main shapes */}
-      <rect x="11" y="14" width="10" height="17" rx="2" fill="#fff"/>
-      <rect x="13" y="14" width="15" height="4" rx="2" fill="#fff"/>
-      <rect x="28" y="20" width="10" height="17" rx="2" fill="#fff"/>
-      <rect x="20" y="33" width="15" height="4" rx="2" fill="#fff"/>
-      {/* Right side A */}
-      <rect x="48" y="14" width="4" height="22" rx="2" fill="#fff" opacity="0.9"/>
-      <rect x="64" y="14" width="4" height="22" rx="2" fill="#fff" opacity="0.9"/>
-      <rect x="48" y="14" width="20" height="4" rx="2" fill="#fff" opacity="0.9"/>
-      <rect x="48" y="24" width="20" height="3" rx="1.5" fill="#fff" opacity="0.6"/>
+      {/* White main — P/autopilot mark */}
+      <rect x="9" y="11" width="7" height="13" rx="1.5" fill="#fff"/>
+      <rect x="11" y="11" width="11" height="3.5" rx="1.5" fill="#fff"/>
+      <rect x="21" y="17" width="7" height="13" rx="1.5" fill="#fff"/>
+      <rect x="13" y="26" width="11" height="3.5" rx="1.5" fill="#fff"/>
       {/* Pixel glitch strips */}
-      <rect x="11" y="22" width="5" height="1.5" fill="#C060A0" opacity="0.8"/>
-      <rect x="36" y="28" width="4" height="1.5" fill="#40A0C0" opacity="0.8"/>
-      <rect x="54" y="18" width="8" height="1.5" fill="#fff" opacity="0.3"/>
-      <rect x="48" y="31" width="6" height="1.5" fill="#C060A0" opacity="0.5"/>
+      <rect x="9" y="17" width="4" height="1.5" fill="#C060A0" opacity="0.9"/>
+      <rect x="27" y="22" width="3" height="1.5" fill="#40A0C0" opacity="0.9"/>
     </svg>
   );
 }

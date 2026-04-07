@@ -155,12 +155,12 @@ export default function Avatar({ user }) {
       )}
 
       {/* ── Tab bar ── */}
-      <div style={{ display:"flex", gap:4, borderBottom:"1px solid #1E1E42", marginBottom:-4 }}>
+      <div style={{ display:"flex", gap:4, borderBottom:"1px solid #1a2830", marginBottom:-4 }}>
         {[["face","◉ Face"], ["generate","✦ Animate"], ["history","⊞ History"]].map(([id, label]) => (
           <button key={id} onClick={() => setTab(id)} style={{
             padding:"10px 20px", background:"none", border:"none",
-            borderBottom:`2px solid ${tab===id?"#7C5CFC":"transparent"}`,
-            color: tab===id ? "#C4B5FD" : "#7878A8", fontWeight: tab===id ? 700 : 400,
+            borderBottom:`2px solid ${tab===id?"#40A0C0":"transparent"}`,
+            color: tab===id ? "#a0d8e8" : "#777", fontWeight: tab===id ? 700 : 400,
             fontSize:14, cursor:"pointer", transition:"all .15s", marginBottom:-1,
           }}>{label}</button>
         ))}
@@ -174,9 +174,9 @@ export default function Avatar({ user }) {
           <div style={{ display:"flex", gap:10 }}>
             {[["upload","📷 Upload Photo"], ["prompt","✦ Describe with AI"], ["preset","⊞ Ready-made"]].map(([id, label]) => (
               <button key={id} onClick={() => setFaceSource(id)} style={{
-                flex:1, padding:"11px 0", borderRadius:11, border:`1.5px solid ${faceSource===id?"#7C5CFC":"#1E1E42"}`,
-                background: faceSource===id ? "#7C5CFC15" : "#0C0C1A",
-                color: faceSource===id ? "#C4B5FD" : "#7878A8",
+                flex:1, padding:"11px 0", borderRadius:11, border:`1.5px solid ${faceSource===id?"#40A0C0":"#1a2830"}`,
+                background: faceSource===id ? "#40A0C015" : "#0e0e0e",
+                color: faceSource===id ? "#a0d8e8" : "#777",
                 fontSize:13, fontWeight: faceSource===id ? 700 : 400, cursor:"pointer", transition:"all .15s",
               }}>{label}</button>
             ))}
@@ -187,14 +187,14 @@ export default function Avatar({ user }) {
             <div className="card" style={{ padding:24, display:"flex", gap:24, alignItems:"flex-start" }}>
               <div style={{ flexShrink:0 }}>
                 {photoSrc ? (
-                  <img src={photoSrc} alt="Avatar" style={{ width:120, height:120, borderRadius:14, objectFit:"cover", border:"2px solid #7C5CFC44" }} />
+                  <img src={photoSrc} alt="Avatar" style={{ width:120, height:120, borderRadius:14, objectFit:"cover", border:"2px solid #40A0C044" }} />
                 ) : (
-                  <div style={{ width:120, height:120, borderRadius:14, background:"#0C0C24", border:"2px dashed #2A2A50", display:"flex", alignItems:"center", justifyContent:"center", fontSize:40 }}>👤</div>
+                  <div style={{ width:120, height:120, borderRadius:14, background:"#0e0e0e", border:"2px dashed #1e3030", display:"flex", alignItems:"center", justifyContent:"center", fontSize:40 }}>👤</div>
                 )}
               </div>
               <div style={{ flex:1 }}>
-                <div style={{ fontSize:14, color:"#C0C0D8", marginBottom:8, lineHeight:1.6 }}>Upload a clear, front-facing photo. The AI will animate it to speak your script.</div>
-                <div style={{ fontSize:12, color:"#7878A8", marginBottom:14 }}>Good lighting · neutral background · face centered · JPG/PNG up to 10 MB</div>
+                <div style={{ fontSize:14, color:"#d0d0d0", marginBottom:8, lineHeight:1.6 }}>Upload a clear, front-facing photo. The AI will animate it to speak your script.</div>
+                <div style={{ fontSize:12, color:"#777", marginBottom:14 }}>Good lighting · neutral background · face centered · JPG/PNG up to 10 MB</div>
                 <input type="file" accept="image/*" id="photoInput" style={{ display:"none" }} onChange={e => e.target.files[0] && uploadPhoto(e.target.files[0])} />
                 <button className="btn-primary" style={{ padding:"9px 22px", fontSize:13 }} disabled={photoUploading} onClick={() => document.getElementById("photoInput").click()}>
                   {photoUploading ? "Uploading…" : photo ? "Change Photo" : "Upload Photo"}
@@ -208,8 +208,8 @@ export default function Avatar({ user }) {
           {faceSource === "prompt" && (
             <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:16 }}>
               <div>
-                <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0", marginBottom:6 }}>Describe your avatar</div>
-                <div style={{ fontSize:13, color:"#7878A8", marginBottom:14 }}>Describe how you want the character to look. Be specific about gender, age, style, expression.</div>
+                <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0", marginBottom:6 }}>Describe your avatar</div>
+                <div style={{ fontSize:13, color:"#777", marginBottom:14 }}>Describe how you want the character to look. Be specific about gender, age, style, expression.</div>
               </div>
               <div style={{ display:"flex", gap:10 }}>
                 <input
@@ -237,7 +237,7 @@ export default function Avatar({ user }) {
               )}
               {photoSrc && !faceGenerating && (
                 <div style={{ display:"flex", gap:16, alignItems:"center" }}>
-                  <img src={photoSrc} alt="Generated" style={{ width:100, height:100, borderRadius:12, objectFit:"cover", border:"2px solid #7C5CFC44" }} />
+                  <img src={photoSrc} alt="Generated" style={{ width:100, height:100, borderRadius:12, objectFit:"cover", border:"2px solid #40A0C044" }} />
                   <div>
                     <div style={{ fontSize:13, color:"#22C55E", marginBottom:6 }}>✓ Face generated and saved</div>
                     <button className="btn-ghost" style={{ padding:"6px 14px", fontSize:12 }} onClick={() => generateFace(facePrompt)} disabled={faceGenerating}>
@@ -252,8 +252,8 @@ export default function Avatar({ user }) {
           {/* Ready-made presets */}
           {faceSource === "preset" && (
             <div className="card" style={{ padding:24 }}>
-              <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0", marginBottom:6 }}>Ready-made Avatar Personas</div>
-              <div style={{ fontSize:13, color:"#7878A8", marginBottom:16 }}>Pick a character — we'll generate a photorealistic face for you instantly. 3 credits each.</div>
+              <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0", marginBottom:6 }}>Ready-made Avatar Personas</div>
+              <div style={{ fontSize:13, color:"#777", marginBottom:16 }}>Pick a character — we'll generate a photorealistic face for you instantly. 3 credits each.</div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:12 }}>
                 {PRESETS.map(p => {
                   const isLoading = presetLoading === p.id;
@@ -264,19 +264,19 @@ export default function Avatar({ user }) {
                       onClick={() => !presetLoading && selectPreset(p)}
                       style={{
                         borderRadius:12, overflow:"hidden", cursor: presetLoading ? "wait" : "pointer",
-                        border:"1.5px solid #1E1E42", background:"#0C0C1A",
+                        border:"1.5px solid #1a2830", background:"#0e0e0e",
                         transition:"all .15s", opacity: presetLoading && !isLoading ? 0.5 : 1,
                       }}
-                      onMouseEnter={e => { if (!presetLoading) e.currentTarget.style.borderColor="#7C5CFC"; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor="#1E1E42"; }}
+                      onMouseEnter={e => { if (!presetLoading) e.currentTarget.style.borderColor="#40A0C0"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor="#1a2830"; }}
                     >
-                      <div style={{ height:100, background:"linear-gradient(135deg,#7C5CFC22,#B45AFD18)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:36 }}>
+                      <div style={{ height:100, background:"linear-gradient(135deg,rgba(64,160,192,0.13),rgba(64,160,192,0.07))", display:"flex", alignItems:"center", justifyContent:"center", fontSize:36 }}>
                         {isLoading ? <span style={{ animation:"spin 1s linear infinite", display:"inline-block", fontSize:24 }}>◌</span> : "◉"}
                       </div>
                       <div style={{ padding:"10px 12px" }}>
                         <div style={{ fontSize:13, fontWeight:700, color:"#D0D0E8", marginBottom:3 }}>{p.label}</div>
                         <div style={{ fontSize:11, color:"#6868A8", lineHeight:1.4 }}>{p.prompt.slice(0, 50)}…</div>
-                        {isLoading && <div style={{ fontSize:11, color:"#9B79FC", marginTop:6 }}>Generating…</div>}
+                        {isLoading && <div style={{ fontSize:11, color:"#40A0C0", marginTop:6 }}>Generating…</div>}
                       </div>
                     </div>
                   );
@@ -293,25 +293,25 @@ export default function Avatar({ user }) {
 
           {/* Voice section — always visible */}
           <div className="card" style={{ padding:24 }}>
-            <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0", marginBottom:14 }}>Voice</div>
+            <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0", marginBottom:14 }}>Voice</div>
             {voices.length === 0 ? (
-              <div style={{ color:"#7878A8", fontSize:13 }}>Loading voices… (requires ELEVENLABS_API_KEY)</div>
+              <div style={{ color:"#777", fontSize:13 }}>Loading voices… (requires ELEVENLABS_API_KEY)</div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))", gap:10 }}>
                 {voices.slice(0, 12).map(v => (
                   <div key={v.voice_id} onClick={() => saveVoice(v.voice_id)} style={{
                     padding:"12px 14px", borderRadius:10, cursor:"pointer",
-                    border:`1.5px solid ${selectedVoice===v.voice_id?"#7C5CFC":"#1E1E42"}`,
-                    background: selectedVoice===v.voice_id ? "#7C5CFC15" : "#0C0C1A", transition:"all .15s",
+                    border:`1.5px solid ${selectedVoice===v.voice_id?"#40A0C0":"#1a2830"}`,
+                    background: selectedVoice===v.voice_id ? "#40A0C015" : "#0e0e0e", transition:"all .15s",
                   }}>
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                      <div style={{ fontSize:13, fontWeight:600, color: selectedVoice===v.voice_id?"#C4B5FD":"#C0C0D8" }}>{v.name}</div>
-                      {selectedVoice===v.voice_id && <span style={{ fontSize:11, color:"#7C5CFC" }}>✓</span>}
+                      <div style={{ fontSize:13, fontWeight:600, color: selectedVoice===v.voice_id?"#a0d8e8":"#d0d0d0" }}>{v.name}</div>
+                      {selectedVoice===v.voice_id && <span style={{ fontSize:11, color:"#40A0C0" }}>✓</span>}
                     </div>
                     <div style={{ fontSize:11, color:"#6868A8", marginTop:3, textTransform:"capitalize" }}>{v.category || "voice"}</div>
                     {v.preview && (
                       <button onClick={e => { e.stopPropagation(); new Audio(v.preview).play(); }}
-                        style={{ marginTop:8, fontSize:11, color:"#9090B8", background:"none", border:"1px solid #2A2A50", borderRadius:6, padding:"3px 10px", cursor:"pointer" }}>
+                        style={{ marginTop:8, fontSize:11, color:"#9090B8", background:"none", border:"1px solid #1e3030", borderRadius:6, padding:"3px 10px", cursor:"pointer" }}>
                         ▶ Preview
                       </button>
                     )}
@@ -352,10 +352,10 @@ export default function Avatar({ user }) {
               <div style={{ fontSize:16, fontWeight:700, color:"#E0E0F8", marginBottom:6 }}>
                 {status === "starting" ? "Starting generation…" : `Animating your avatar — ${progress}%`}
               </div>
-              <div style={{ fontSize:13, color:"#7878A8", marginBottom:16 }}>Takes 2–4 minutes. You can leave this page and come back to History.</div>
+              <div style={{ fontSize:13, color:"#777", marginBottom:16 }}>Takes 2–4 minutes. You can leave this page and come back to History.</div>
               {progress > 0 && (
                 <div style={{ width:320, maxWidth:"90%", margin:"0 auto", height:6, background:"#1A1A3A", borderRadius:3, overflow:"hidden" }}>
-                  <div style={{ width:`${progress}%`, height:"100%", background:"linear-gradient(90deg,#7C5CFC,#B45AFD)", borderRadius:3, transition:"width .5s" }} />
+                  <div style={{ width:`${progress}%`, height:"100%", background:"linear-gradient(90deg,#40A0C0,#60C8E0)", borderRadius:3, transition:"width .5s" }} />
                 </div>
               )}
             </div>
@@ -367,15 +367,15 @@ export default function Avatar({ user }) {
               <div style={{ display:"flex", alignItems:"center", gap:14 }}>
                 {photoSrc && <img src={photoSrc} alt="Avatar" style={{ width:48, height:48, borderRadius:10, objectFit:"cover", border:"1px solid #3A2A8A", flexShrink:0 }} />}
                 <div>
-                  <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>Script</div>
-                  <div style={{ fontSize:12, color:"#7878A8", marginTop:2 }}>Max 2,500 chars · ~3 min video · 15 credits</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>Script</div>
+                  <div style={{ fontSize:12, color:"#777", marginTop:2 }}>Max 2,500 chars · ~3 min video · 15 credits</div>
                 </div>
               </div>
               <textarea value={script} onChange={e => setScript(e.target.value)} maxLength={2500}
                 placeholder={"Hi everyone! Today I'm going to show you…"} className="inp"
                 style={{ minHeight:160, resize:"vertical", lineHeight:1.7 }} />
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color: script.length > 2300 ? "#F59E0B" : "#7878A8" }}>{script.length}/2,500</span>
+                <span style={{ fontSize:12, color: script.length > 2300 ? "#F59E0B" : "#777" }}>{script.length}/2,500</span>
                 <button onClick={generate} disabled={!script.trim() || !photo} className="btn-primary" style={{ padding:"11px 28px", fontSize:14 }}>
                   ◉ Generate Avatar Video
                 </button>
@@ -390,15 +390,15 @@ export default function Avatar({ user }) {
       {tab === "history" && (
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           {history.length === 0 ? (
-            <div className="card" style={{ padding:40, textAlign:"center", color:"#7878A8", fontSize:14 }}>
+            <div className="card" style={{ padding:40, textAlign:"center", color:"#777", fontSize:14 }}>
               No videos generated yet this session. Generated videos will appear here.
             </div>
           ) : history.map((h, i) => (
             <div key={i} className="card" style={{ padding:18, display:"flex", gap:16, alignItems:"center" }}>
               <video src={h.url} style={{ width:120, height:70, borderRadius:8, objectFit:"cover", background:"#000", flexShrink:0 }} />
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:13, color:"#C0C0D8", marginBottom:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>"{h.script}{h.script.length >= 80 ? "…" : ""}"</div>
-                <div style={{ fontSize:12, color:"#7878A8" }}>{new Date(h.ts).toLocaleString()}</div>
+                <div style={{ fontSize:13, color:"#d0d0d0", marginBottom:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>"{h.script}{h.script.length >= 80 ? "…" : ""}"</div>
+                <div style={{ fontSize:12, color:"#777" }}>{new Date(h.ts).toLocaleString()}</div>
               </div>
               <a href={h.url} download={`avatar-${i+1}.mp4`} className="btn-ghost" style={{ padding:"7px 16px", fontSize:12, textDecoration:"none", flexShrink:0 }}>⬇ Download</a>
             </div>
