@@ -35,11 +35,20 @@ const PAGES = {
 function AppInner() {
   const { user, loading } = useAuth();
   const { upload } = useUpload();
-  const [page,      setPage]      = useState("dashboard");
+  // First-time users → land on Platforms; returning users → dashboard
+  const [page,      setPageRaw]   = useState(() => localStorage.getItem("autopilot_welcomed") ? "dashboard" : "platforms");
   const [collapsed, setCollapsed] = useState(false);
   // Show every login unless user has explicitly checked "Don't show again"
   const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem("autopilot_tutorial_v1") !== "done");
   const [pageProps, setPageProps] = useState({});
+
+  // Wrap setPage so first navigation marks user as welcomed
+  const setPage = (pg) => {
+    if (!localStorage.getItem("autopilot_welcomed")) {
+      localStorage.setItem("autopilot_welcomed", "1");
+    }
+    setPageRaw(pg);
+  };
 
   // Handle OAuth redirects that land on /platforms?connected=...
   useEffect(() => {
@@ -253,18 +262,18 @@ function AppInner() {
       {/* ── Glitch pixel overlay ── */}
       <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
         {[
-          { top:"12%",  left:"23%",  w:3, h:8,  color:"#40A0C0", anim:"px1 7.3s steps(1) infinite",          delay:"0s"    },
-          { top:"8%",   left:"23.4%",w:2, h:2,  color:"#C060A0", anim:"px1 7.3s steps(1) infinite",          delay:"-.05s" },
-          { top:"34%",  left:"71%",  w:5, h:2,  color:"#40A0C0", anim:"px2 5.8s steps(1) infinite",          delay:"-1.2s" },
-          { top:"34.4%",left:"71%",  w:2, h:2,  color:"#C060A0", anim:"px2 5.8s steps(1) infinite",          delay:"-1.1s" },
-          { top:"61%",  left:"44%",  w:4, h:3,  color:"#C060A0", anim:"px3 9.1s steps(1) infinite",          delay:"-3s"   },
-          { top:"61.3%",left:"44.4%",w:2, h:2,  color:"#40C4C0", anim:"px3 9.1s steps(1) infinite",          delay:"-2.9s" },
-          { top:"78%",  left:"82%",  w:6, h:2,  color:"#40A0C0", anim:"px4 6.4s steps(1) infinite",          delay:"-2s"   },
-          { top:"22%",  left:"88%",  w:3, h:5,  color:"#C060A0", anim:"px5 11.2s steps(1) infinite",         delay:"-4s"   },
-          { top:"22.4%",left:"88.3%",w:2, h:2,  color:"#40A0C0", anim:"px5 11.2s steps(1) infinite",         delay:"-3.9s" },
-          { top:"50%",  left:"9%",   w:2, h:6,  color:"#40C4C0", anim:"px1 8.7s steps(1) infinite",          delay:"-2.5s" },
-          { top:"88%",  left:"31%",  w:4, h:2,  color:"#C060A0", anim:"px3 7.9s steps(1) infinite",          delay:"-1s"   },
-          { top:"15%",  left:"57%",  w:2, h:4,  color:"#40A0C0", anim:"px4 10.3s steps(1) infinite",         delay:"-5s"   },
+          { top:"12%",  left:"23%",  w:8,  h:20, color:"#40A0C0", anim:"px1 7.3s steps(1) infinite",  delay:"0s"    },
+          { top:"8%",   left:"23.8%",w:5,  h:5,  color:"#C060A0", anim:"px1 7.3s steps(1) infinite",  delay:"-.05s" },
+          { top:"34%",  left:"71%",  w:14, h:5,  color:"#40A0C0", anim:"px2 5.8s steps(1) infinite",  delay:"-1.2s" },
+          { top:"34.6%",left:"71%",  w:5,  h:5,  color:"#C060A0", anim:"px2 5.8s steps(1) infinite",  delay:"-1.1s" },
+          { top:"61%",  left:"44%",  w:10, h:7,  color:"#C060A0", anim:"px3 9.1s steps(1) infinite",  delay:"-3s"   },
+          { top:"61.5%",left:"44.8%",w:5,  h:5,  color:"#40C4C0", anim:"px3 9.1s steps(1) infinite",  delay:"-2.9s" },
+          { top:"78%",  left:"82%",  w:16, h:5,  color:"#40A0C0", anim:"px4 6.4s steps(1) infinite",  delay:"-2s"   },
+          { top:"22%",  left:"88%",  w:7,  h:14, color:"#C060A0", anim:"px5 11.2s steps(1) infinite", delay:"-4s"   },
+          { top:"22.8%",left:"88.6%",w:5,  h:5,  color:"#40A0C0", anim:"px5 11.2s steps(1) infinite", delay:"-3.9s" },
+          { top:"50%",  left:"9%",   w:5,  h:16, color:"#40C4C0", anim:"px1 8.7s steps(1) infinite",  delay:"-2.5s" },
+          { top:"88%",  left:"31%",  w:12, h:5,  color:"#C060A0", anim:"px3 7.9s steps(1) infinite",  delay:"-1s"   },
+          { top:"15%",  left:"57%",  w:5,  h:12, color:"#40A0C0", anim:"px4 10.3s steps(1) infinite", delay:"-5s"   },
         ].map((p, i) => (
           <div key={i} style={{
             position:"absolute", top:p.top, left:p.left,
@@ -328,7 +337,7 @@ function AppInner() {
             </div>
           </>
         )}
-        <div key={page} className="fade" style={{ padding:"32px 36px", maxWidth:1300, margin:"0 auto" }}>
+        <div key={page} className="fade" style={{ padding: window.innerWidth < 768 ? "20px 16px" : "32px 36px", maxWidth:1300, margin:"0 auto" }}>
           <Page
             setPage={setPage}
             user={user}

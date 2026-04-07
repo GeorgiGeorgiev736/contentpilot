@@ -42,9 +42,17 @@ export default function Dashboard({ setPage }) {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
+      <style>{`
+        .dash-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+        .dash-main    { display:grid; grid-template-columns:1fr 320px; gap:20px; }
+        @media (max-width:767px) {
+          .dash-metrics { grid-template-columns:1fr 1fr; }
+          .dash-main    { grid-template-columns:1fr; }
+        }
+      `}</style>
 
       {/* Header */}
-      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
         <div>
           <h1 style={{ fontSize:30, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>
             Welcome back, {user?.name?.split(" ")[0]} 👋
@@ -69,6 +77,22 @@ export default function Dashboard({ setPage }) {
       </div>
 
 
+      {/* Upload CTA */}
+      <div
+        onClick={() => setPage("postcontent")}
+        className="card"
+        style={{ padding:"20px 24px", cursor:"pointer", background:"linear-gradient(135deg,#0A1E24 0%,#081418 100%)", border:"1px solid rgba(64,160,192,0.2)", borderLeft:"3px solid #40A0C0", display:"flex", alignItems:"center", gap:18, transition:"none" }}
+        onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgba(64,160,192,0.4)"; e.currentTarget.style.background="linear-gradient(135deg,#0C2228 0%,#091A1E 100%)"; }}
+        onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgba(64,160,192,0.2)"; e.currentTarget.style.background="linear-gradient(135deg,#0A1E24 0%,#081418 100%)"; }}
+      >
+        <div style={{ width:52, height:52, borderRadius:14, background:"rgba(64,160,192,0.12)", border:"1px solid rgba(64,160,192,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, flexShrink:0 }}>🎬</div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:18, fontWeight:800, color:"#fff", letterSpacing:"-.01em" }}>Upload &amp; Post a Video</div>
+          <div style={{ fontSize:14, color:"#40A0C0", marginTop:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Drop a video · AI writes your metadata · Schedule to all platforms</div>
+        </div>
+        <div style={{ padding:"10px 22px", background:"#fff", borderRadius:9, color:"#000", fontWeight:900, fontSize:14, flexShrink:0 }}>Upload →</div>
+      </div>
+
       {/* Smart alerts */}
       <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
         {alerts.map((a, i) => {
@@ -89,7 +113,7 @@ export default function Dashboard({ setPage }) {
       </div>
 
       {/* Metrics */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
+      <div className="dash-metrics">
         <Metric label="Platforms"      value={connected.length || 0} delta={connected.length ? `${connected.length} connected` : "none connected yet"} up={connected.length>0} accent="#69C9D0" />
         <Metric label="Content Projects" value={campaigns.length || 0} delta={campaigns.length ? `${campaigns.length} active` : "run pipeline to create one"} up={campaigns.length>0} accent="#7C5CFC" />
         <Metric label="AI Credits"     value={user?.credits || 0} delta={user?.plan === "free" ? "free plan" : user?.plan + " plan"} up accent="#F59E0B" />
@@ -97,7 +121,7 @@ export default function Dashboard({ setPage }) {
       </div>
 
       {/* Main content */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:20 }}>
+      <div className="dash-main">
 
         {/* Recent campaigns */}
         <div className="card" style={{ padding:24 }}>
