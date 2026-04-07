@@ -56,11 +56,48 @@ export default function PostContent() {
   const videoPreview = upload?.preview || null;
 
   const { step, clipStart, clipEnd, makeShort, frames, thumbIdx,
-          title, description, hashtags, selPlatforms, scheduleTime, postNow } = draft;
+          title, description, hashtags, scheduleTime, postNow } = draft;
 
   const set = (key) => (val) => patchDraft({ [key]: val });
 
+  // Platform selection helpers
+  const PLAT_COLORS = {
+    youtube:        "#40A0C0",
+    youtube_shorts: "#50B8A0",
+    tiktok:         "#40C4C0",
+    instagram:      "#C060A0",
+  };
+  const PLAT_LABELS = {
+    youtube:        "YouTube",
+    youtube_shorts: "YouTube Shorts",
+    tiktok:         "TikTok",
+    instagram:      "Instagram Reels",
+  };
+
   const [connList,        setConnList]        = useState([]);
+  const [videoMeta,       setVideoMeta]       = useState(null); // { duration, width, height }
+  const [selConnIds,      setSelConnIds]      = useState([]);   // selected by connection ID (fixes multi-same-platform bug)
+
+  // Derived from video metadata
+  const isShortForm = videoMeta
+    ? (videoMeta.duration <= 90 || videoMeta.height > videoMeta.width)
+    : null; // null = not yet detected
+
+  const longFormConns  = connList.filter(c => c.platform === "youtube");
+  const shortFormConns = connList.filter(c => ["youtube_shorts","tiktok","instagram"].includes(c.platform));
+  // Platforms derived from selected connection IDs (for submit)
+  const derivedPlatforms = connList.filter(c => selConnIds.includes(c.id)).map(c => c.platform);
+
+  const toggleConn = (id) => setSelConnIds(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+
+  const onLoadedMetadata = (e) => {
+    const v = e.target;
+    setVideoMeta({ duration: v.duration, width: v.videoWidth, height: v.videoHeight });
+    // Reset platform selection when a new video is loaded
+    setSelConnIds([]);
+  };
   const [aiLoading,       setAiLoading]       = useState(false);
   const [aiStream,        setAiStream]        = useState("");
   const [submitting,      setSubmitting]      = useState(false);
@@ -92,8 +129,8 @@ export default function PostContent() {
   }, [selectFile]);
 
   const onFileChange = e => { if (e.target.files[0]) handleDrop(e.target.files[0]); };
-  const onDragOver  = e => { e.preventDefault(); if (dropRef.current) dropRef.current.style.borderColor = "#7C5CFC"; };
-  const onDragLeave = ()  => { if (dropRef.current) dropRef.current.style.borderColor = "#2A2A50"; };
+  const onDragOver  = e => { e.preventDefault(); if (dropRef.current) dropRef.current.style.borderColor = "#40A0C0"; };
+  const onDragLeave = ()  => { if (dropRef.current) dropRef.current.style.borderColor = "#333"; };
   const onDropEvent = e => { e.preventDefault(); onDragLeave(); handleDrop(e.dataTransfer.files[0]); };
 
   const goToAI = async () => {
@@ -111,7 +148,7 @@ export default function PostContent() {
     try {
       await streamAI({
         feature: "video_metadata",
-        context: { filename: videoFile?.name || "video", platform: selPlatforms[0] || "youtube" },
+        context: { filename: videoFile?.name || "video", platform: derivedPlatforms[0] || "youtube" },
         onToken: t => {
           out += t;
           setAiStream(out);
@@ -166,12 +203,8 @@ export default function PostContent() {
     setAutoClipLoading(false);
   };
 
-  const togglePlatform = (id) => set("selPlatforms")(
-    selPlatforms.includes(id) ? selPlatforms.filter(x => x !== id) : [...selPlatforms, id]
-  );
-
   const submit = async () => {
-    if (!selPlatforms.length) { setError("Select at least one platform"); return; }
+    if (!selConnIds.length) { setError("Select at least one platform"); return; }
     if (!postNow && !scheduleTime) { setError("Set a schedule time"); return; }
     if (!videoFile) { setError("No video selected"); return; }
     setError(""); setSubmitting(true);
@@ -180,7 +213,7 @@ export default function PostContent() {
 
     try {
       let youtubeVideoId = null;
-      const youtubeSelected = selPlatforms.some(p => p === "youtube" || p === "youtube_shorts");
+      const youtubeSelected = derivedPlatforms.some(p => p === "youtube" || p === "youtube_shorts");
 
       if (youtubeSelected) {
         // Step 1: Initiate YouTube resumable upload session
@@ -216,7 +249,7 @@ export default function PostContent() {
         title:         title || videoFile.name,
         description:   description || "",
         hashtags:      hashTagArr,
-        platforms:     selPlatforms,
+        platforms:     derivedPlatforms,
         scheduled_for: postNow ? new Date().toISOString() : new Date(scheduleTime).toISOString(),
         video_url:     youtubeVideoId ? `https://youtube.com/watch?v=${youtubeVideoId}` : null,
         youtube_video_id: youtubeVideoId,
@@ -242,11 +275,11 @@ export default function PostContent() {
   if (done) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:400, gap:20, textAlign:"center" }}>
       <div style={{ fontSize:56 }}>🎉</div>
-      <h2 style={{ fontSize:26, fontWeight:800, color:"#F5F5FF" }}>{postNow ? "Posted to YouTube!" : "Scheduled successfully!"}</h2>
-      <p style={{ color:"#9090B8", fontSize:15 }}>
+      <h2 style={{ fontSize:26, fontWeight:800, color:"#fff" }}>{postNow ? "Posted to YouTube!" : "Scheduled successfully!"}</h2>
+      <p style={{ color:"#888", fontSize:15 }}>
         {postNow
-          ? `Your video is now on YouTube (${selPlatforms.join(", ")})`
-          : `Scheduled for ${new Date(scheduleTime).toLocaleString()} on ${selPlatforms.join(", ")}`}
+          ? `Your video is now on YouTube (${derivedPlatforms.join(", ")})`
+          : `Scheduled for ${new Date(scheduleTime).toLocaleString()} on ${derivedPlatforms.join(", ")}`}
       </p>
       <button onClick={() => setDone(false)} className="btn-primary" style={{ padding:"12px 32px", fontSize:14 }}>
         Post Another →
@@ -258,12 +291,12 @@ export default function PostContent() {
   if (submitting) return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:400, gap:20, textAlign:"center" }}>
       <div style={{ fontSize:48 }}>{uploadPhase === "saving" ? "💾" : "📤"}</div>
-      <h2 style={{ fontSize:22, fontWeight:800, color:"#F5F5FF" }}>
+      <h2 style={{ fontSize:22, fontWeight:800, color:"#fff" }}>
         {uploadPhase === "initiating" ? "Connecting to YouTube…" :
          uploadPhase === "uploading"  ? `Uploading to YouTube — ${uploadProgress}%` :
          uploadPhase === "saving"     ? "Saving schedule…" : "Working…"}
       </h2>
-      <p style={{ color:"#9090B8", fontSize:14 }}>
+      <p style={{ color:"#888", fontSize:14 }}>
         {uploadPhase === "uploading"
           ? "Your video is going directly to YouTube — you can leave this page"
           : uploadPhase === "initiating"
@@ -273,9 +306,9 @@ export default function PostContent() {
       {uploadPhase === "uploading" && (
         <div style={{ width:400, maxWidth:"90vw" }}>
           <div style={{ height:8, background:"#1A1A3A", borderRadius:4, overflow:"hidden", marginBottom:8 }}>
-            <div style={{ width:`${uploadProgress}%`, height:"100%", background:"linear-gradient(90deg,#7C5CFC,#B45AFD)", borderRadius:4, transition:"width .3s" }} />
+            <div style={{ width:`${uploadProgress}%`, height:"100%", background:"linear-gradient(90deg,#40A0C0,#60C8E0)", borderRadius:4, transition:"width .3s" }} />
           </div>
-          <div style={{ fontSize:13, color:"#7878A8" }}>{videoFile?.name} · {(videoFile?.size / 1024 / 1024).toFixed(0)} MB</div>
+          <div style={{ fontSize:13, color:"#777" }}>{videoFile?.name} · {(videoFile?.size / 1024 / 1024).toFixed(0)} MB</div>
         </div>
       )}
     </div>
@@ -285,8 +318,8 @@ export default function PostContent() {
     <div style={{ display:"flex", flexDirection:"column", gap:24, maxWidth:860, margin:"0 auto" }}>
 
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Post Content</h1>
-        <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Upload goes directly to YouTube — no double transfer, no file size limits</p>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Post Content</h1>
+        <p style={{ color:"#888", fontSize:15, marginTop:5 }}>Upload goes directly to YouTube — no double transfer, no file size limits</p>
       </div>
 
       {/* Step indicator */}
@@ -295,13 +328,13 @@ export default function PostContent() {
           <div key={s} style={{ display:"flex", alignItems:"center", flex: i < STEPS.length - 1 ? 1 : 0 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, cursor: i < step ? "pointer" : "default" }} onClick={() => i < step && set("step")(i)}>
               <div style={{ width:28, height:28, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700,
-                background: i < step ? "#22C55E" : i === step ? "linear-gradient(135deg,#7C5CFC,#B45AFD)" : "#1A1A2E",
-                color: i <= step ? "#fff" : "#5A5A80", flexShrink:0 }}>
+                background: i < step ? "#22C55E" : i === step ? "linear-gradient(135deg,#40A0C0,#60C8E0)" : "#1a1a1a",
+                color: i <= step ? "#fff" : "#555", flexShrink:0 }}>
                 {i < step ? "✓" : i + 1}
               </div>
-              <span style={{ fontSize:13, fontWeight: i === step ? 700 : 400, color: i === step ? "#E0E0F0" : i < step ? "#22C55E" : "#5A5A80", whiteSpace:"nowrap" }}>{s}</span>
+              <span style={{ fontSize:13, fontWeight: i === step ? 700 : 400, color: i === step ? "#e0e0e0" : i < step ? "#22C55E" : "#555", whiteSpace:"nowrap" }}>{s}</span>
             </div>
-            {i < STEPS.length - 1 && <div style={{ flex:1, height:1, background: i < step ? "#22C55E44" : "#1A1A2E", margin:"0 10px" }}/>}
+            {i < STEPS.length - 1 && <div style={{ flex:1, height:1, background: i < step ? "#22C55E44" : "#1a1a1a", margin:"0 10px" }}/>}
           </div>
         ))}
       </div>
@@ -319,21 +352,21 @@ export default function PostContent() {
               ref={dropRef}
               onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDropEvent}
               onClick={() => document.getElementById("vidInput").click()}
-              style={{ border:"2px dashed #2A2A50", borderRadius:16, padding:"60px 40px", textAlign:"center", cursor:"pointer", transition:"border-color .15s" }}
+              style={{ border:"2px dashed #2a2a2a", borderRadius:16, padding:"60px 40px", textAlign:"center", cursor:"pointer", transition:"border-color .15s" }}
             >
               <div style={{ fontSize:48, marginBottom:16 }}>🎬</div>
-              <div style={{ fontSize:18, fontWeight:700, color:"#E0E0F0", marginBottom:8 }}>Drop your video here</div>
-              <div style={{ fontSize:14, color:"#7878A8", marginBottom:4 }}>or click to browse · MP4, MOV, AVI</div>
-              <div style={{ fontSize:12, color:"#5858A0", marginBottom:20 }}>No file size limit — uploads go directly to YouTube</div>
+              <div style={{ fontSize:18, fontWeight:700, color:"#e0e0e0", marginBottom:8 }}>Drop your video here</div>
+              <div style={{ fontSize:14, color:"#777", marginBottom:4 }}>or click to browse · MP4, MOV, AVI</div>
+              <div style={{ fontSize:12, color:"#555", marginBottom:20 }}>No file size limit — uploads go directly to YouTube</div>
               <button className="btn-primary" style={{ padding:"11px 28px", fontSize:14 }} onClick={e => { e.stopPropagation(); document.getElementById("vidInput").click(); }}>
                 Choose Video
               </button>
             </div>
           ) : (
             <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-              <video src={videoPreview} controls ref={videoRef} style={{ width:"100%", borderRadius:12, maxHeight:400, background:"#000" }} />
+              <video src={videoPreview} controls ref={videoRef} onLoadedMetadata={onLoadedMetadata} style={{ width:"100%", borderRadius:12, maxHeight:400, background:"#000" }} />
               <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                <div style={{ flex:1, fontSize:14, color:"#B0B0D0", fontWeight:600 }}>
+                <div style={{ flex:1, fontSize:14, color:"#bbb", fontWeight:600 }}>
                   ✓ {videoFile.name} · {(videoFile.size / 1024 / 1024).toFixed(0)} MB
                 </div>
                 <button onClick={() => document.getElementById("vidInput").click()} className="btn-ghost" style={{ padding:"8px 16px", fontSize:13 }}>Change</button>
@@ -351,22 +384,22 @@ export default function PostContent() {
       {step === 1 && (
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <div className="card" style={{ padding:24 }}>
-            <video src={videoPreview} controls ref={videoRef} style={{ width:"100%", borderRadius:12, maxHeight:380, background:"#000" }} />
+            <video src={videoPreview} controls ref={videoRef} onLoadedMetadata={onLoadedMetadata} style={{ width:"100%", borderRadius:12, maxHeight:380, background:"#000" }} />
           </div>
           <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:16 }}>
-            <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>Clip Range <span style={{ fontSize:12, color:"#7878A8", fontWeight:400 }}>(optional)</span></div>
+            <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>Clip Range <span style={{ fontSize:12, color:"#777", fontWeight:400 }}>(optional)</span></div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
               <div>
-                <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>Start (seconds)</label>
+                <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:6 }}>Start (seconds)</label>
                 <input value={clipStart} onChange={e => set("clipStart")(e.target.value)} placeholder="e.g. 10" className="inp" type="number" min="0" />
               </div>
               <div>
-                <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>End (seconds)</label>
+                <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:6 }}>End (seconds)</label>
                 <input value={clipEnd} onChange={e => set("clipEnd")(e.target.value)} placeholder="e.g. 90" className="inp" type="number" min="0" />
               </div>
             </div>
-            <label style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", fontSize:14, color:"#C0C0D8" }}>
-              <input type="checkbox" checked={makeShort} onChange={e => set("makeShort")(e.target.checked)} style={{ width:16, height:16, accentColor:"#7C5CFC" }}/>
+            <label style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", fontSize:14, color:"#d0d0d0" }}>
+              <input type="checkbox" checked={makeShort} onChange={e => set("makeShort")(e.target.checked)} style={{ width:16, height:16, accentColor:"#40A0C0" }}/>
               Also create a vertical Short/Reel version (9:16)
             </label>
           </div>
@@ -382,13 +415,13 @@ export default function PostContent() {
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <div className="card" style={{ padding:24 }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>Thumbnail</div>
+              <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>Thumbnail</div>
               {frames.length > 0 && (
                 <a
                   href={frames[thumbIdx]}
                   download={`thumbnail-${thumbIdx + 1}.jpg`}
-                  style={{ fontSize:13, fontWeight:600, color:"#9B79FC", textDecoration:"none", padding:"6px 14px", border:"1px solid #9B79FC44", borderRadius:8, display:"flex", alignItems:"center", gap:6, transition:"all .15s" }}
-                  onMouseEnter={e => { e.currentTarget.style.background="#9B79FC18"; }}
+                  style={{ fontSize:13, fontWeight:600, color:"#40A0C0", textDecoration:"none", padding:"6px 14px", border:"1px solid #40A0C044", borderRadius:8, display:"flex", alignItems:"center", gap:6, transition:"all .15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background="#40A0C018"; }}
                   onMouseLeave={e => { e.currentTarget.style.background="transparent"; }}
                 >
                   ↓ Download frame
@@ -396,52 +429,52 @@ export default function PostContent() {
               )}
             </div>
             {frames.length === 0 ? (
-              <div style={{ color:"#7878A8", fontSize:13 }}>Extracting frames…</div>
+              <div style={{ color:"#777", fontSize:13 }}>Extracting frames…</div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:8 }}>
                 {frames.map((f, i) => (
-                  <div key={i} onClick={() => set("thumbIdx")(i)} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:`2px solid ${thumbIdx===i?"#7C5CFC":"transparent"}`, transition:"border-color .15s", position:"relative" }}>
+                  <div key={i} onClick={() => set("thumbIdx")(i)} style={{ cursor:"pointer", borderRadius:8, overflow:"hidden", border:`2px solid ${thumbIdx===i?"#40A0C0":"transparent"}`, transition:"border-color .15s", position:"relative" }}>
                     <img src={f} alt={`Frame ${i+1}`} style={{ width:"100%", display:"block" }}/>
-                    {thumbIdx===i && <div style={{ position:"absolute", inset:0, background:"#7C5CFC22", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>✓</div>}
+                    {thumbIdx===i && <div style={{ position:"absolute", inset:0, background:"#40A0C022", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>✓</div>}
                   </div>
                 ))}
               </div>
             )}
-            <div style={{ fontSize:12, color:"#7878A8", marginTop:10 }}>Click a frame to select · Download to use as your YouTube thumbnail</div>
+            <div style={{ fontSize:12, color:"#777", marginTop:10 }}>Click a frame to select · Download to use as your YouTube thumbnail</div>
           </div>
 
           <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:14 }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-              <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>Title, Description & Hashtags</div>
+              <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>Title, Description & Hashtags</div>
               <button data-tutorial="postcontent-ai-btn" onClick={generateAI} disabled={aiLoading} className="btn-primary" style={{ padding:"8px 18px", fontSize:13 }}>
                 {aiLoading ? "Generating…" : "✦ Generate with AI"}
               </button>
             </div>
             {aiLoading && (
               <div style={{ background:"#0A0A22", border:"1px solid #1E1E42", borderRadius:10, padding:"14px 16px" }}>
-                <div style={{ fontSize:12, color:"#7C5CFC", fontWeight:600, marginBottom:8, display:"flex", alignItems:"center", gap:7 }}>
+                <div style={{ fontSize:12, color:"#40A0C0", fontWeight:600, marginBottom:8, display:"flex", alignItems:"center", gap:7 }}>
                   <span style={{ display:"inline-block", animation:"spin 1s linear infinite" }}>◌</span>
                   AI is generating your metadata…
                 </div>
                 {aiStream ? (
-                  <pre style={{ fontSize:12, color:"#C0C0D8", fontFamily:"'DM Mono',monospace", whiteSpace:"pre-wrap", lineHeight:1.7, margin:0, maxHeight:180, overflowY:"auto" }}>
-                    {aiStream}<span style={{ animation:"shimmer .7s ease infinite", color:"#7C5CFC" }}>▌</span>
+                  <pre style={{ fontSize:12, color:"#d0d0d0", fontFamily:"'DM Mono',monospace", whiteSpace:"pre-wrap", lineHeight:1.7, margin:0, maxHeight:180, overflowY:"auto" }}>
+                    {aiStream}<span style={{ animation:"shimmer .7s ease infinite", color:"#40A0C0" }}>▌</span>
                   </pre>
                 ) : (
-                  <div style={{ fontSize:12, color:"#6868A8" }}>Connecting to AI…</div>
+                  <div style={{ fontSize:12, color:"#666" }}>Connecting to AI…</div>
                 )}
               </div>
             )}
             <div>
-              <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>Title</label>
+              <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:6 }}>Title</label>
               <input value={title} onChange={e => set("title")(e.target.value)} placeholder="Enter title or generate with AI" className="inp" />
             </div>
             <div>
-              <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>Description</label>
+              <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:6 }}>Description</label>
               <textarea value={description} onChange={e => set("description")(e.target.value)} placeholder="Video description…" className="inp" style={{ minHeight:100, resize:"vertical" }} />
             </div>
             <div>
-              <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>Hashtags</label>
+              <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:6 }}>Hashtags</label>
               <input value={hashtags} onChange={e => set("hashtags")(e.target.value)} placeholder="#content #creator #viral" className="inp" />
             </div>
           </div>
@@ -457,132 +490,156 @@ export default function PostContent() {
       {step === 3 && (
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
 
-          {/* ── Auto-clip for Shorts ── */}
-          <div data-tutorial="postcontent-autoclip" className="card" style={{ padding:24, border:"1px solid #7C5CFC33" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom: autoClipOpen ? 18 : 0 }}>
-              <div>
-                <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>✂ Auto-clip for Shorts</div>
-                {!autoClipOpen && <div style={{ fontSize:13, color:"#7878A8", marginTop:4 }}>AI finds best moments → trims to 9:16 → adds captions → batch-schedules</div>}
-              </div>
-              <button onClick={() => setAutoClipOpen(o => !o)} className="btn-primary" style={{ padding:"8px 18px", fontSize:13, flexShrink:0 }}>
-                {autoClipOpen ? "Collapse ↑" : "Enable →"}
-              </button>
-            </div>
-
-            {autoClipOpen && (
-              <>
-                <div style={{ fontSize:13, color:"#9090B8", marginBottom:16, lineHeight:1.65 }}>
-                  Autopilot uploads your video, detects 4–6 viral moments with AI, trims each to vertical 9:16, adds a title caption, and schedules them 6 hours apart across your chosen platforms.
+          {/* ── Auto-clip: only shown for long-form video ── */}
+          {isShortForm === false && (
+            <div data-tutorial="postcontent-autoclip" className="card" style={{ padding:24, border:"1px solid rgba(64,160,192,0.2)" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom: autoClipOpen ? 18 : 0 }}>
+                <div>
+                  <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>✂ Generate & Schedule Clips</div>
+                  {!autoClipOpen && <div style={{ fontSize:13, color:"#777", marginTop:4 }}>AI finds best moments → trims to 9:16 → schedules on Shorts, TikTok & Reels</div>}
                 </div>
+                <button onClick={() => setAutoClipOpen(o => !o)} className="btn-ghost" style={{ padding:"8px 18px", fontSize:13, flexShrink:0 }}>
+                  {autoClipOpen ? "Collapse ↑" : "Enable →"}
+                </button>
+              </div>
+              {autoClipOpen && (
+                <>
+                  <div style={{ fontSize:13, color:"#888", marginBottom:16, lineHeight:1.65 }}>
+                    Autopilot detects 4–6 viral moments, trims each to vertical 9:16, adds a title caption, and schedules them 6 hours apart across your chosen platforms.
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <div style={{ fontSize:12, color:"#666", marginBottom:8, textTransform:"uppercase", letterSpacing:".1em" }}>Short-form platforms</div>
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                      {shortFormConns.map(c => {
+                        const col = PLAT_COLORS[c.platform] || "#40A0C0";
+                        const sel = autoClipPlats.includes(c.platform);
+                        return (
+                          <div key={c.id} onClick={() => setAutoClipPlats(sel ? autoClipPlats.filter(x => x !== c.platform) : [...autoClipPlats, c.platform])}
+                            style={{ padding:"8px 16px", borderRadius:10, cursor:"pointer", border:`2px solid ${sel ? col : "#222"}`, background: sel ? `${col}18` : "#111", color: sel ? col : "#777", fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
+                            {sel ? "✓" : "○"} {PLAT_LABELS[c.platform]} · {c.handle}
+                          </div>
+                        );
+                      })}
+                      {shortFormConns.length === 0 && <div style={{ fontSize:13, color:"#777" }}>No short-form platforms connected. Go to <strong>Platforms</strong> to connect TikTok or Instagram.</div>}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:16 }}>
+                    <label style={{ fontSize:12, color:"#777", display:"block", marginBottom:6 }}>First clip posts at</label>
+                    <input type="datetime-local" value={autoClipStart} onChange={e => setAutoClipStart(e.target.value)} className="inp" style={{ maxWidth:300 }} />
+                    <div style={{ fontSize:12, color:"#555", marginTop:4 }}>Each subsequent clip is scheduled 6 hours later</div>
+                  </div>
+                  {autoClipErr && <div style={{ padding:"10px 14px", background:"#EF444410", border:"1px solid #EF444422", borderRadius:8, color:"#EF4444", fontSize:13, marginBottom:14 }}>{autoClipErr}</div>}
+                  {autoClipResults.length > 0 && (
+                    <div style={{ background:"#0e0e0e", borderRadius:10, padding:16, marginBottom:14 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#22C55E", marginBottom:10 }}>✓ {autoClipResults.length} clips scheduled!</div>
+                      {autoClipResults.map((c, i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderTop: i ? "1px solid #1a1a1a" : "none" }}>
+                          <div style={{ width:24, height:24, borderRadius:6, background:"rgba(64,160,192,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#40A0C0", flexShrink:0 }}>{i+1}</div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:13, color:"#e0e0e0", fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.title}</div>
+                            <div style={{ fontSize:11, color:"#777" }}>{c.duration}s · {c.platforms?.join(", ")} · {c.scheduled_for ? new Date(c.scheduled_for).toLocaleString() : ""}</div>
+                          </div>
+                          {c.clip_url && <a href={`${API}${c.clip_url}`} download style={{ fontSize:12, color:"#40A0C0", textDecoration:"none" }}>↓</a>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={handleAutoClip} disabled={autoClipLoading || !videoFile || !autoClipPlats.length} className="btn-primary" style={{ padding:"11px 24px", fontSize:14, width:"100%", opacity: (!videoFile || !autoClipPlats.length) && !autoClipLoading ? .5 : 1 }}>
+                    {autoClipLoading ? "⏳ Processing clips… this may take a few minutes" : "✂ Generate & Schedule Clips"}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
-                <div style={{ marginBottom:14 }}>
-                  <div style={{ fontSize:12, color:"#8888B8", marginBottom:8 }}>Short-form platforms</div>
-                  <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-                    {[
-                      { id:"youtube_shorts", label:"YouTube Shorts", color:"#FF4444" },
-                      { id:"tiktok",         label:"TikTok",         color:"#69C9D0" },
-                      { id:"instagram",      label:"Instagram Reels", color:"#E1306C" },
-                    ].filter(p => connList.some(c => c.platform === p.id)).map(p => {
-                      const sel = autoClipPlats.includes(p.id);
+          {/* ── Platform Selector ── */}
+          <div className="card" style={{ padding:24 }}>
+            {isShortForm === null && (
+              <div style={{ color:"#777", fontSize:14, textAlign:"center", padding:"12px 0" }}>
+                Upload a video — platform options will appear automatically based on the video format.
+              </div>
+            )}
+            {isShortForm === true && (
+              <>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                  <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>Short-form Platforms</div>
+                  <span style={{ fontSize:11, background:"rgba(64,160,192,0.15)", color:"#40A0C0", padding:"2px 10px", borderRadius:20, fontWeight:700 }}>● READY</span>
+                </div>
+                <div style={{ fontSize:13, color:"#777", marginBottom:16 }}>
+                  This video is already in short-form format (≤90s or vertical). Select where to post it directly.
+                </div>
+                {shortFormConns.length === 0 ? (
+                  <div style={{ color:"#777", fontSize:14 }}>No short-form platforms connected. Go to <strong>Platforms</strong> to connect TikTok or Instagram.</div>
+                ) : (
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
+                    {shortFormConns.map(c => {
+                      const col = PLAT_COLORS[c.platform] || "#40A0C0";
+                      const sel = selConnIds.includes(c.id);
                       return (
-                        <div key={p.id} onClick={() => setAutoClipPlats(sel ? autoClipPlats.filter(x => x !== p.id) : [...autoClipPlats, p.id])}
-                          style={{ padding:"8px 16px", borderRadius:10, cursor:"pointer", border:`2px solid ${sel ? p.color : "#2A2A50"}`, background: sel ? `${p.color}18` : "#0C0C1A", color: sel ? p.color : "#9090B8", fontSize:13, fontWeight:600, transition:"all .15s", display:"flex", alignItems:"center", gap:6 }}>
-                          {sel ? "✓" : "○"} {p.label}
+                        <div key={c.id} onClick={() => toggleConn(c.id)} style={{ padding:"10px 18px", borderRadius:12, cursor:"pointer", border:`2px solid ${sel ? col : "#222"}`, background: sel ? `${col}18` : "#111", color: sel ? col : "#777", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
+                          <span>{sel ? "✓" : "○"}</span>
+                          <span>{PLAT_LABELS[c.platform]}</span>
+                          <span style={{ fontSize:12, opacity:.6 }}>{c.handle}</span>
                         </div>
                       );
                     })}
-                    {connList.filter(c => ["youtube_shorts","tiktok","instagram"].includes(c.platform)).length === 0 && (
-                      <div style={{ fontSize:13, color:"#7878A8" }}>No short-form platforms connected. Go to <strong>Platforms</strong> to connect TikTok or Instagram.</div>
-                    )}
                   </div>
-                </div>
-
-                <div style={{ marginBottom:16 }}>
-                  <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>First clip posts at</label>
-                  <input type="datetime-local" value={autoClipStart} onChange={e => setAutoClipStart(e.target.value)} className="inp" style={{ maxWidth:300 }} />
-                  <div style={{ fontSize:12, color:"#6868A8", marginTop:4 }}>Each subsequent clip is scheduled 6 hours later</div>
-                </div>
-
-                {autoClipErr && (
-                  <div style={{ padding:"10px 14px", background:"#EF444410", border:"1px solid #EF444422", borderRadius:8, color:"#EF4444", fontSize:13, marginBottom:14 }}>{autoClipErr}</div>
                 )}
-
-                {autoClipResults.length > 0 && (
-                  <div style={{ background:"#0A0A1A", borderRadius:10, padding:16, marginBottom:14 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#22C55E", marginBottom:10 }}>✓ {autoClipResults.length} clips scheduled!</div>
-                    {autoClipResults.map((c, i) => (
-                      <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderTop: i ? "1px solid #1A1A2E" : "none" }}>
-                        <div style={{ width:24, height:24, borderRadius:6, background:"#7C5CFC22", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#B09FFF", flexShrink:0 }}>{i+1}</div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13, color:"#D0D0F0", fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.title}</div>
-                          <div style={{ fontSize:11, color:"#7878A8" }}>{c.duration}s · {c.platforms?.join(", ")} · {c.scheduled_for ? new Date(c.scheduled_for).toLocaleString() : ""}</div>
+              </>
+            )}
+            {isShortForm === false && (
+              <>
+                <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0", marginBottom:8 }}>YouTube Upload</div>
+                <div style={{ fontSize:13, color:"#777", marginBottom:16 }}>
+                  Long-form video uploads directly to YouTube. Use <strong style={{ color:"#40A0C0" }}>Generate & Schedule Clips</strong> above to also post on TikTok, Reels, and Shorts.
+                </div>
+                {longFormConns.length === 0 ? (
+                  <div style={{ color:"#777", fontSize:14 }}>No YouTube account connected. Go to <strong>Platforms</strong> to connect one.</div>
+                ) : (
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
+                    {longFormConns.map(c => {
+                      const col = PLAT_COLORS.youtube;
+                      const sel = selConnIds.includes(c.id);
+                      return (
+                        <div key={c.id} onClick={() => toggleConn(c.id)} style={{ padding:"10px 18px", borderRadius:12, cursor:"pointer", border:`2px solid ${sel ? col : "#222"}`, background: sel ? `${col}18` : "#111", color: sel ? col : "#777", fontSize:14, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
+                          <span>{sel ? "✓" : "○"}</span>
+                          <span>YouTube</span>
+                          <span style={{ fontSize:12, opacity:.6 }}>{c.handle}</span>
                         </div>
-                        {c.clip_url && <a href={`${API}${c.clip_url}`} download style={{ fontSize:12, color:"#9B79FC", textDecoration:"none" }}>↓</a>}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
-
-                <button onClick={handleAutoClip} disabled={autoClipLoading || !videoFile || !autoClipPlats.length} className="btn-primary" style={{ padding:"11px 24px", fontSize:14, width:"100%", opacity: (!videoFile || !autoClipPlats.length) && !autoClipLoading ? .5 : 1 }}>
-                  {autoClipLoading ? "⏳ Processing clips… this may take a few minutes" : "✂ Generate & Schedule Clips"}
-                </button>
               </>
             )}
           </div>
 
-          <div className="card" style={{ padding:24 }}>
-            <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0", marginBottom:16 }}>Select Platforms</div>
-            {connList.length === 0 ? (
-              <div style={{ color:"#7878A8", fontSize:14 }}>No platforms connected. Go to <strong>Platforms</strong> to connect one first.</div>
-            ) : (
-              <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
-                {connList.map(c => {
-                  const sel = selPlatforms.includes(c.platform);
-                  const colors = { youtube:"#FF0000", youtube_shorts:"#FF4444", tiktok:"#69C9D0", instagram:"#E1306C" };
-                  const col = colors[c.platform] || "#7C5CFC";
-                  return (
-                    <div key={c.id || c.platform} onClick={() => togglePlatform(c.platform)} style={{ padding:"10px 18px", borderRadius:12, cursor:"pointer", border:`2px solid ${sel ? col : "#2A2A50"}`, background: sel ? `${col}18` : "#0C0C1A", color: sel ? col : "#9090B8", fontSize:14, fontWeight:600, transition:"all .15s", display:"flex", alignItems:"center", gap:8 }}>
-                      <span>{sel ? "✓" : "○"}</span>
-                      <span>{c.handle}</span>
-                      <span style={{ fontSize:12, opacity:.7, textTransform:"capitalize" }}>({c.platform.replace("_"," ")})</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {selPlatforms.some(p => p !== "youtube" && p !== "youtube_shorts") && (
-              <div style={{ marginTop:12, padding:"10px 14px", background:"#F59E0B08", border:"1px solid #F59E0B22", borderRadius:8, fontSize:12, color:"#D4943A" }}>
-                ⚠ Direct upload is currently supported for YouTube only. Other platforms will be saved as scheduled for manual publishing.
-              </div>
-            )}
-          </div>
-
           <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:14 }}>
-            <div style={{ fontSize:15, fontWeight:700, color:"#E0E0F0" }}>When to Post</div>
-            <label style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", fontSize:14, color:"#C0C0D8" }}>
-              <input type="checkbox" checked={postNow} onChange={e => set("postNow")(e.target.checked)} style={{ width:16, height:16, accentColor:"#7C5CFC" }}/>
+            <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0" }}>When to Post</div>
+            <label style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", fontSize:14, color:"#d0d0d0" }}>
+              <input type="checkbox" checked={postNow} onChange={e => set("postNow")(e.target.checked)} style={{ width:16, height:16, accentColor:"#40A0C0" }}/>
               Post immediately
             </label>
             {!postNow && (
               <div>
-                <label style={{ fontSize:12, color:"#8888B8", display:"block", marginBottom:6 }}>Schedule date & time</label>
+                <label style={{ fontSize:12, color:"#888", display:"block", marginBottom:6 }}>Schedule date & time</label>
                 <input type="datetime-local" value={scheduleTime} onChange={e => set("scheduleTime")(e.target.value)} className="inp" />
               </div>
             )}
           </div>
 
           <div className="card" style={{ padding:20, background:"#080810", display:"flex", flexDirection:"column", gap:6 }}>
-            <div style={{ fontSize:12, color:"#7878A8", textTransform:"uppercase", letterSpacing:".08em", marginBottom:4 }}>Summary</div>
-            <div style={{ fontSize:14, color:"#C0C0D8" }}>📹 <strong>{videoFile?.name}</strong> · {videoFile ? `${(videoFile.size/1024/1024).toFixed(0)} MB` : ""}</div>
-            {title && <div style={{ fontSize:14, color:"#C0C0D8" }}>📝 {title}</div>}
-            <div style={{ fontSize:14, color:"#C0C0D8" }}>📤 {selPlatforms.length ? selPlatforms.join(", ") : "No platforms selected"}</div>
-            <div style={{ fontSize:14, color:"#C0C0D8" }}>🕐 {postNow ? "Post immediately" : scheduleTime ? new Date(scheduleTime).toLocaleString() : "Not set"}</div>
-            {makeShort && <div style={{ fontSize:14, color:"#C0C0D8" }}>✂ Short/Reel version will be created</div>}
+            <div style={{ fontSize:12, color:"#777", textTransform:"uppercase", letterSpacing:".08em", marginBottom:4 }}>Summary</div>
+            <div style={{ fontSize:14, color:"#d0d0d0" }}>📹 <strong>{videoFile?.name}</strong> · {videoFile ? `${(videoFile.size/1024/1024).toFixed(0)} MB` : ""}</div>
+            {title && <div style={{ fontSize:14, color:"#d0d0d0" }}>📝 {title}</div>}
+            <div style={{ fontSize:14, color:"#d0d0d0" }}>📤 {derivedPlatforms.length ? derivedPlatforms.join(", ") : "No platforms selected"}</div>
+            <div style={{ fontSize:14, color:"#d0d0d0" }}>🕐 {postNow ? "Post immediately" : scheduleTime ? new Date(scheduleTime).toLocaleString() : "Not set"}</div>
+            {makeShort && <div style={{ fontSize:14, color:"#d0d0d0" }}>✂ Short/Reel version will be created</div>}
           </div>
 
           <div style={{ display:"flex", gap:12, justifyContent:"flex-end" }}>
             <button onClick={() => set("step")(2)} className="btn-ghost" style={{ padding:"11px 22px", fontSize:14 }}>← Back</button>
-            <button onClick={submit} disabled={submitting || !selPlatforms.length} className="btn-primary" style={{ padding:"11px 32px", fontSize:14 }}>
+            <button onClick={submit} disabled={submitting || !selConnIds.length} className="btn-primary" style={{ padding:"11px 32px", fontSize:14 }}>
               {postNow ? "🚀 Upload & Post Now" : "📅 Upload & Schedule"}
             </button>
           </div>
