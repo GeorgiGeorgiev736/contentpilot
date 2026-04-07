@@ -91,10 +91,23 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
           border-radius:0 2px 2px 0;
           box-shadow: -2px 0 0 #C060A0, 2px 0 0 #40A0C0;
         }
+        .scollapse {
+          background: transparent;
+          border: 1px solid #222;
+          border-radius: 6px;
+          color: #555;
+          cursor: pointer;
+          padding: 5px 7px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: none;
+          flex-shrink: 0;
+        }
         .scollapse:hover {
-          border-color: rgba(64,160,192,0.4) !important;
-          color:#40A0C0 !important;
-          animation: glitchBorder .1s steps(2) infinite;
+          border-color: rgba(64,160,192,0.5) !important;
+          color: #40A0C0 !important;
+          background: rgba(64,160,192,0.06) !important;
         }
         .sbottom-btn:hover {
           background: #111 !important;
@@ -217,19 +230,32 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
         }
       `}</style>
 
-      {/* Logo */}
-      <div onClick={() => setPage("dashboard")} style={{
-        display:"flex", alignItems:"center", gap:10,
-        marginBottom:24,
-        justifyContent: collapsed ? "center" : "flex-start",
-        cursor:"pointer",
-      }}>
-        <div style={{ flexShrink:0 }}><GlitchLogo size={38}/></div>
-        {!collapsed && (
-          <div>
-            <div style={{ fontWeight:900, fontSize:16, color:"#fff", whiteSpace:"nowrap", letterSpacing:"-.02em", lineHeight:1.1 }}>AUTOPILOT</div>
-            <div style={{ fontSize:11, color:"#555", letterSpacing:".2em", textTransform:"uppercase", marginTop:2 }}>Creator OS</div>
+      {/* Logo + Collapse toggle */}
+      <div style={{ marginBottom:24 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, justifyContent: collapsed ? "center" : "space-between" }}>
+          <div onClick={() => setPage("dashboard")} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", flex: collapsed ? "none" : 1, minWidth:0 }}>
+            <div style={{ flexShrink:0 }}><GlitchLogo size={38}/></div>
+            {!collapsed && (
+              <div style={{ minWidth:0 }}>
+                <div style={{ fontWeight:900, fontSize:16, color:"#fff", whiteSpace:"nowrap", letterSpacing:"-.02em", lineHeight:1.1 }}>AUTOPILOT</div>
+                <div style={{ fontSize:11, color:"#555", letterSpacing:".2em", textTransform:"uppercase", marginTop:2 }}>Creator OS</div>
+              </div>
+            )}
           </div>
+          {!collapsed && (
+            <button onClick={() => setCollapsed(true)} className="scollapse" title="Collapse sidebar">
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+          )}
+        </div>
+        {collapsed && (
+          <button onClick={() => setCollapsed(false)} className="scollapse" title="Expand sidebar" style={{ width:"100%", marginTop:10 }}>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
         )}
       </div>
 
@@ -364,14 +390,6 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
         </div>
       )}
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="scollapse"
-        style={{ background:"#0a0a0a", border:"1px solid #1a1a1a", borderRadius:8, color:"#333", cursor:"pointer", padding:"8px", fontSize:14, marginTop:10, display:"flex", alignItems:"center", justifyContent:"center", transition:"none" }}
-      >
-        {collapsed ? "→" : "←"}
-      </button>
     </div>
   );
 }
