@@ -69,7 +69,7 @@ export default function Platforms() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Platform Connections</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Platform_Connections</h1>
         <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Connect your accounts so AI can analyze your real content performance</p>
       </div>
 

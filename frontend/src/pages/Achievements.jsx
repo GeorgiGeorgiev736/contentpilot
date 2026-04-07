@@ -62,8 +62,8 @@ export default function Achievements() {
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", flexWrap:"wrap", gap:16 }}>
         <div>
-          <div style={{ fontSize:11, color:"#444", letterSpacing:".2em", textTransform:"uppercase", marginBottom:6 }}>Progress & Rewards</div>
-          <h1 style={{ fontSize:36, fontWeight:900, color:"#fff", letterSpacing:"-.04em", lineHeight:1 }}>Achievements</h1>
+          <div style={{ fontSize:11, color:"#40A0C0", letterSpacing:".2em", textTransform:"uppercase", marginBottom:6, fontFamily:"'DM Mono',monospace" }}>// progress_rewards</div>
+          <h1 style={{ fontSize:36, fontWeight:900, color:"#fff", letterSpacing:"-.04em", lineHeight:1, fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Achievements</h1>
         </div>
         <div style={{ display:"flex", gap:24 }}>
           <div style={{ textAlign:"center" }}>

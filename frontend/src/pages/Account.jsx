@@ -32,7 +32,7 @@ export default function Account({ setPage }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22, maxWidth:700 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>Account Settings</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Account_Settings</h1>
         <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Manage your profile, billing, and usage</p>
       </div>
 

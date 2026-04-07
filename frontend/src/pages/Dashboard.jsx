@@ -54,8 +54,8 @@ export default function Dashboard({ setPage }) {
       {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
         <div>
-          <h1 style={{ fontSize:30, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>
-            Welcome back, {user?.name?.split(" ")[0]} 👋
+          <h1 style={{ fontSize:30, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}>
+            <span style={{ color:"#40A0C0", marginRight:10, fontWeight:400 }}>/</span>welcome_back,&nbsp;<span style={{ color:"#40A0C0" }}>{user?.name?.split(" ")[0].toLowerCase()}</span>
           </h1>
           <p style={{ color:"#9090B8", fontSize:15, marginTop:6 }}>
             {connected.length} platforms connected

@@ -132,7 +132,7 @@ export default function Pricing({ setPage }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
       <div style={{ textAlign: "center" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 800, color: "#F5F5FF", letterSpacing: "-.04em", marginBottom: 10 }}>Simple, transparent pricing</h1>
+        <h1 style={{ fontSize: 34, fontWeight: 800, color: "#F5F5FF", letterSpacing: "-.04em", marginBottom: 10, fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Pricing</h1>
         <p style={{ color: "#9090B8", fontSize: 16, marginBottom: 8 }}>Start free. Scale as your audience grows.</p>
         <p style={{ color: "#6868A0", fontSize: 13 }}>1 AI credit = 1 feature run (script, trend scan, optimize, etc.) · each costs ~$0.01–0.05 in API fees · credit caps keep your costs predictable</p>
       </div>

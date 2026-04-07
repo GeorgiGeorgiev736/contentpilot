@@ -318,7 +318,7 @@ export default function PostContent() {
     <div style={{ display:"flex", flexDirection:"column", gap:24, maxWidth:860, margin:"0 auto" }}>
 
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Post Content</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Post_Content</h1>
         <p style={{ color:"#888", fontSize:15, marginTop:5 }}>Upload goes directly to YouTube — no double transfer, no file size limits</p>
       </div>
 

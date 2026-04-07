@@ -126,7 +126,7 @@ export default function Avatar({ user }) {
   if (!isPro) return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>AI Avatar Studio</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> AI_Avatar_Studio</h1>
         <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Create talking AI presenter videos — no camera needed</p>
       </div>
       <div className="card" style={{ padding:48, textAlign:"center" }}>
@@ -143,7 +143,7 @@ export default function Avatar({ user }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em" }}>AI Avatar Studio</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#F5F5FF", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> AI_Avatar_Studio</h1>
         <p style={{ color:"#9090B8", fontSize:15, marginTop:5 }}>Pick or generate a face · choose a voice · paste a script · get a talking presenter video</p>
       </div>
 

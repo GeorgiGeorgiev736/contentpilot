@@ -34,7 +34,7 @@ export function Optimizer() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Video Optimizer</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Video_Optimizer</h1>
         <p style={{ color:"#888", fontSize:15, marginTop:5 }}>AI-powered SEO, tags, titles, descriptions for maximum reach</p>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:20, alignItems:"start" }}>
@@ -102,7 +102,7 @@ export function Thumbnails() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Thumbnail Designer</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Thumbnail_Designer</h1>
         <p style={{ color:"#888", fontSize:15, marginTop:5 }}>AI thumbnail concepts, CTR analysis and A/B testing</p>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"280px 1fr", gap:20 }}>
@@ -275,7 +275,7 @@ export function Scripts({ setPage, prefillTopic, onNavigate }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Script Writer</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Script_Writer</h1>
         <p style={{ color:"#888", fontSize:15, marginTop:5 }}>AI scripts with visual cues, b-roll notes, and editing markers</p>
       </div>
       {prefillTopic && (
@@ -529,7 +529,7 @@ export function Analytics() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div>
-        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>Analytics</h1>
+        <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> Analytics</h1>
         <p style={{ color:"#888", fontSize:15, marginTop:5 }}>Performance insights across all connected platforms</p>
       </div>
 
@@ -665,7 +665,7 @@ export function Pipeline() {
     <div style={{ display:"flex", flexDirection:"column", gap:22 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
         <div>
-          <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em" }}>AI Pipeline</h1>
+          <h1 style={{ fontSize:28, fontWeight:800, color:"#fff", letterSpacing:"-.04em", fontFamily:"'DM Mono',monospace" }}><span style={{ color:"#40A0C0", fontWeight:400 }}>/</span> AI_Pipeline</h1>
           <p style={{ color:"#888", fontSize:15, marginTop:5 }}>Full autopilot — trend → script → thumbnail → scheduled post</p>
         </div>
         <div style={{ display:"flex", gap:10 }}>
