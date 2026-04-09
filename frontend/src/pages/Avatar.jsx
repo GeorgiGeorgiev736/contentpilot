@@ -15,26 +15,37 @@ const PRESETS = [
   { id:"p8", label:"Business Coach",     prompt:"authoritative business coach man, 50s, suit, confident posture, direct gaze" },
 ];
 
+function ls(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
 export default function Avatar({ user }) {
-  const [tab,           setTab]           = useState("face");     // face | generate | history
-  const [faceSource,    setFaceSource]    = useState("upload");   // upload | prompt | preset
+  const [tab,           setTabRaw]        = useState(() => ls("av_tab", "face"));
+  const [faceSource,    setFaceSourceRaw] = useState(() => ls("av_faceSource", "upload"));
   const [photo,         setPhoto]         = useState(null);       // saved server URL
   const [photoPreview,  setPhotoPreview]  = useState(null);       // local blob or generated
   const [photoUploading,setPhotoUploading]= useState(false);
-  const [facePrompt,    setFacePrompt]    = useState("");
+  const [facePrompt,    setFacePromptRaw] = useState(() => ls("av_facePrompt", ""));
   const [faceGenerating,setFaceGenerating]= useState(false);
   const [presetLoading, setPresetLoading] = useState(null);       // preset id being generated
   const [voices,        setVoices]        = useState([]);
   const [selectedVoice, setSelectedVoice] = useState("21m00Tcm4TlvDq8ikWAM");
-  const [script,        setScript]        = useState("");
+  const [script,        setScriptRaw]     = useState(() => ls("av_script", ""));
   const [generating,    setGenerating]    = useState(false);
-  const [predictionId,  setPredictionId]  = useState(null);
-  const [status,        setStatus]        = useState(null);
+  const [predictionId,  setPredictionId]  = useState(() => ls("av_predId", null));
+  const [status,        setStatus]        = useState(() => ls("av_predId", null) ? "processing" : null);
   const [progress,      setProgress]      = useState(0);
   const [videoUrl,      setVideoUrl]      = useState(null);
   const [history,       setHistory]       = useState([]);
   const [error,         setError]         = useState("");
   const pollRef = useRef(null);
+
+  // Persisted setters
+  const setTab        = v => { setTabRaw(v);        lsSet("av_tab", v); };
+  const setFaceSource = v => { setFaceSourceRaw(v); lsSet("av_faceSource", v); };
+  const setFacePrompt = v => { setFacePromptRaw(v); lsSet("av_facePrompt", v); };
+  const setScript     = v => { setScriptRaw(v);     lsSet("av_script", v); };
 
   const isPro = ["pro","business","max","agency"].includes(user?.plan);
 
@@ -47,6 +58,9 @@ export default function Avatar({ user }) {
       .then(r => r.json())
       .then(d => setVoices(d.voices || []))
       .catch(() => {});
+    // Resume polling if there was an in-progress generation
+    const savedPredId = ls("av_predId", null);
+    if (savedPredId) { setGenerating(true); setTabRaw("generate"); }
   }, []);
 
   // Poll SadTalker status
@@ -64,12 +78,14 @@ export default function Avatar({ user }) {
           clearInterval(pollRef.current);
           setGenerating(false);
           localStorage.removeItem("avatar_pending");
+          lsSet("av_predId", null);
         }
         if (d.status === "failed") {
           setError("Generation failed: " + (d.error || "unknown error"));
           clearInterval(pollRef.current);
           setGenerating(false);
           localStorage.removeItem("avatar_pending");
+          lsSet("av_predId", null);
         }
       } catch {}
     }, 3000);
@@ -122,6 +138,7 @@ export default function Avatar({ user }) {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       setPredictionId(d.prediction_id);
+      lsSet("av_predId", d.prediction_id);
       // Persist so Dashboard can show an in-progress notification
       localStorage.setItem("avatar_pending", JSON.stringify({ predictionId: d.prediction_id, script: script.slice(0, 80) }));
     } catch (e) { setError(e.message); setGenerating(false); setStatus(null); }
