@@ -121,21 +121,14 @@ router.post("/generate-face", requireAuth, async (req, res, next) => {
     const imageUrl = Array.isArray(output) ? output[0] : output;
     if (!imageUrl) throw new Error("Image generation returned no output");
 
-    // Download the image and save locally so SadTalker can access it
-    const imgRes    = await fetch(imageUrl);
-    const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
-    const filename  = `${req.user.id}_genface_${Date.now()}.jpg`;
-    const filepath  = path.join(uploadsDir, filename);
-    fs.writeFileSync(filepath, imgBuffer);
-
-    const localUrl = `/uploads/${filename}`;
-    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [localUrl, req.user.id]);
+    // Store the Replicate CDN URL directly — no local file needed
+    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [imageUrl, req.user.id]);
 
     if (!isUnlimited) {
       await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [FACE_GEN_CREDIT_COST, req.user.id]);
     }
 
-    res.json({ photo_url: localUrl, image_url: imageUrl });
+    res.json({ photo_url: imageUrl, image_url: imageUrl });
   } catch (err) { next(err); }
 });
 
@@ -165,11 +158,8 @@ router.post("/generate", requireAuth, async (req, res, next) => {
       return res.status(400).json({ error: "Upload a photo first in the Avatar Setup tab." });
     }
 
-    const voiceId   = user.avatar_voice_id || "21m00Tcm4TlvDq8ikWAM"; // Rachel default
-    const photoPath = path.join(uploadsDir, path.basename(user.avatar_photo_url));
-    if (!fs.existsSync(photoPath)) {
-      return res.status(400).json({ error: "Avatar photo not found. Please re-upload." });
-    }
+    const voiceId  = user.avatar_voice_id || "21m00Tcm4TlvDq8ikWAM"; // Rachel default
+    const photoUrl = user.avatar_photo_url;
 
     // ── Step 1: ElevenLabs TTS → save audio file ─────────────
     const cleanScript = script.replace(/\*\*.*?\*\*/g, "").replace(/#{1,3}\s/g, "").trim().slice(0, 2500);
@@ -199,9 +189,25 @@ router.post("/generate", requireAuth, async (req, res, next) => {
     fs.writeFileSync(audioPath, audioBuffer);
 
     // ── Step 2: Upload photo + audio to Replicate CDN ─────────
-    const [photoReplicateUrl, audioReplicateUrl] = await Promise.all([
-      uploadToReplicate(photoPath,  "image/jpeg"),
-      uploadToReplicate(audioPath,  "audio/mpeg"),
+    // Photo may be an external URL (Replicate CDN) or a local path
+    let photoReplicateUrl;
+    if (photoUrl.startsWith("http")) {
+      // Already an external URL — upload buffer to Replicate
+      const photoRes = await fetch(photoUrl);
+      if (!photoRes.ok) return res.status(400).json({ error: "Avatar photo not found. Please re-upload." });
+      const photoBuffer = Buffer.from(await photoRes.arrayBuffer());
+      const tmpPath = path.join(uploadsDir, `${req.user.id}_tmp_${Date.now()}.jpg`);
+      fs.writeFileSync(tmpPath, photoBuffer);
+      photoReplicateUrl = await uploadToReplicate(tmpPath, "image/jpeg");
+      fs.unlink(tmpPath, () => {});
+    } else {
+      const photoPath = path.join(uploadsDir, path.basename(photoUrl));
+      if (!fs.existsSync(photoPath)) return res.status(400).json({ error: "Avatar photo not found. Please re-upload." });
+      photoReplicateUrl = await uploadToReplicate(photoPath, "image/jpeg");
+    }
+
+    const [audioReplicateUrl] = await Promise.all([
+      uploadToReplicate(audioPath, "audio/mpeg"),
     ]);
 
     // ── Step 3: Submit SadTalker job to Replicate ─────────────
