@@ -48,6 +48,7 @@ app.use("/api/oauth",    require("./routes/oauth"));
 app.use("/api/schedule", require("./routes/schedule"));
 app.use("/api/clips",    require("./routes/clips"));
 app.use("/api/avatar",   require("./routes/avatar"));
+app.use("/api/tools",    require("./routes/tools"));
 app.use("/api/admin",    require("./routes/admin"));
 app.use("/api/achievements", require("./routes/achievements"));
 

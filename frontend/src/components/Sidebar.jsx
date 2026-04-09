@@ -5,7 +5,7 @@ const NAV_TOP = [
   ["dashboard",    "⊞", "Dashboard"],
   ["scripts",      "✦", "AI Scripts"],
   ["pipeline",     "⊙", "AI Pipeline"],
-  ["avatar",       "◉", "AI Avatar"],
+  ["tools",        "⚡", "AI Tools"],
   ["analytics",    "▦", "Analytics"],
   ["platforms",    "⬡", "Platforms"],
   ["calendar",     "◫", "Calendar"],

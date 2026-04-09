@@ -12,7 +12,7 @@ import Pipeline     from "./pages/Pipeline";
 import Pricing      from "./pages/Pricing";
 import Account      from "./pages/Account";
 import PostContent  from "./pages/PostContent";
-import Avatar       from "./pages/Avatar";
+import Tools        from "./pages/Tools";
 import Admin        from "./pages/Admin";
 import Calendar     from "./pages/Calendar";
 import Achievements from "./pages/Achievements";
@@ -27,7 +27,7 @@ const PAGES = {
   platforms:    Platforms,
   pricing:      Pricing,
   account:      Account,
-  avatar:       Avatar,
+  tools:        Tools,
   admin:        Admin,
   calendar:     Calendar,
   achievements: Achievements,
@@ -40,18 +40,6 @@ function AppInner() {
   const [collapsed, setCollapsed] = useState(false);
   const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem("autopilot_tutorial_v1") !== "done");
   const [pageProps, setPageProps] = useState({});
-  const [avatarPending, setAvatarPending] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("avatar_pending") || "null"); } catch { return null; }
-  });
-
-  useEffect(() => {
-    const sync = () => {
-      try { setAvatarPending(JSON.parse(localStorage.getItem("avatar_pending") || "null")); } catch {}
-    };
-    const interval = setInterval(sync, 1000);
-    window.addEventListener("storage", sync);
-    return () => { clearInterval(interval); window.removeEventListener("storage", sync); };
-  }, []);
 
   // Wrap setPage so first navigation marks user as welcomed
   const setPage = (pg) => {
@@ -354,22 +342,7 @@ function AppInner() {
             </div>
           </>
         )}
-        {/* ── Avatar generating banner ── */}
-        {avatarPending && page !== "avatar" && (
-          <div onClick={() => setPage("avatar")} style={{ cursor:"pointer", background:"linear-gradient(90deg,#0A1A20 0%,#081418 100%)", borderBottom:"2px solid rgba(64,160,192,0.3)", padding:"12px 36px", display:"flex", alignItems:"center", gap:14, position:"relative", overflow:"hidden" }}>
-            <div style={{ position:"absolute", inset:0, background:"linear-gradient(105deg,transparent 40%,rgba(64,160,192,0.06) 50%,transparent 60%)", pointerEvents:"none" }} />
-            <div style={{ width:10, height:10, borderRadius:"50%", background:"#40A0C0", flexShrink:0, animation:"dotBlink 1.4s ease-in-out infinite", boxShadow:"0 0 8px #40A0C0" }} />
-            <span style={{ fontSize:17, flexShrink:0 }}>◉</span>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:15, fontWeight:700, color:"#a0d8e8", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Avatar video is generating…</div>
-              {avatarPending.script && <div style={{ fontSize:13, color:"#6090A8", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>"{avatarPending.script}"</div>}
-            </div>
-            <button onClick={e => { e.stopPropagation(); localStorage.removeItem("avatar_pending"); setAvatarPending(null); }} style={{ background:"none", border:"1px solid #1e3030", color:"#6090A8", borderRadius:7, padding:"4px 12px", fontSize:12, cursor:"pointer", flexShrink:0 }}>Dismiss</button>
-            <div style={{ padding:"7px 18px", background:"rgba(64,160,192,0.15)", border:"1px solid rgba(64,160,192,0.3)", borderRadius:9, color:"#a0d8e8", fontWeight:700, fontSize:13, flexShrink:0 }}>View →</div>
-          </div>
-        )}
-
-        <div key={page} className="fade" style={{ padding: window.innerWidth < 768 ? "20px 16px" : "32px 36px", maxWidth:1300, margin:"0 auto" }}>
+<div key={page} className="fade" style={{ padding: window.innerWidth < 768 ? "20px 16px" : "32px 36px", maxWidth:1300, margin:"0 auto" }}>
           <Page
             setPage={setPage}
             user={user}
