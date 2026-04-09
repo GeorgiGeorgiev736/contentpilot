@@ -18,19 +18,6 @@ export default function Dashboard({ setPage }) {
   const [campaigns,       setCampaigns]       = useState([]);
   const [connections,     setConnections]     = useState([]);
   const [loadingData,     setLoadingData]     = useState(true);
-  const [avatarPending,   setAvatarPending]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem("avatar_pending") || "null"); } catch { return null; }
-  });
-
-  // Keep avatar notification in sync with localStorage (set from Avatar page)
-  useEffect(() => {
-    const sync = () => {
-      try { setAvatarPending(JSON.parse(localStorage.getItem("avatar_pending") || "null")); } catch {}
-    };
-    window.addEventListener("storage", sync);
-    const interval = setInterval(sync, 2000); // poll in case storage event doesn't fire same-tab
-    return () => { window.removeEventListener("storage", sync); clearInterval(interval); };
-  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -89,32 +76,6 @@ export default function Dashboard({ setPage }) {
         </div>
       </div>
 
-
-      {/* Avatar generation in-progress notification */}
-      {avatarPending && (
-        <div
-          onClick={() => setPage("avatar")}
-          className="card"
-          style={{ padding:"16px 20px", cursor:"pointer", background:"linear-gradient(135deg,#0A1A20 0%,#081418 100%)", border:"1px solid rgba(64,160,192,0.25)", borderLeft:"3px solid #40A0C0", display:"flex", alignItems:"center", gap:16 }}
-          onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgba(64,160,192,0.5)"; }}
-          onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgba(64,160,192,0.25)"; }}
-        >
-          <div style={{ width:40, height:40, borderRadius:12, background:"rgba(64,160,192,0.12)", border:"1px solid rgba(64,160,192,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0, animation:"pulse 2s ease infinite" }}>◉</div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:15, fontWeight:700, color:"#a0d8e8" }}>Avatar video is generating…</div>
-            <div style={{ fontSize:13, color:"#6090A8", marginTop:3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-              "{avatarPending.script}"
-            </div>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-            <button
-              onClick={e => { e.stopPropagation(); localStorage.removeItem("avatar_pending"); setAvatarPending(null); }}
-              style={{ background:"none", border:"1px solid #1e3030", color:"#6090A8", borderRadius:7, padding:"5px 12px", fontSize:12, cursor:"pointer" }}
-            >Dismiss</button>
-            <div style={{ padding:"7px 18px", background:"rgba(64,160,192,0.15)", border:"1px solid rgba(64,160,192,0.3)", borderRadius:9, color:"#a0d8e8", fontWeight:700, fontSize:13 }}>View →</div>
-          </div>
-        </div>
-      )}
 
       {/* Upload CTA */}
       <div

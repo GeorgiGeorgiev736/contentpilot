@@ -20,7 +20,7 @@ function ls(key, fallback) {
 }
 function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
 
-export default function Avatar({ user }) {
+export default function Avatar({ user, setPage }) {
   const [tab,           setTabRaw]        = useState(() => ls("av_tab", "face"));
   const [faceSource,    setFaceSourceRaw] = useState(() => ls("av_faceSource", "upload"));
   const [photo,         setPhoto]         = useState(null);       // saved server URL
@@ -37,7 +37,8 @@ export default function Avatar({ user }) {
   const [status,        setStatus]        = useState(() => ls("av_predId", null) ? "processing" : null);
   const [progress,      setProgress]      = useState(0);
   const [videoUrl,      setVideoUrl]      = useState(null);
-  const [history,       setHistory]       = useState([]);
+  const [history,       setHistoryRaw]    = useState(() => ls("av_history", []));
+  const setHistory = v => { const arr = typeof v === "function" ? v(history) : v; setHistoryRaw(arr); lsSet("av_history", arr.slice(0,10)); };
   const [error,         setError]         = useState("");
   const pollRef = useRef(null);
 
@@ -374,8 +375,9 @@ export default function Avatar({ user }) {
             <div className="card" style={{ padding:20 }}>
               <div style={{ fontSize:14, fontWeight:700, color:"#22C55E", marginBottom:12 }}>✓ Avatar video ready!</div>
               <video src={videoUrl} controls style={{ width:"100%", maxHeight:400, borderRadius:10, background:"#000" }} />
-              <div style={{ display:"flex", gap:10, marginTop:12 }}>
+              <div style={{ display:"flex", gap:10, marginTop:12, flexWrap:"wrap" }}>
                 <a href={videoUrl} download="avatar.mp4" className="btn-primary" style={{ padding:"9px 20px", fontSize:13, textDecoration:"none", display:"inline-block" }}>⬇ Download</a>
+                <button onClick={() => setPage("postcontent")} className="btn-primary" style={{ padding:"9px 20px", fontSize:13 }}>📅 Schedule & Upload</button>
                 <button onClick={() => { setVideoUrl(null); setStatus(null); setPredictionId(null); }} className="btn-ghost" style={{ padding:"9px 18px", fontSize:13 }}>Generate Another</button>
               </div>
             </div>
