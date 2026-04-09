@@ -227,7 +227,7 @@ router.post("/generate", requireAuth, async (req, res, next) => {
 
     // ── Step 3: Submit SadTalker job to Replicate ─────────────
     const prediction = await replicate.predictions.create({
-      model:   "cjwbw/sadtalker",
+      version: "a519cc0cfebaaeade068b23899165a11ec76aaa1d2b313d40d214f204ec957a3",
       input: {
         source_image:  photoReplicateUrl,
         driven_audio:  audioReplicateUrl,

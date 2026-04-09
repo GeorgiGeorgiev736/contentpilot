@@ -133,15 +133,21 @@ export default function Avatar({ user }) {
     if (!photo) { setError("Choose a face first in the Face tab"); return; }
     setError(""); setGenerating(true); setVideoUrl(null);
     setStatus("starting"); setProgress(0); setPredictionId(null);
+    // Set notification immediately so Dashboard shows banner while request is in-flight
+    const pendingPayload = JSON.stringify({ predictionId: null, script: script.slice(0, 80) });
+    localStorage.setItem("avatar_pending", pendingPayload);
     try {
       const r = await fetch(`${API}/api/avatar/generate`, { method:"POST", headers: jsonHdr(), body: JSON.stringify({ script }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       setPredictionId(d.prediction_id);
       lsSet("av_predId", d.prediction_id);
-      // Persist so Dashboard can show an in-progress notification
       localStorage.setItem("avatar_pending", JSON.stringify({ predictionId: d.prediction_id, script: script.slice(0, 80) }));
-    } catch (e) { setError(e.message); setGenerating(false); setStatus(null); }
+    } catch (e) {
+      setError(e.message); setGenerating(false); setStatus(null);
+      localStorage.removeItem("avatar_pending");
+      lsSet("av_predId", null);
+    }
   };
 
   if (!isPro) return (
