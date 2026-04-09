@@ -33,19 +33,10 @@ const upload = multer({
 // ── Upload files to Replicate CDN so models can access them ──
 async function uploadToReplicate(filePath, mimeType) {
   const buffer = fs.readFileSync(filePath);
-  const blob   = new Blob([buffer], { type: mimeType });
-  const res = await fetch("https://api.replicate.com/v1/files", {
-    method: "POST",
-    headers: {
-      Authorization:   `Bearer ${process.env.REPLICATE_API_TOKEN}`,
-      "Content-Type":  mimeType,
-      "Content-Length": buffer.length.toString(),
-    },
-    body: blob,
-  });
-  const data = await res.json();
-  if (!data.urls?.get) throw new Error("Replicate file upload failed: " + JSON.stringify(data));
-  return data.urls.get;
+  const blob   = new Blob([new Uint8Array(buffer)], { type: mimeType });
+  const file   = await replicate.files.create(blob, { filename: path.basename(filePath) });
+  if (!file?.urls?.get) throw new Error("Replicate file upload failed: " + JSON.stringify(file));
+  return file.urls.get;
 }
 
 // ── POST /api/avatar/upload-photo ────────────────────────────
