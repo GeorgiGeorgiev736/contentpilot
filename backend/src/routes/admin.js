@@ -2,6 +2,16 @@ const router = require("express").Router();
 const { query, queryOne } = require("../db/client");
 const { requireAuth } = require("../middleware/auth");
 
+// Temp debug — remove after fixing ElevenLabs
+router.get("/debug-eleven", requireAuth, async (req, res) => {
+  const key = process.env.ELEVENLABS_API_KEY;
+  const r = await fetch("https://api.elevenlabs.io/v1/voices?show_legacy=true", {
+    headers: { "xi-api-key": key },
+  });
+  const body = await r.json();
+  res.json({ status: r.status, keyPrefix: key ? key.slice(0, 8) : "MISSING", body });
+});
+
 // All admin routes require auth + is_admin
 async function requireAdmin(req, res, next) {
   if (!req.user.is_admin) return res.status(403).json({ error: "Admin only" });
