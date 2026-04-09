@@ -208,7 +208,8 @@ export default function Avatar({ user }) {
             <div className="card" style={{ padding:24, display:"flex", gap:24, alignItems:"flex-start" }}>
               <div style={{ flexShrink:0 }}>
                 {photoSrc ? (
-                  <img src={photoSrc} alt="Avatar" style={{ width:120, height:120, borderRadius:14, objectFit:"cover", border:"2px solid #40A0C044" }} />
+                  <img src={photoSrc} alt="Avatar" style={{ width:120, height:120, borderRadius:14, objectFit:"cover", border:"2px solid #40A0C044" }}
+                    onError={e => { e.currentTarget.style.display="none"; setPhoto(null); setPhotoPreview(null); }} />
                 ) : (
                   <div style={{ width:120, height:120, borderRadius:14, background:"#0e0e0e", border:"2px dashed #1e3030", display:"flex", alignItems:"center", justifyContent:"center", fontSize:40 }}>👤</div>
                 )}
@@ -258,7 +259,7 @@ export default function Avatar({ user }) {
               )}
               {photoSrc && !faceGenerating && (
                 <div style={{ display:"flex", gap:16, alignItems:"center" }}>
-                  <img src={photoSrc} alt="Generated" style={{ width:100, height:100, borderRadius:12, objectFit:"cover", border:"2px solid #40A0C044" }} />
+                  <img src={photoSrc} alt="Generated" style={{ width:100, height:100, borderRadius:12, objectFit:"cover", border:"2px solid #40A0C044" }} onError={e => { e.currentTarget.style.display="none"; setPhoto(null); setPhotoPreview(null); }} />
                   <div>
                     <div style={{ fontSize:13, color:"#22C55E", marginBottom:6 }}>✓ Face generated and saved</div>
                     <button className="btn-ghost" style={{ padding:"6px 14px", fontSize:12 }} onClick={() => generateFace(facePrompt)} disabled={faceGenerating}>

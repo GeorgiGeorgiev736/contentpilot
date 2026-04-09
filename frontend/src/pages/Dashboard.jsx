@@ -22,6 +22,16 @@ export default function Dashboard({ setPage }) {
     try { return JSON.parse(localStorage.getItem("avatar_pending") || "null"); } catch { return null; }
   });
 
+  // Keep avatar notification in sync with localStorage (set from Avatar page)
+  useEffect(() => {
+    const sync = () => {
+      try { setAvatarPending(JSON.parse(localStorage.getItem("avatar_pending") || "null")); } catch {}
+    };
+    window.addEventListener("storage", sync);
+    const interval = setInterval(sync, 2000); // poll in case storage event doesn't fire same-tab
+    return () => { window.removeEventListener("storage", sync); clearInterval(interval); };
+  }, []);
+
   useEffect(() => {
     Promise.all([
       campaignsApi.list().catch(() => ({ campaigns: [] })),
