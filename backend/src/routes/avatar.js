@@ -78,7 +78,7 @@ router.put("/settings", requireAuth, async (req, res, next) => {
 // ── GET /api/avatar/voices ────────────────────────────────────
 router.get("/voices", requireAuth, async (req, res, next) => {
   try {
-    const elevenRes = await fetch("https://api.elevenlabs.io/v1/voices", {
+    const elevenRes = await fetch("https://api.elevenlabs.io/v1/voices?show_legacy=true", {
       headers: { "xi-api-key": ELEVEN_KEY },
     });
     const data = await elevenRes.json();

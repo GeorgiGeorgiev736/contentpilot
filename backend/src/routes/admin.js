@@ -113,7 +113,7 @@ router.get("/health", requireAuth, requireAdmin, async (req, res, next) => {
         .catch(() => ({ service: "replicate", ok: false, status: 0 })),
 
       // ElevenLabs
-      fetch("https://api.elevenlabs.io/v1/voices", {
+      fetch("https://api.elevenlabs.io/v1/voices?show_legacy=true", {
         headers: process.env.ELEVENLABS_API_KEY ? { "xi-api-key": process.env.ELEVENLABS_API_KEY } : {},
         signal: AbortSignal.timeout(5000),
       })
