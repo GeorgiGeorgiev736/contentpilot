@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { UploadProvider, useUpload } from "./context/UploadContext"; // eslint-disable-line
 import AuthPage     from "./pages/AuthPage";
+import LandingPage  from "./pages/LandingPage";
 import Sidebar      from "./components/Sidebar";
 import Dashboard    from "./pages/Dashboard";
 import Platforms    from "./pages/Platforms";
@@ -72,7 +73,13 @@ function AppInner() {
     </div>
   );
 
-  if (!user) return <AuthPage />;
+  if (!user) {
+    const params = new URLSearchParams(window.location.search);
+    const forceAuth = params.get("auth") || localStorage.getItem("autopilot_show_auth");
+    if (forceAuth) return <AuthPage />;
+    return <LandingPage onLogin={() => { localStorage.setItem("autopilot_show_auth","1"); window.location.search="?auth=1"; }} onSignup={() => { localStorage.setItem("autopilot_show_auth","1"); window.location.search="?auth=1"; }} />;
+  }
+  localStorage.removeItem("autopilot_show_auth");
 
   const Page = PAGES[page] || Dashboard;
 
