@@ -63,11 +63,13 @@ export default function Avatar({ user }) {
           setHistory(h => [{ id: predictionId, url, script: script.slice(0, 80), ts: new Date() }, ...h]);
           clearInterval(pollRef.current);
           setGenerating(false);
+          localStorage.removeItem("avatar_pending");
         }
         if (d.status === "failed") {
           setError("Generation failed: " + (d.error || "unknown error"));
           clearInterval(pollRef.current);
           setGenerating(false);
+          localStorage.removeItem("avatar_pending");
         }
       } catch {}
     }, 3000);
@@ -120,6 +122,8 @@ export default function Avatar({ user }) {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       setPredictionId(d.prediction_id);
+      // Persist so Dashboard can show an in-progress notification
+      localStorage.setItem("avatar_pending", JSON.stringify({ predictionId: d.prediction_id, script: script.slice(0, 80) }));
     } catch (e) { setError(e.message); setGenerating(false); setStatus(null); }
   };
 

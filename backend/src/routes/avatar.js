@@ -5,6 +5,7 @@ const fs       = require("fs");
 const Replicate = require("replicate");
 const { requireAuth } = require("../middleware/auth");
 const { query, queryOne } = require("../db/client");
+const { uploadToR2, uploadBufferToR2 } = require("../utils/r2");
 
 const replicate  = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 const ELEVEN_KEY = process.env.ELEVENLABS_API_KEY;
@@ -49,7 +50,12 @@ async function uploadToReplicate(filePath, mimeType) {
 router.post("/upload-photo", requireAuth, upload.single("photo"), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No photo uploaded" });
-    const photoUrl = `/uploads/${req.file.filename}`;
+
+    // Try to store in R2 for permanent persistence; fall back to local path
+    let photoUrl = `/uploads/${req.file.filename}`;
+    const r2Url = await uploadToR2(req.file.path, req.file.mimetype).catch(() => null);
+    if (r2Url) photoUrl = r2Url;
+
     await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [photoUrl, req.user.id]);
     res.json({ photo_url: photoUrl });
   } catch (err) { next(err); }
@@ -123,21 +129,24 @@ router.post("/generate-face", requireAuth, async (req, res, next) => {
     const imageUrl = rawOut?.url ? rawOut.url().toString() : rawOut?.toString();
     if (!imageUrl || !imageUrl.startsWith("http")) throw new Error("Image generation returned no valid URL: " + JSON.stringify(rawOut));
 
-    // Download and save locally for SadTalker (Railway ephemeral — CDN URL stored in DB for persistence)
+    // Download image — save locally (for SadTalker) and upload to R2 for permanent storage
     const imgRes    = await fetch(imageUrl);
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
     const filename  = `${req.user.id}_genface_${Date.now()}.jpg`;
     const filepath  = path.join(uploadsDir, filename);
     fs.writeFileSync(filepath, imgBuffer);
 
-    // Store the CDN URL in DB (survives redeploys), not the local path which is ephemeral
-    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [imageUrl, req.user.id]);
+    // Prefer R2 permanent URL → fallback to Replicate CDN URL (expires ~1h) → local path
+    const r2Url = await uploadToR2(filepath, "image/jpeg").catch(() => null);
+    const persistentUrl = r2Url || imageUrl;
+
+    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [persistentUrl, req.user.id]);
 
     if (!isUnlimited) {
       await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [FACE_GEN_CREDIT_COST, req.user.id]);
     }
 
-    res.json({ photo_url: imageUrl, image_url: imageUrl });
+    res.json({ photo_url: persistentUrl, image_url: persistentUrl });
   } catch (err) { next(err); }
 });
 
