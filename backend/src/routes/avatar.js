@@ -123,21 +123,21 @@ router.post("/generate-face", requireAuth, async (req, res, next) => {
     const imageUrl = rawOut?.url ? rawOut.url().toString() : rawOut?.toString();
     if (!imageUrl || !imageUrl.startsWith("http")) throw new Error("Image generation returned no valid URL: " + JSON.stringify(rawOut));
 
-    // Download and save locally so it persists and SadTalker can use it
+    // Download and save locally for SadTalker (Railway ephemeral — CDN URL stored in DB for persistence)
     const imgRes    = await fetch(imageUrl);
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
     const filename  = `${req.user.id}_genface_${Date.now()}.jpg`;
     const filepath  = path.join(uploadsDir, filename);
     fs.writeFileSync(filepath, imgBuffer);
-    const localUrl = `/uploads/${filename}`;
 
-    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [localUrl, req.user.id]);
+    // Store the CDN URL in DB (survives redeploys), not the local path which is ephemeral
+    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [imageUrl, req.user.id]);
 
     if (!isUnlimited) {
       await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [FACE_GEN_CREDIT_COST, req.user.id]);
     }
 
-    res.json({ photo_url: localUrl, image_url: imageUrl });
+    res.json({ photo_url: imageUrl, image_url: imageUrl });
   } catch (err) { next(err); }
 });
 
@@ -189,7 +189,11 @@ router.post("/generate", requireAuth, async (req, res, next) => {
 
     if (!ttsRes.ok) {
       const err = await ttsRes.json().catch(() => ({}));
-      throw new Error("ElevenLabs TTS failed: " + (err.detail?.message || ttsRes.status));
+      const msg = err.detail?.message || "";
+      if (msg.toLowerCase().includes("unusual activity") || msg.toLowerCase().includes("free tier")) {
+        throw new Error("Voice generation is temporarily unavailable — the ElevenLabs account needs a paid plan. Please upgrade at elevenlabs.io.");
+      }
+      throw new Error("Voice generation failed: " + (msg || ttsRes.status));
     }
 
     const audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
