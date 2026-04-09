@@ -118,17 +118,26 @@ router.post("/generate-face", requireAuth, async (req, res, next) => {
       },
     });
 
-    const imageUrl = Array.isArray(output) ? output[0] : output;
-    if (!imageUrl) throw new Error("Image generation returned no output");
+    // Replicate newer client wraps output in FileOutput objects — extract URL string
+    const rawOut  = Array.isArray(output) ? output[0] : output;
+    const imageUrl = rawOut?.url ? rawOut.url().toString() : rawOut?.toString();
+    if (!imageUrl || !imageUrl.startsWith("http")) throw new Error("Image generation returned no valid URL: " + JSON.stringify(rawOut));
 
-    // Store the Replicate CDN URL directly — no local file needed
-    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [imageUrl, req.user.id]);
+    // Download and save locally so it persists and SadTalker can use it
+    const imgRes    = await fetch(imageUrl);
+    const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
+    const filename  = `${req.user.id}_genface_${Date.now()}.jpg`;
+    const filepath  = path.join(uploadsDir, filename);
+    fs.writeFileSync(filepath, imgBuffer);
+    const localUrl = `/uploads/${filename}`;
+
+    await query("UPDATE users SET avatar_photo_url = $1 WHERE id = $2", [localUrl, req.user.id]);
 
     if (!isUnlimited) {
       await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [FACE_GEN_CREDIT_COST, req.user.id]);
     }
 
-    res.json({ photo_url: imageUrl, image_url: imageUrl });
+    res.json({ photo_url: localUrl, image_url: imageUrl });
   } catch (err) { next(err); }
 });
 
@@ -253,7 +262,7 @@ router.get("/status/:id", requireAuth, async (req, res, next) => {
     const prediction = await replicate.predictions.get(req.params.id);
     res.json({
       status:    prediction.status,               // starting | processing | succeeded | failed
-      video_url: prediction.output ?? null,
+      video_url: prediction.output ? (prediction.output?.url ? prediction.output.url().toString() : prediction.output.toString()) : null,
       error:     prediction.error ?? null,
       progress:  prediction.logs ? parseProgress(prediction.logs) : 0,
     });
