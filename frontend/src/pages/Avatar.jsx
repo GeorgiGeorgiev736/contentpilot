@@ -253,11 +253,10 @@ export default function Avatar({ user }) {
           {faceSource === "preset" && (
             <div className="card" style={{ padding:24 }}>
               <div style={{ fontSize:15, fontWeight:700, color:"#e0e0e0", marginBottom:6 }}>Ready-made Avatar Personas</div>
-              <div style={{ fontSize:13, color:"#777", marginBottom:16 }}>Pick a character — we'll generate a photorealistic face for you instantly. 3 credits each.</div>
+              <div style={{ fontSize:13, color:"#777", marginBottom:16 }}>Click a character to generate a photorealistic face instantly. 3 credits each.</div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:12 }}>
                 {PRESETS.map(p => {
                   const isLoading = presetLoading === p.id;
-                  const isActive  = !presetLoading && photo && faceSource === "preset";
                   return (
                     <div
                       key={p.id}
@@ -265,18 +264,27 @@ export default function Avatar({ user }) {
                       style={{
                         borderRadius:12, overflow:"hidden", cursor: presetLoading ? "wait" : "pointer",
                         border:"1.5px solid #1a2830", background:"#0e0e0e",
-                        transition:"all .15s", opacity: presetLoading && !isLoading ? 0.5 : 1,
+                        transition:"border-color .15s", opacity: presetLoading && !isLoading ? 0.4 : 1,
                       }}
-                      onMouseEnter={e => { if (!presetLoading) e.currentTarget.style.borderColor="#40A0C0"; }}
+                      onMouseEnter={e => { if (!presetLoading) { e.currentTarget.style.borderColor="#40A0C0"; } }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor="#1a2830"; }}
                     >
-                      <div style={{ height:100, background:"linear-gradient(135deg,rgba(64,160,192,0.13),rgba(64,160,192,0.07))", display:"flex", alignItems:"center", justifyContent:"center", fontSize:36 }}>
-                        {isLoading ? <span style={{ animation:"spin 1s linear infinite", display:"inline-block", fontSize:24 }}>◌</span> : "◉"}
+                      <div style={{ height:110, background:"linear-gradient(135deg,#0e1618,#0a1214)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, position:"relative" }}>
+                        {isLoading ? (
+                          <>
+                            <span style={{ animation:"spin 1s linear infinite", display:"inline-block", fontSize:22, color:"#40A0C0" }}>◌</span>
+                            <span style={{ fontSize:11, color:"#40A0C0", fontFamily:"'DM Mono',monospace" }}>generating…</span>
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ fontSize:28, color:"#2A5060" }}>◉</div>
+                            <div style={{ fontSize:10, color:"#2A5060", fontFamily:"'DM Mono',monospace", letterSpacing:".05em" }}>click to generate</div>
+                          </>
+                        )}
                       </div>
                       <div style={{ padding:"10px 12px" }}>
                         <div style={{ fontSize:13, fontWeight:700, color:"#D0D0E8", marginBottom:3 }}>{p.label}</div>
-                        <div style={{ fontSize:11, color:"#6868A8", lineHeight:1.4 }}>{p.prompt.slice(0, 50)}…</div>
-                        {isLoading && <div style={{ fontSize:11, color:"#40A0C0", marginTop:6 }}>Generating…</div>}
+                        <div style={{ fontSize:11, color:"#555", lineHeight:1.4 }}>{p.prompt.slice(0, 50)}…</div>
                       </div>
                     </div>
                   );
