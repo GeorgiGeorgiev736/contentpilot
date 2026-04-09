@@ -111,8 +111,8 @@ router.post("/generate-face", requireAuth, async (req, res, next) => {
       input: {
         prompt:          fullPrompt,
         negative_prompt: "cartoon, anime, illustration, blurry, low quality, deformed, extra limbs, watermark, text",
-        width:  768,
-        height: 768,
+        width:  576,
+        height: 1024,
         num_inference_steps: 4,
       },
     });
@@ -231,10 +231,10 @@ router.post("/generate", requireAuth, async (req, res, next) => {
       input: {
         source_image:  photoReplicateUrl,
         driven_audio:  audioReplicateUrl,
-        preprocess:    "crop",
-        still_mode:    false,
+        preprocess:    "full",
+        still_mode:    true,
         use_enhancer:  true,
-        size_of_image: 256,
+        size_of_image: 512,
         pose_style:    0,
       },
     });
