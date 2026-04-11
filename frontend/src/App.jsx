@@ -40,6 +40,7 @@ function AppInner() {
   const [collapsed, setCollapsed] = useState(false);
   const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem("autopilot_tutorial_v1") !== "done");
   const [pageProps, setPageProps] = useState({});
+  const [showAuth,  setShowAuth]  = useState(() => new URLSearchParams(window.location.search).get("auth") === "1");
 
   // Wrap setPage so first navigation marks user as welcomed
   const setPage = (pg) => {
@@ -72,12 +73,9 @@ function AppInner() {
   );
 
   if (!user) {
-    const params = new URLSearchParams(window.location.search);
-    const forceAuth = params.get("auth") || localStorage.getItem("autopilot_show_auth");
-    if (forceAuth) return <AuthPage />;
-    return <LandingPage onLogin={() => { localStorage.setItem("autopilot_show_auth","1"); window.location.search="?auth=1"; }} onSignup={() => { localStorage.setItem("autopilot_show_auth","1"); window.location.search="?auth=1"; }} />;
+    if (showAuth) return <AuthPage />;
+    return <LandingPage onSignup={() => setShowAuth(true)} />;
   }
-  localStorage.removeItem("autopilot_show_auth");
 
   const Page = PAGES[page] || Dashboard;
 
