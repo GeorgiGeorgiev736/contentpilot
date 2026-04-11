@@ -6,7 +6,7 @@ const { requireAuth } = require("../middleware/auth");
 router.get("/profile", requireAuth, async (req, res, next) => {
   try {
     const user = await queryOne(
-      "SELECT id, email, name, plan, credits, subscription_status, created_at FROM users WHERE id = $1",
+      "SELECT id, email, name, plan, credits, credits_reset_at, subscription_status, created_at FROM users WHERE id = $1",
       [req.user.id]
     );
     res.json({ user });

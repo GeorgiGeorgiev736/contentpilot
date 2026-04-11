@@ -52,6 +52,19 @@ app.use("/api/tools",    require("./routes/tools"));
 app.use("/api/admin",    require("./routes/admin"));
 app.use("/api/achievements", require("./routes/achievements"));
 
+// ── Weekly credit reset (runs every hour, resets free users whose 7 days are up) ──
+const { query: dbQuery } = require("./db/client");
+setInterval(async () => {
+  try {
+    await dbQuery(`
+      UPDATE users
+      SET credits = 10, credits_reset_at = NOW()
+      WHERE plan = 'free'
+        AND credits_reset_at < NOW() - INTERVAL '7 days'
+    `);
+  } catch (e) { /* silent — don't crash server */ }
+}, 60 * 60 * 1000); // every hour
+
 // ── Health checks ────────────────────────────────────────────
 app.get("/health", (_req, res) => res.json({ status: "ok", env: process.env.NODE_ENV }));
 

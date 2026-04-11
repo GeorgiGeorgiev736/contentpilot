@@ -1,4 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function CreditCountdown({ resetAt }) {
+  const [timeLeft, setTimeLeft] = useState("");
+  useEffect(() => {
+    const calc = () => {
+      if (!resetAt) return setTimeLeft("");
+      const next = new Date(resetAt).getTime() + 7 * 24 * 60 * 60 * 1000;
+      const diff = next - Date.now();
+      if (diff <= 0) return setTimeLeft("Resetting…");
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setTimeLeft(d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`);
+    };
+    calc();
+    const id = setInterval(calc, 60000);
+    return () => clearInterval(id);
+  }, [resetAt]);
+  return timeLeft ? <span style={{ fontSize:11, color:"#555", fontFamily:"'DM Mono',monospace" }}>↺ {timeLeft}</span> : null;
+}
 import { useAuth } from "../hooks/useAuth";
 
 const NAV_TOP = [
@@ -345,12 +365,17 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
 
           {/* Credits */}
           <div style={{ padding:"9px 10px", marginBottom:6, background:"#0a0a0a", borderRadius:9, border:"1px solid #1a1a1a" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, alignItems:"center" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4, alignItems:"center" }}>
               <span style={{ fontSize:12, color:"#666", fontWeight:600, textTransform:"uppercase", letterSpacing:".1em" }}>AI Credits</span>
               <span style={{ fontSize:14, fontWeight:900, color: (user?.credits||0) > 20 ? "#fff" : (user?.credits||0) > 5 ? "#F59E0B" : "#FF2040" }}>
                 {user?.credits || 0}
               </span>
             </div>
+            {plan === "free" && user?.credits_reset_at && (
+              <div style={{ marginBottom:6 }}>
+                <CreditCountdown resetAt={user.credits_reset_at} />
+              </div>
+            )}
             {!isUnlimited && (
               <div style={{ height:2, background:"#161616", borderRadius:1, overflow:"hidden" }}>
                 <div style={{ width:`${Math.min(100,(user?.credits||0)*10)}%`, height:"100%", background:(user?.credits||0) > 5 ? "#fff" : "#FF2040", borderRadius:1, transition:"width .3s" }}/>

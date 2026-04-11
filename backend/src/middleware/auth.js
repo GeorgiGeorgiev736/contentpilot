@@ -15,7 +15,7 @@ async function requireAuth(req, res, next) {
 
     // Fetch fresh user from DB (catches deleted/suspended accounts)
     const user = await queryOne(
-      "SELECT id, email, name, plan, credits, subscription_status, is_admin FROM users WHERE id = $1",
+      "SELECT id, email, name, plan, credits, credits_reset_at, subscription_status, is_admin FROM users WHERE id = $1",
       [decoded.userId]
     );
 

@@ -10,6 +10,8 @@ export default function LandingPage({ onLogin, onSignup }) {
         @keyframes px1{0%,89%,100%{opacity:0}90%{opacity:1;transform:translate(0,0)}91%{opacity:1;transform:translate(-3px,1px)}92%{opacity:0}94%{opacity:1;transform:translate(2px,-2px)}95%{opacity:0}}
         @keyframes px2{0%,74%,100%{opacity:0}75%{opacity:1}76%{opacity:0}78%{opacity:1;transform:translate(3px,2px)}79%{opacity:0}}
         @keyframes px3{0%,55%,100%{opacity:0}56%{opacity:1}57%{opacity:1;transform:translate(-2px,-3px)}58%{opacity:0}60%{opacity:1;transform:translate(4px,1px)}61%{opacity:0}}
+        @keyframes logoGlitch{0%,68%,100%{filter:none;transform:none;clip-path:none}69%{filter:drop-shadow(-6px 0 0 rgba(192,96,160,0.95)) drop-shadow(6px 0 0 rgba(64,160,192,0.95));transform:skewX(-7deg) translateX(-3px) scaleY(1.02);clip-path:polygon(0 10%,100% 10%,100% 48%,0 48%)}70%{filter:drop-shadow(7px 0 0 rgba(192,96,160,0.95)) drop-shadow(-6px 0 0 rgba(64,160,192,0.95)) brightness(1.7);transform:skewX(5deg) translateX(4px);clip-path:none}71%{filter:drop-shadow(-3px 0 0 rgba(192,96,160,0.7)) drop-shadow(3px 0 0 rgba(64,160,192,0.7));transform:translateX(-1px) skewX(-1deg)}72%,83%{filter:none;transform:none;clip-path:none}84%{filter:drop-shadow(10px 0 0 rgba(192,96,160,0.95)) drop-shadow(-10px 0 0 rgba(64,160,192,0.95)) brightness(1.5);transform:skewX(-11deg) scaleY(0.97);clip-path:polygon(0 0,100% 0,100% 35%,0 35%)}85%{filter:drop-shadow(-8px 0 0 rgba(192,96,160,0.95)) drop-shadow(8px 0 0 rgba(64,160,192,0.95));transform:skewX(7deg) translateX(7px);clip-path:polygon(0 35%,100% 35%,100% 100%,0 100%)}86%{filter:drop-shadow(4px 0 0 rgba(192,96,160,0.5)) drop-shadow(-2px 0 0 rgba(64,160,192,0.5));transform:translateX(-2px);clip-path:none}87%{filter:none;transform:none}}
+        .land-logo-glitch{animation:logoGlitch 6s steps(1) infinite;display:inline-block}
         .land-btn-primary{background:#fff;border:1px solid transparent;border-radius:10px;color:#000;font-weight:800;font-size:15px;cursor:pointer;padding:13px 32px;transition:none}
         .land-btn-primary:hover{animation:glitchBorder .1s steps(2) infinite,glitchShake .2s steps(8) infinite;border-color:rgba(255,255,255,0.8)!important;text-shadow:14px 5px rgba(246,0,153,0.85),-16px -3px rgba(15,210,255,0.85)}
         .land-btn-ghost{background:transparent;border:1px solid #2a2a2a;border-radius:10px;color:#aaa;cursor:pointer;font-size:15px;padding:13px 28px;transition:none}
@@ -43,17 +45,19 @@ export default function LandingPage({ onLogin, onSignup }) {
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, borderBottom:"1px solid #111", background:"rgba(6,6,15,0.92)", backdropFilter:"blur(12px)" }}>
         <div className="nav-inner" style={{ maxWidth:1200, margin:"0 auto", padding:"0 36px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="40" height="40" rx="9" fill="#111" stroke="#222" strokeWidth="1"/>
-              <g transform="translate(-2,0)" opacity="0.5"><rect x="8" y="10" width="8" height="14" rx="1.5" fill="#C060A0"/><rect x="10" y="10" width="12" height="3.5" rx="1.5" fill="#C060A0"/></g>
-              <g transform="translate(2,0)" opacity="0.5"><rect x="20" y="16" width="8" height="14" rx="1.5" fill="#40A0C0"/><rect x="14" y="26" width="12" height="3.5" rx="1.5" fill="#40A0C0"/></g>
-              <rect x="9" y="11" width="7" height="13" rx="1.5" fill="#fff"/>
-              <rect x="11" y="11" width="11" height="3.5" rx="1.5" fill="#fff"/>
-              <rect x="21" y="17" width="7" height="13" rx="1.5" fill="#fff"/>
-              <rect x="13" y="26" width="11" height="3.5" rx="1.5" fill="#fff"/>
-              <rect x="9" y="17" width="4" height="1.5" fill="#C060A0" opacity="0.9"/>
-              <rect x="27" y="22" width="3" height="1.5" fill="#40A0C0" opacity="0.9"/>
-            </svg>
+            <div className="land-logo-glitch">
+              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="9" fill="#111" stroke="#222" strokeWidth="1"/>
+                <g transform="translate(-2,0)" opacity="0.5"><rect x="8" y="10" width="8" height="14" rx="1.5" fill="#C060A0"/><rect x="10" y="10" width="12" height="3.5" rx="1.5" fill="#C060A0"/></g>
+                <g transform="translate(2,0)" opacity="0.5"><rect x="20" y="16" width="8" height="14" rx="1.5" fill="#40A0C0"/><rect x="14" y="26" width="12" height="3.5" rx="1.5" fill="#40A0C0"/></g>
+                <rect x="9" y="11" width="7" height="13" rx="1.5" fill="#fff"/>
+                <rect x="11" y="11" width="11" height="3.5" rx="1.5" fill="#fff"/>
+                <rect x="21" y="17" width="7" height="13" rx="1.5" fill="#fff"/>
+                <rect x="13" y="26" width="11" height="3.5" rx="1.5" fill="#fff"/>
+                <rect x="9" y="17" width="4" height="1.5" fill="#C060A0" opacity="0.9"/>
+                <rect x="27" y="22" width="3" height="1.5" fill="#40A0C0" opacity="0.9"/>
+              </svg>
+            </div>
             <span style={{ fontSize:17, fontWeight:800, color:"#fff", fontFamily:"'DM Mono',monospace", letterSpacing:"-.02em" }}>contentpilots</span>
           </div>
           <button onClick={onSignup} className="land-btn-primary" style={{ padding:"8px 20px", fontSize:14 }}>Get started</button>
