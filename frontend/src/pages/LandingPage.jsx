@@ -43,17 +43,20 @@ export default function LandingPage({ onLogin, onSignup }) {
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, borderBottom:"1px solid #111", background:"rgba(6,6,15,0.92)", backdropFilter:"blur(12px)" }}>
         <div className="nav-inner" style={{ maxWidth:1200, margin:"0 auto", padding:"0 36px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-              <rect x="8" y="8" width="24" height="24" rx="4" fill="none" stroke="#40A0C0" strokeWidth="2"/>
-              <rect x="14" y="14" width="12" height="12" rx="2" fill="#40A0C0" opacity=".7"/>
-              <rect x="17" y="17" width="6" height="6" rx="1" fill="#fff"/>
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="9" fill="#111" stroke="#222" strokeWidth="1"/>
+              <g transform="translate(-2,0)" opacity="0.5"><rect x="8" y="10" width="8" height="14" rx="1.5" fill="#C060A0"/><rect x="10" y="10" width="12" height="3.5" rx="1.5" fill="#C060A0"/></g>
+              <g transform="translate(2,0)" opacity="0.5"><rect x="20" y="16" width="8" height="14" rx="1.5" fill="#40A0C0"/><rect x="14" y="26" width="12" height="3.5" rx="1.5" fill="#40A0C0"/></g>
+              <rect x="9" y="11" width="7" height="13" rx="1.5" fill="#fff"/>
+              <rect x="11" y="11" width="11" height="3.5" rx="1.5" fill="#fff"/>
+              <rect x="21" y="17" width="7" height="13" rx="1.5" fill="#fff"/>
+              <rect x="13" y="26" width="11" height="3.5" rx="1.5" fill="#fff"/>
+              <rect x="9" y="17" width="4" height="1.5" fill="#C060A0" opacity="0.9"/>
+              <rect x="27" y="22" width="3" height="1.5" fill="#40A0C0" opacity="0.9"/>
             </svg>
             <span style={{ fontSize:17, fontWeight:800, color:"#fff", fontFamily:"'DM Mono',monospace", letterSpacing:"-.02em" }}>contentpilots</span>
           </div>
-          <div style={{ display:"flex", gap:10 }}>
-            <button onClick={onLogin}  className="land-btn-ghost" style={{ padding:"8px 20px", fontSize:14 }}>Log in</button>
-            <button onClick={onSignup} className="land-btn-primary" style={{ padding:"8px 20px", fontSize:14 }}>Get started</button>
-          </div>
+          <button onClick={onSignup} className="land-btn-primary" style={{ padding:"8px 20px", fontSize:14 }}>Get started</button>
         </div>
       </nav>
 
@@ -73,12 +76,9 @@ export default function LandingPage({ onLogin, onSignup }) {
           ContentPilots uses AI to generate scripts, thumbnails, and metadata — then automatically publishes your content to YouTube, TikTok, and Instagram.
         </p>
 
-        <div className="hero-btns" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-          <button onClick={onSignup} className="land-btn-primary" style={{ padding:"16px 40px", fontSize:16 }}>
+        <div style={{ display:"flex", justifyContent:"center" }}>
+          <button onClick={onSignup} className="land-btn-primary" style={{ padding:"16px 48px", fontSize:17 }}>
             Start for free →
-          </button>
-          <button onClick={onLogin} className="land-btn-ghost" style={{ padding:"16px 32px", fontSize:16 }}>
-            Log in
           </button>
         </div>
 
