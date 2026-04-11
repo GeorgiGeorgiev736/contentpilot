@@ -237,7 +237,7 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
             <div className="logo-glitch" style={{ flexShrink:0 }}><GlitchLogo size={38}/></div>
             {!collapsed && (
               <div style={{ minWidth:0 }}>
-                <div style={{ fontWeight:900, fontSize:16, color:"#fff", whiteSpace:"nowrap", letterSpacing:"-.02em", lineHeight:1.1 }}>AUTOPILOT</div>
+                <div style={{ fontWeight:900, fontSize:16, color:"#fff", whiteSpace:"nowrap", letterSpacing:"-.02em", lineHeight:1.1, fontFamily:"'DM Mono',monospace" }}>contentpilots</div>
                 <div style={{ fontSize:11, color:"#555", letterSpacing:".2em", textTransform:"uppercase", marginTop:2 }}>Creator OS</div>
               </div>
             )}
@@ -413,7 +413,7 @@ function MobileNav({ page, setPage, user }) {
         {/* Logo */}
         <div onClick={() => { setPage("dashboard"); setOpen(false); }} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
           <span className="logo-glitch"><GlitchLogo size={32}/></span>
-          <span style={{ fontWeight:900, fontSize:14, color:"#fff", letterSpacing:"-.01em" }}>AUTOPILOT</span>
+          <span style={{ fontWeight:900, fontSize:14, color:"#fff", letterSpacing:"-.01em", fontFamily:"'DM Mono',monospace" }}>contentpilots</span>
         </div>
 
         {/* Post Content button */}
