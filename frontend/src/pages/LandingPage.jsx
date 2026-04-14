@@ -98,12 +98,12 @@ export default function LandingPage({ onLogin, onSignup }) {
 
         <div className="features-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
           {[
-            { icon:"⊙", title:"AI Pipeline",         desc:"Enter a niche and topic. Claude AI researches trends, writes a viral script, generates metadata, and scores virality — in one click." },
-            { icon:"◉", title:"AI Avatar Studio",     desc:"Generate a photorealistic AI presenter, add a voice, paste your script — get a talking video without ever going on camera." },
-            { icon:"⬡", title:"Multi-Platform Publishing", desc:"Connect YouTube, TikTok, and Instagram. Schedule and publish automatically — one workflow for all platforms." },
-            { icon:"✦", title:"Trend Scanner",        desc:"Real-time trend analysis across platforms. Know what's going viral before you create, so every video has a head start." },
-            { icon:"◈", title:"Thumbnail Generator",  desc:"AI-generated thumbnails optimised for click-through rate. No design skills needed." },
-            { icon:"⚡", title:"Content Calendar",    desc:"Visual calendar to plan, schedule, and track all your posts across platforms in one place." },
+            { icon:"⊙", title:"AI Pipeline",              desc:"Enter a niche and topic. Claude AI researches trends, writes a viral script, generates metadata, and scores virality — in one click." },
+            { icon:"✦", title:"Hook Generator",           desc:"Generate 10 viral opening hooks for any topic. Stop the scroll in the first 3 seconds." },
+            { icon:"⬡", title:"Multi-Platform Publishing",desc:"Connect YouTube, TikTok, and Instagram. Schedule and publish automatically — one workflow for all platforms." },
+            { icon:"◈", title:"A/B Thumbnails",           desc:"Generate 3 AI thumbnail variants in different styles. Pick your favourite or A/B test them." },
+            { icon:"⚡", title:"Repurpose Videos",        desc:"Upload a long video — AI finds the 5 most viral moments and cuts them into ready-to-post clips for Shorts and Reels." },
+            { icon:"◫", title:"Content Calendar",         desc:"Visual calendar to plan, schedule, and track all your posts across platforms in one place." },
           ].map((f, i) => (
             <div key={i} className="feature-card" style={{ animationDelay:`${i * 0.06}s` }}>
               <div style={{ fontSize:28, marginBottom:14, color:"#40A0C0" }}>{f.icon}</div>
