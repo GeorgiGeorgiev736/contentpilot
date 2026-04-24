@@ -2,10 +2,13 @@ const router     = require("express").Router();
 const multer     = require("multer");
 const path       = require("path");
 const fs         = require("fs");
+const https      = require("https");
+const http       = require("http");
 const Replicate  = require("replicate");
 const Anthropic  = require("@anthropic-ai/sdk");
 const ffmpeg     = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
+const ytdl       = require("@distube/ytdl-core");
 const { requireAuth }    = require("../middleware/auth");
 const { query }          = require("../db/client");
 const { uploadToR2 }     = require("../utils/r2");
@@ -48,6 +51,38 @@ async function gate(req, res, feature) {
 async function deduct(userId, feature, cost) {
   await query("UPDATE users SET credits = GREATEST(credits - $1, 0) WHERE id = $2", [cost, userId]);
   await query("INSERT INTO ai_usage (user_id, feature, tokens_used, credits_used) VALUES ($1,$2,0,$3)", [userId, feature, cost]);
+}
+
+function isYouTubeUrl(url) {
+  return /youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts/i.test(url);
+}
+
+async function downloadVideoFromUrl(videoUrl, destPath) {
+  if (isYouTubeUrl(videoUrl)) {
+    await new Promise((resolve, reject) => {
+      const stream = ytdl(videoUrl, {
+        quality: "highestvideo",
+        filter:  format => format.container === "mp4" && format.hasVideo && format.hasAudio,
+      });
+      const out = fs.createWriteStream(destPath);
+      stream.pipe(out);
+      stream.on("error", reject);
+      out.on("finish", resolve);
+      out.on("error", reject);
+    });
+  } else {
+    // Direct video URL (mp4, mov, etc.)
+    await new Promise((resolve, reject) => {
+      const proto = videoUrl.startsWith("https") ? https : http;
+      const out   = fs.createWriteStream(destPath);
+      proto.get(videoUrl, res => {
+        if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode} downloading video`));
+        res.pipe(out);
+        out.on("finish", resolve);
+        out.on("error", reject);
+      }).on("error", reject);
+    });
+  }
 }
 
 async function fileToReplicate(filePath, mimeType) {
@@ -173,18 +208,31 @@ router.post("/captions", requireAuth, videoUpload.single("video"), async (req, r
 
 // ── POST /api/tools/repurpose ─────────────────────────────────
 router.post("/repurpose", requireAuth, videoUpload.single("video"), async (req, res, next) => {
+  let downloadedPath = null;
   const cleanup = (extra = []) => {
     if (req.file?.path) fs.unlink(req.file.path, () => {});
+    if (downloadedPath)  fs.unlink(downloadedPath, () => {});
     extra.forEach(p => fs.unlink(p, () => {}));
   };
   try {
-    if (!req.file) return res.status(400).json({ error: "No video uploaded" });
+    const videoUrl = req.body?.videoUrl?.trim();
+    let videoPath  = req.file?.path;
+    let mimeType   = req.file?.mimetype || "video/mp4";
+
+    if (!videoPath && videoUrl) {
+      const outName    = `${req.user.id}_url_${Date.now()}.mp4`;
+      downloadedPath   = path.join(uploadsDir, outName);
+      videoPath        = downloadedPath;
+      await downloadVideoFromUrl(videoUrl, downloadedPath);
+    }
+
+    if (!videoPath) return res.status(400).json({ error: "No video uploaded or URL provided" });
 
     const g = await gate(req, res, "repurpose");
     if (!g) { cleanup(); return; }
 
     // Step 1: Whisper transcription with timestamps
-    const fileUrl = await fileToReplicate(req.file.path, req.file.mimetype);
+    const fileUrl = await fileToReplicate(videoPath, mimeType);
 
     const whisper = await replicate.run("openai/whisper", {
       input: {
@@ -237,7 +285,7 @@ Return ONLY a JSON array of 5 objects — no markdown, no explanation:
       const duration = Math.max(1, clip.end - clip.start);
 
       await new Promise((resolve, reject) => {
-        ffmpeg(req.file.path)
+        ffmpeg(videoPath)
           .seekInput(clip.start)
           .duration(duration)
           .videoCodec("copy")

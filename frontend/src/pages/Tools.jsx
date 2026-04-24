@@ -242,17 +242,22 @@ function CaptionsTab() {
 
 // ── Repurpose tab ─────────────────────────────────────────────
 function RepurposeTab() {
+  const [mode,    setMode]    = useState("file"); // "file" | "url"
   const [file,    setFile]    = useState(null);
+  const [url,     setUrl]     = useState("");
   const [loading, setLoading] = useState(false);
   const [clips,   setClips]   = useState([]);
   const [err,     setErr]     = useState("");
   const inputRef = useRef();
 
+  const canSubmit = mode === "file" ? !!file : url.trim().length > 0;
+
   const generate = async () => {
-    if (!file) return;
+    if (!canSubmit) return;
     setLoading(true); setErr(""); setClips([]);
     const fd = new FormData();
-    fd.append("video", file);
+    if (mode === "file") fd.append("video", file);
+    else fd.append("videoUrl", url.trim());
     try {
       const r = await fetch(`${API}/api/tools/repurpose`, { method:"POST", headers: hdr(), body: fd });
       const d = await r.json();
@@ -262,21 +267,47 @@ function RepurposeTab() {
     setLoading(false);
   };
 
+  const tabBtn = (m, label) => (
+    <button onClick={() => { setMode(m); setFile(null); setUrl(""); setClips([]); setErr(""); }}
+      style={{ padding:"7px 18px", fontSize:13, borderRadius:8, cursor:"pointer", border:"1px solid",
+        borderColor: mode === m ? "#40A0C0" : "#222",
+        background:  mode === m ? "#40A0C012" : "transparent",
+        color:       mode === m ? "#40A0C0" : "#666" }}>
+      {label}
+    </button>
+  );
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
       <div className="card" style={{ padding:24, display:"flex", flexDirection:"column", gap:14 }}>
-        <div style={{ fontSize:14, color:"#9090B8" }}>Upload a long video — podcast, vlog, interview. AI transcribes it, picks the 5 most viral moments, and cuts them into ready-to-post clips. 10 credits.</div>
-        <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
-          <input ref={inputRef} type="file" accept="video/*" style={{ display:"none" }} onChange={e => setFile(e.target.files[0] || null)} />
-          <button onClick={() => inputRef.current.click()} className="btn-ghost" style={{ padding:"10px 22px", fontSize:14 }}>
-            {file ? `✓ ${file.name}` : "Choose Video"}
-          </button>
-          {file && <span style={{ fontSize:12, color:"#555" }}>{(file.size / 1024 / 1024).toFixed(1)} MB</span>}
-          <button onClick={generate} disabled={!file || loading} className="btn-primary" style={{ padding:"10px 24px", fontSize:14 }}>
-            {loading ? "Processing…" : "⚡ Find Best Clips"}
-          </button>
+        <div style={{ fontSize:14, color:"#9090B8" }}>Upload a long video or paste a YouTube link — AI transcribes it, picks the 5 most viral moments, and cuts them into ready-to-post clips. 10 credits.</div>
+        <div style={{ display:"flex", gap:8 }}>
+          {tabBtn("file", "⬆ Upload File")}
+          {tabBtn("url",  "🔗 Paste URL")}
         </div>
-        <div style={{ fontSize:12, color:"#555" }}>Max 200 MB · best results with 5–60 min videos</div>
+        {mode === "file" ? (
+          <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+            <input ref={inputRef} type="file" accept="video/*" style={{ display:"none" }} onChange={e => setFile(e.target.files[0] || null)} />
+            <button onClick={() => inputRef.current.click()} className="btn-ghost" style={{ padding:"10px 22px", fontSize:14 }}>
+              {file ? `✓ ${file.name}` : "Choose Video"}
+            </button>
+            {file && <span style={{ fontSize:12, color:"#555" }}>{(file.size / 1024 / 1024).toFixed(1)} MB</span>}
+            <button onClick={generate} disabled={!canSubmit || loading} className="btn-primary" style={{ padding:"10px 24px", fontSize:14 }}>
+              {loading ? "Processing…" : "⚡ Find Best Clips"}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+            <input value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === "Enter" && generate()}
+              placeholder="https://www.youtube.com/watch?v=..." className="inp" style={{ flex:1, minWidth:260 }} />
+            <button onClick={generate} disabled={!canSubmit || loading} className="btn-primary" style={{ padding:"10px 24px", fontSize:14 }}>
+              {loading ? "Processing…" : "⚡ Find Best Clips"}
+            </button>
+          </div>
+        )}
+        <div style={{ fontSize:12, color:"#555" }}>
+          {mode === "file" ? "Max 200 MB · best results with 5–60 min videos" : "Supports YouTube, YouTube Shorts, and direct video URLs"}
+        </div>
       </div>
 
       <ErrBox msg={err} onClose={() => setErr("")} />
