@@ -5,9 +5,11 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 const CONFIGS = {
   youtube:        { name:"YouTube",                color:"#FF0000", icon:"▶", scopes:["Channel analytics","Video metadata","Comments","Upload & schedule"],                        features:["Video SEO optimization","Thumbnail A/B testing","Comment sentiment","Best time prediction"] },
-  youtube_shorts: { name:"YouTube Shorts Channel", color:"#FF0000", icon:"▶", note:"Separate channel dedicated to Shorts", isOptional:true, scopes:["Upload Shorts","Channel analytics","Shorts scheduling"], features:["Auto-tag as Short","Shorts feed optimization","Separate analytics","Cross-post from Video Clipper"] },
+  youtube_shorts: { name:"YouTube Shorts Channel", color:"#FF0000", icon:"▶", isOptional:true, scopes:["Upload Shorts","Channel analytics","Shorts scheduling"],                  features:["Auto-tag as Short","Shorts feed optimization","Separate analytics","Cross-post from Video Clipper"] },
   tiktok:         { name:"TikTok",                 color:"#69C9D0", icon:"♪", scopes:["Video analytics","Follower demographics","Trending sounds","Post scheduling"],              features:["FYP trend detection","Sound & hashtag analysis","Viral pattern matching","Duet opportunities"] },
   instagram:      { name:"Instagram (via Meta)",   color:"#E1306C", icon:"◈", scopes:["Media insights","Audience demographics","Story analytics","Hashtag data"],                 features:["Reel performance tracking","Hashtag optimization","Audience overlap","Cross-platform repurposing"] },
+  linkedin:       { name:"LinkedIn",               color:"#0A66C2", icon:"in", scopes:["Post updates","Share content","Profile access"],                                           features:["Professional audience reach","B2B content publishing","Thought leadership posts","Career growth content"] },
+  twitter:        { name:"X (Twitter)",            color:"#e0e0e0", icon:"𝕏",  scopes:["Post tweets","Upload media","Read profile"],                                              features:["Thread publishing","Trending topic content","Viral short-form posts","Real-time audience reach"] },
 };
 
 export default function Platforms() {
@@ -181,7 +183,7 @@ export default function Platforms() {
       <div className="card" style={{ padding:"18px 22px" }}>
         <div style={{ fontSize:12, color:"#7878A8", marginBottom:10, fontWeight:600, textTransform:"uppercase", letterSpacing:".06em" }}>Coming Soon</div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-          {["X / Twitter","LinkedIn","Pinterest","Snapchat","Twitch","YouTube Shorts"].map(p => (
+          {["Pinterest","Snapchat","Twitch","Facebook"].map(p => (
             <span key={p} style={{ background:"#10102A", color:"#7878A8", border:"1px solid #1a1a1a", fontSize:11, fontWeight:600, padding:"4px 12px", borderRadius:20 }}>{p}</span>
           ))}
         </div>

@@ -23,9 +23,7 @@ import { useAuth } from "../hooks/useAuth";
 
 const NAV_TOP = [
   ["dashboard",    "⊞", "Dashboard"],
-  ["scripts",      "✦", "AI Scripts"],
-  ["pipeline",     "⊙", "AI Pipeline"],
-  ["tools",        "⚡", "AI Tools"],
+  ["upload",       "⬆", "Upload"],
   ["analytics",    "▦", "Analytics"],
   ["platforms",    "⬡", "Platforms"],
   ["calendar",     "◫", "Calendar"],

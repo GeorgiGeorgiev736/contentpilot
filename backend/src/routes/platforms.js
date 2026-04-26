@@ -219,6 +219,29 @@ router.get("/:platform/stats", requireAuth, async (req, res, next) => {
       }});
     }
 
+    // ── LinkedIn ─────────────────────────────────────────────
+    if (platform === "linkedin") {
+      return res.json({ platform, stats: {
+        handle: connection.handle,
+        status: "Connected",
+        note:   "LinkedIn analytics via API coming soon",
+      }});
+    }
+
+    // ── X (Twitter) ──────────────────────────────────────────
+    if (platform === "twitter") {
+      const profileRes = await fetch(
+        "https://api.twitter.com/2/users/me?user.fields=public_metrics",
+        { headers: { Authorization: `Bearer ${connection.access_token}` } }
+      );
+      const { data: p } = await profileRes.json();
+      return res.json({ platform, stats: {
+        followers: parseInt(p?.public_metrics?.followers_count || 0).toLocaleString(),
+        following: parseInt(p?.public_metrics?.following_count || 0).toLocaleString(),
+        tweets:    parseInt(p?.public_metrics?.tweet_count     || 0).toLocaleString(),
+      }});
+    }
+
     res.json({ platform, stats: {} });
   } catch (err) { next(err); }
 });

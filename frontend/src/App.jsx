@@ -6,13 +6,11 @@ import LandingPage  from "./pages/LandingPage";
 import Sidebar      from "./components/Sidebar";
 import Dashboard    from "./pages/Dashboard";
 import Platforms    from "./pages/Platforms";
-import Scripts      from "./pages/Scripts";
 import Analytics    from "./pages/Analytics";
-import Pipeline     from "./pages/Pipeline";
 import Pricing      from "./pages/Pricing";
 import Account      from "./pages/Account";
 import PostContent  from "./pages/PostContent";
-import Tools        from "./pages/Tools";
+import Upload       from "./pages/Upload";
 import Admin        from "./pages/Admin";
 import Calendar     from "./pages/Calendar";
 import Achievements from "./pages/Achievements";
@@ -20,14 +18,12 @@ import { BubbleTutorial, LoginTip } from "./components/BubbleTutorial";
 
 const PAGES = {
   dashboard:    Dashboard,
+  upload:       Upload,
   postcontent:  PostContent,
-  scripts:      Scripts,
   analytics:    Analytics,
-  pipeline:     Pipeline,
   platforms:    Platforms,
   pricing:      Pricing,
   account:      Account,
-  tools:        Tools,
   admin:        Admin,
   calendar:     Calendar,
   achievements: Achievements,

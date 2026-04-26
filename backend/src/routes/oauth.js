@@ -448,4 +448,120 @@ router.get("/instagram/callback", async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// LINKEDIN — platform connection
+// ─────────────────────────────────────────────────────────────
+router.get("/linkedin", requireAuth, (req, res) => {
+  const state = Buffer.from(JSON.stringify({ userId: req.user.id })).toString("base64");
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id:     process.env.LINKEDIN_CLIENT_ID,
+    redirect_uri:  process.env.LINKEDIN_REDIRECT_URI,
+    scope:         "openid profile email w_member_social",
+    state,
+  });
+  res.redirect(`https://www.linkedin.com/oauth/v2/authorization?${params}`);
+});
+
+router.get("/linkedin/callback", async (req, res) => {
+  const { code, state } = req.query;
+  if (!code) return res.redirect(`${process.env.FRONTEND_URL}/platforms?error=no_code`);
+  try {
+    const { userId } = JSON.parse(Buffer.from(state, "base64").toString());
+
+    const tokenRes = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
+      method:  "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body:    new URLSearchParams({
+        grant_type:    "authorization_code",
+        code,
+        redirect_uri:  process.env.LINKEDIN_REDIRECT_URI,
+        client_id:     process.env.LINKEDIN_CLIENT_ID,
+        client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+      }),
+    });
+    const tokens = await tokenRes.json();
+    if (!tokens.access_token) throw new Error("LinkedIn token exchange failed");
+
+    const profileRes = await fetch("https://api.linkedin.com/v2/userinfo", {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    const profile = await profileRes.json();
+
+    const handle = profile.name || profile.email || "LinkedIn User";
+    await query(
+      `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,followers,connected,updated_at)
+       VALUES ($1,'linkedin','default',$2,$3,0,true,NOW())
+       ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+         handle=$2,access_token=$3,connected=true,updated_at=NOW()`,
+      [userId, handle, tokens.access_token]
+    );
+    res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=linkedin`);
+  } catch (err) {
+    console.error("LinkedIn connect error:", err.message);
+    res.redirect(`${process.env.FRONTEND_URL}/platforms?error=linkedin_failed&detail=${encodeURIComponent(err.message)}`);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// X (TWITTER) — platform connection (OAuth 2.0 + PKCE)
+// ─────────────────────────────────────────────────────────────
+router.get("/twitter", requireAuth, (req, res) => {
+  const codeVerifier  = crypto.randomBytes(32).toString("base64url");
+  const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
+  const state = Buffer.from(JSON.stringify({ userId: req.user.id, codeVerifier })).toString("base64");
+
+  const params = new URLSearchParams({
+    response_type:          "code",
+    client_id:              process.env.X_CLIENT_ID,
+    redirect_uri:           process.env.X_REDIRECT_URI,
+    scope:                  "tweet.read tweet.write users.read offline.access",
+    state,
+    code_challenge:         codeChallenge,
+    code_challenge_method:  "S256",
+  });
+  res.redirect(`https://twitter.com/i/oauth2/authorize?${params}`);
+});
+
+router.get("/twitter/callback", async (req, res) => {
+  const { code, state } = req.query;
+  if (!code) return res.redirect(`${process.env.FRONTEND_URL}/platforms?error=no_code`);
+  try {
+    const { userId, codeVerifier } = JSON.parse(Buffer.from(state, "base64").toString());
+
+    const tokenRes = await fetch("https://api.twitter.com/2/oauth2/token", {
+      method:  "POST",
+      headers: {
+        "Content-Type":  "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${Buffer.from(`${process.env.X_CLIENT_ID}:${process.env.X_CLIENT_SECRET}`).toString("base64")}`,
+      },
+      body: new URLSearchParams({
+        grant_type:    "authorization_code",
+        code,
+        redirect_uri:  process.env.X_REDIRECT_URI,
+        code_verifier: codeVerifier,
+      }),
+    });
+    const tokens = await tokenRes.json();
+    if (!tokens.access_token) throw new Error("X token exchange failed");
+
+    const profileRes = await fetch("https://api.twitter.com/2/users/me?user.fields=public_metrics,username", {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    const { data: profile } = await profileRes.json();
+
+    await query(
+      `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,refresh_token,followers,connected,updated_at)
+       VALUES ($1,'twitter','default',$2,$3,$4,$5,true,NOW())
+       ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
+         handle=$2,access_token=$3,refresh_token=$4,followers=$5,connected=true,updated_at=NOW()`,
+      [userId, `@${profile.username}`, tokens.access_token, tokens.refresh_token || null, profile.public_metrics?.followers_count || 0]
+    );
+    res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=twitter`);
+  } catch (err) {
+    console.error("X connect error:", err.message);
+    res.redirect(`${process.env.FRONTEND_URL}/platforms?error=twitter_failed&detail=${encodeURIComponent(err.message)}`);
+  }
+});
+
 module.exports = router;
