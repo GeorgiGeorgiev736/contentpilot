@@ -23,7 +23,6 @@ import { useAuth } from "../hooks/useAuth";
 
 const NAV_TOP = [
   ["dashboard",    "⊞", "Dashboard"],
-  ["upload",       "⬆", "Upload"],
   ["analytics",    "▦", "Analytics"],
   ["platforms",    "⬡", "Platforms"],
   ["calendar",     "◫", "Calendar"],
@@ -280,9 +279,9 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
       {/* Post Content CTA */}
       {collapsed ? (
         <button
-          data-tutorial="nav-postcontent"
-          onClick={() => setPage("postcontent")}
-          title="Post Content"
+          data-tutorial="nav-upload"
+          onClick={() => setPage("upload")}
+          title="Upload & Create"
           className="cyber-btn"
           style={{ marginBottom:18, padding:"11px 0", justifyContent:"center", width:44 }}
         >
@@ -293,21 +292,21 @@ function DesktopSidebar({ page, setPage, user, collapsed, setCollapsed }) {
         </button>
       ) : (
         <button
-          data-tutorial="nav-postcontent"
-          onClick={() => setPage("postcontent")}
+          data-tutorial="nav-upload"
+          onClick={() => setPage("upload")}
           className="cyber-btn"
           style={{ marginBottom:18 }}
         >
           <span className="cb-backdrop"><span className="cb-corner"/></span>
-          <kbd>P</kbd>
+          <kbd>U</kbd>
           <div style={{ flex:1, textAlign:"left", lineHeight:1.25 }}>
-            <div style={{ fontSize:15, fontWeight:900, letterSpacing:".06em" }}>POST CONTENT</div>
-            <div style={{ fontSize:11, opacity:.55, letterSpacing:".1em", fontWeight:500, marginTop:2 }}>UPLOAD · EDIT · SCHEDULE</div>
+            <div style={{ fontSize:15, fontWeight:900, letterSpacing:".06em" }}>UPLOAD & CREATE</div>
+            <div style={{ fontSize:11, opacity:.55, letterSpacing:".1em", fontWeight:500, marginTop:2 }}>AI · CLIPS · SCHEDULE</div>
           </div>
           <div className="cb-glitch" aria-hidden="true">
             <span className="cb-backdrop"><span className="cb-corner"/></span>
-            <kbd>P</kbd>
-            <div style={{ fontSize:15, fontWeight:900, letterSpacing:".06em" }}>POST CONTENT</div>
+            <kbd>U</kbd>
+            <div style={{ fontSize:15, fontWeight:900, letterSpacing:".06em" }}>UPLOAD & CREATE</div>
           </div>
         </button>
       )}
@@ -441,13 +440,13 @@ function MobileNav({ page, setPage, user }) {
 
         {/* Post Content button */}
         <button
-          onClick={() => { setPage("postcontent"); setOpen(false); }}
+          onClick={() => { setPage("upload"); setOpen(false); }}
           style={{ flex:1, maxWidth:160, margin:"0 12px", padding:"8px 12px", background:"#fff", border:"none", borderRadius:8, color:"#000", fontWeight:900, fontSize:11, cursor:"pointer", letterSpacing:".05em", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 3v13M7 8l5-5 5 5"/><path d="M5 19h14"/>
           </svg>
-          POST
+          UPLOAD
         </button>
 
         {/* Hamburger */}
