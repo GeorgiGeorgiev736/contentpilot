@@ -9,14 +9,12 @@ const BASE = process.env.PAYPAL_MODE === "live"
 
 // planKey → { planId (PayPal), credits/month, dbPlan (stored in users.plan) }
 const PLANS = {
-  starter:        { planId: process.env.PAYPAL_PLAN_STARTER,        credits: 75,   dbPlan: "starter"  },
-  starter_yearly: { planId: process.env.PAYPAL_PLAN_STARTER_YEARLY, credits: 75,   dbPlan: "starter"  },
-  creator:        { planId: process.env.PAYPAL_PLAN_CREATOR,        credits: 300,  dbPlan: "creator"  },
-  creator_yearly: { planId: process.env.PAYPAL_PLAN_CREATOR_YEARLY, credits: 300,  dbPlan: "creator"  },
-  pro:            { planId: process.env.PAYPAL_PLAN_PRO,            credits: 700,  dbPlan: "pro"      },
-  pro_yearly:     { planId: process.env.PAYPAL_PLAN_PRO_YEARLY,     credits: 700,  dbPlan: "pro"      },
-  agency:         { planId: process.env.PAYPAL_PLAN_AGENCY,         credits: 2000, dbPlan: "agency"   },
-  agency_yearly:  { planId: process.env.PAYPAL_PLAN_AGENCY_YEARLY,  credits: 2000, dbPlan: "agency"   },
+  starter:        { planId: process.env.PAYPAL_PLAN_STARTER,        credits: 75,  dbPlan: "starter" },
+  starter_yearly: { planId: process.env.PAYPAL_PLAN_STARTER_YEARLY, credits: 75,  dbPlan: "starter" },
+  creator:        { planId: process.env.PAYPAL_PLAN_CREATOR,        credits: 300, dbPlan: "creator" },
+  creator_yearly: { planId: process.env.PAYPAL_PLAN_CREATOR_YEARLY, credits: 300, dbPlan: "creator" },
+  pro:            { planId: process.env.PAYPAL_PLAN_PRO,            credits: 700, dbPlan: "pro"     },
+  pro_yearly:     { planId: process.env.PAYPAL_PLAN_PRO_YEARLY,     credits: 700, dbPlan: "pro"     },
 };
 
 async function getAccessToken() {

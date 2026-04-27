@@ -70,23 +70,6 @@ const PLANS_MONTHLY = [
       "Dedicated account manager",
     ],
   },
-  {
-    id: "agency",
-    name: "Agency",
-    price: 119,
-    yearlyPrice: 99,
-    credits: 2000,
-    creditNote: "2,000 credits / month",
-    color: "#F59E0B",
-    features: [
-      "2,000 AI credits / month (~66/day)",
-      "Everything in Pro",
-      "5 team members · 20 channels",
-      "White-label reports",
-      "API access",
-      "SLA + dedicated Slack channel",
-    ],
-  },
 ];
 
 export default function Pricing({ setPage }) {
@@ -167,7 +150,7 @@ export default function Pricing({ setPage }) {
       {error  && <div style={{ padding:"12px 16px", background:"#EF444410", border:"1px solid #EF444422", borderRadius:10, color:"#EF4444", fontSize:13 }}>{error}</div>}
 
       {/* Plan cards */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
         {PLANS_MONTHLY.map(plan => {
           const isCurrent = currentPlan === plan.id;
           const col       = plan.color;
