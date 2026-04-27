@@ -7,11 +7,16 @@ const BASE = process.env.PAYPAL_MODE === "live"
   ? "https://api-m.paypal.com"
   : "https://api-m.sandbox.paypal.com";
 
+// planKey → { planId (PayPal), credits/month, dbPlan (stored in users.plan) }
 const PLANS = {
-  creator:  { planId: process.env.PAYPAL_PLAN_CREATOR,  credits: 200,  name: "Creator"  },
-  pro:      { planId: process.env.PAYPAL_PLAN_PRO,      credits: 500,  name: "Pro"      },
-  business: { planId: process.env.PAYPAL_PLAN_BUSINESS, credits: 1500, name: "Business" },
-  max:      { planId: process.env.PAYPAL_PLAN_MAX,      credits: 5000, name: "Max"      },
+  starter:        { planId: process.env.PAYPAL_PLAN_STARTER,        credits: 75,   dbPlan: "starter"  },
+  starter_yearly: { planId: process.env.PAYPAL_PLAN_STARTER_YEARLY, credits: 75,   dbPlan: "starter"  },
+  creator:        { planId: process.env.PAYPAL_PLAN_CREATOR,        credits: 300,  dbPlan: "creator"  },
+  creator_yearly: { planId: process.env.PAYPAL_PLAN_CREATOR_YEARLY, credits: 300,  dbPlan: "creator"  },
+  pro:            { planId: process.env.PAYPAL_PLAN_PRO,            credits: 700,  dbPlan: "pro"      },
+  pro_yearly:     { planId: process.env.PAYPAL_PLAN_PRO_YEARLY,     credits: 700,  dbPlan: "pro"      },
+  agency:         { planId: process.env.PAYPAL_PLAN_AGENCY,         credits: 2000, dbPlan: "agency"   },
+  agency_yearly:  { planId: process.env.PAYPAL_PLAN_AGENCY_YEARLY,  credits: 2000, dbPlan: "agency"   },
 };
 
 async function getAccessToken() {
@@ -94,10 +99,10 @@ router.post("/verify", requireAuth, async (req, res, next) => {
     await query(
       `UPDATE users SET plan=$1, credits=$2, paypal_subscription_id=$3,
        subscription_status='active', updated_at=NOW() WHERE id=$4`,
-      [plan, planConfig.credits, subscriptionId, userId]
+      [planConfig.dbPlan, planConfig.credits, subscriptionId, userId]
     );
 
-    logger.info(`User ${userId} subscribed via PayPal to ${plan}`);
+    logger.info(`User ${userId} subscribed via PayPal to ${planConfig.dbPlan}`);
     res.json({ success: true, plan });
   } catch (err) { next(err); }
 });
@@ -124,7 +129,7 @@ router.post("/webhook", async (req, res) => {
         await query(
           `UPDATE users SET plan=$1, credits=$2, paypal_subscription_id=$3,
            subscription_status='active', updated_at=NOW() WHERE id=$4`,
-          [plan, planConfig.credits, resource.id, userId]
+          [planConfig.dbPlan, planConfig.credits, resource.id, userId]
         );
       }
     }
