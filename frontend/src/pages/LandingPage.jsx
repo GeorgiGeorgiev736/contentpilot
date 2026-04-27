@@ -68,16 +68,16 @@ export default function LandingPage({ onLogin, onSignup }) {
       <div className="hero-inner" style={{ maxWidth:1100, margin:"0 auto", padding:"140px 36px 80px", textAlign:"center", position:"relative", zIndex:1, animation:"fadeUp .5s cubic-bezier(.22,1,.36,1) both" }}>
         <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"6px 16px", borderRadius:20, border:"1px solid #40A0C022", background:"#40A0C010", marginBottom:28 }}>
           <span style={{ width:7, height:7, borderRadius:"50%", background:"#40A0C0", display:"inline-block" }} />
-          <span style={{ fontSize:13, color:"#40A0C0", fontFamily:"'DM Mono',monospace", letterSpacing:".05em" }}>// AI-powered content automation</span>
+          <span style={{ fontSize:13, color:"#40A0C0", fontFamily:"'DM Mono',monospace", letterSpacing:".05em" }}>// upload once · publish everywhere</span>
         </div>
 
         <h1 className="hero-title" style={{ fontSize:62, fontWeight:900, color:"#fff", letterSpacing:"-.04em", lineHeight:1.08, marginBottom:24 }}>
-          Create, schedule &amp; publish<br />
-          <span style={{ color:"#40A0C0" }}>content on autopilot</span>
+          One video. Clips, captions<br />
+          <span style={{ color:"#40A0C0" }}>&amp; posts for every platform.</span>
         </h1>
 
         <p style={{ fontSize:20, color:"#888", maxWidth:600, margin:"0 auto 40px", lineHeight:1.65 }}>
-          ContentPilots uses AI to generate scripts, thumbnails, and metadata — then automatically publishes your content to YouTube, TikTok, and Instagram.
+          Upload a video and AI automatically writes your title, tags &amp; description, cuts it into viral Shorts &amp; Reels, generates thumbnails, and schedules everything to YouTube, TikTok, Instagram, LinkedIn, and X.
         </p>
 
         <div style={{ display:"flex", justifyContent:"center" }}>
