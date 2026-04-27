@@ -100,6 +100,70 @@ function parseDuration(iso) {
   return (parseInt(m?.[1] || 0) * 3600) + (parseInt(m?.[2] || 0) * 60) + parseInt(m?.[3] || 0);
 }
 
+// GET /api/platforms/top-posts — top content across ALL connected platforms
+router.get("/top-posts", requireAuth, async (req, res, next) => {
+  try {
+    const connections = await query(
+      "SELECT * FROM platform_connections WHERE user_id=$1 AND connected=true",
+      [req.user.id]
+    );
+
+    const allPosts = [];
+
+    await Promise.allSettled(connections.map(async conn => {
+      // ── YouTube / YouTube Shorts ────────────────────────────
+      if (conn.platform === "youtube" || conn.platform === "youtube_shorts") {
+        const searchData = await googleFetch(
+          "https://www.googleapis.com/youtube/v3/search?part=snippet&forMine=true&type=video&order=viewCount&maxResults=10",
+          conn
+        ).catch(() => null);
+        const ids = searchData?.items?.map(i => i.id.videoId).filter(Boolean).join(",");
+        if (!ids) return;
+
+        const statsData = await googleFetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${ids}`,
+          conn
+        ).catch(() => null);
+
+        for (const v of (statsData?.items || [])) {
+          const dur     = parseDuration(v.contentDetails?.duration || "");
+          const isShort = dur > 0 && dur <= 60;
+          allPosts.push({
+            title:    v.snippet?.title || "Untitled",
+            platform: isShort ? "youtube_shorts" : "youtube",
+            views:    parseInt(v.statistics?.viewCount    || 0),
+            likes:    parseInt(v.statistics?.likeCount    || 0),
+            comments: parseInt(v.statistics?.commentCount || 0),
+          });
+        }
+      }
+
+      // ── Instagram ───────────────────────────────────────────
+      if (conn.platform === "instagram") {
+        const meRes  = await fetch(`https://graph.facebook.com/v18.0/me?fields=id&access_token=${conn.access_token}`).catch(() => null);
+        const meData = await meRes?.json().catch(() => null);
+        if (!meData?.id) return;
+
+        const mediaRes  = await fetch(`https://graph.facebook.com/v18.0/${meData.id}/media?fields=caption,media_type,like_count,comments_count&limit=10&access_token=${conn.access_token}`).catch(() => null);
+        const mediaData = await mediaRes?.json().catch(() => null);
+        for (const m of (mediaData?.data || [])) {
+          allPosts.push({
+            title:    (m.caption || "").slice(0, 80) || m.media_type || "Post",
+            platform: "instagram",
+            views:    0,
+            likes:    parseInt(m.like_count    || 0),
+            comments: parseInt(m.comments_count || 0),
+          });
+        }
+      }
+    }));
+
+    // Sort by views first, then likes as tiebreaker
+    allPosts.sort((a, b) => (b.views + b.likes * 3) - (a.views + a.likes * 3));
+    res.json({ posts: allPosts.slice(0, 10) });
+  } catch (err) { next(err); }
+});
+
 // GET /api/platforms/youtube/top-videos — top 5 videos by view count
 router.get("/youtube/top-videos", requireAuth, async (req, res, next) => {
   try {

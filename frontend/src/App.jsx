@@ -241,6 +241,25 @@ function AppInner() {
         .text-muted{color:#aaa}
         .text-dim{color:#777}
 
+        /* ── Responsive grid utilities ── */
+        .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+        .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+        .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+        .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+
+        /* ── Mobile overrides ── */
+        @media(max-width:767px){
+          .grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr!important}
+          .hide-mobile{display:none!important}
+          .stack-mobile{flex-direction:column!important}
+          .page-title{font-size:26px!important}
+          .page-sub{font-size:15px!important}
+          .card{border-radius:12px!important}
+        }
+        @media(min-width:768px) and (max-width:1024px){
+          .grid-3,.grid-4,.grid-5{grid-template-columns:repeat(2,1fr)!important}
+        }
+
         @keyframes px1 {
           0%,89%,100%{opacity:0} 90%{opacity:1;transform:translate(0,0)} 91%{opacity:1;transform:translate(-3px,1px)} 92%{opacity:0} 94%{opacity:1;transform:translate(2px,-2px)} 95%{opacity:0}
         }

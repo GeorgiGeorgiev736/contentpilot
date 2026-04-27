@@ -150,7 +150,7 @@ export default function Pricing({ setPage }) {
       {error  && <div style={{ padding:"12px 16px", background:"#EF444410", border:"1px solid #EF444422", borderRadius:10, color:"#EF4444", fontSize:13 }}>{error}</div>}
 
       {/* Plan cards */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
+      <div className="grid-4" style={{ gap:14 }}>
         {PLANS_MONTHLY.map(plan => {
           const isCurrent = currentPlan === plan.id;
           const col       = plan.color;
@@ -222,7 +222,7 @@ export default function Pricing({ setPage }) {
       {/* FAQ */}
       <div className="card" style={{ padding:28 }}>
         <div style={{ fontSize:16, fontWeight:700, color:"#EDEDFA", marginBottom:20 }}>Common questions</div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
+        <div className="grid-2" style={{ gap:20 }}>
           {[
             ["What counts as 1 credit?", "Each AI action uses credits: generating title/tags/description = 1cr, auto-captions = 3cr, AI thumbnails = 5cr, repurposing into 5 clips = 10cr. Free users get 10cr/week, auto-reset every 7 days."],
             ["Can I switch plans anytime?", "Yes. Upgrade or downgrade at any time. Your new plan takes effect immediately and credits are topped up right away."],
