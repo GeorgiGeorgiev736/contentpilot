@@ -488,13 +488,14 @@ router.get("/linkedin/callback", async (req, res) => {
     });
     const profile = await profileRes.json();
 
-    const handle = profile.name || profile.email || "LinkedIn User";
+    const handle    = profile.name || profile.email || "LinkedIn User";
+    const channelId = profile.sub || "default";
     await query(
       `INSERT INTO platform_connections (user_id,platform,channel_id,handle,access_token,followers,connected,updated_at)
-       VALUES ($1,'linkedin','default',$2,$3,0,true,NOW())
+       VALUES ($1,'linkedin',$2,$3,$4,0,true,NOW())
        ON CONFLICT (user_id,platform,channel_id) DO UPDATE SET
-         handle=$2,access_token=$3,connected=true,updated_at=NOW()`,
-      [userId, handle, tokens.access_token]
+         handle=$3,access_token=$4,connected=true,updated_at=NOW()`,
+      [userId, channelId, handle, tokens.access_token]
     );
     res.redirect(`${process.env.FRONTEND_URL}/platforms?connected=linkedin`);
   } catch (err) {
