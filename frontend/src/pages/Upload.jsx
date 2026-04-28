@@ -186,8 +186,9 @@ export default function Upload({ setPage }) {
             </div>
             {mode === "file" ? (
               <div
-                onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                onDragLeave={() => setDragging(false)}
+                onDragEnter={e => { e.preventDefault(); setDragging(true); }}
+                onDragOver={e => { e.preventDefault(); }}
+                onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); }}
                 onDrop={handleDrop}
                 onClick={() => inputRef.current.click()}
                 style={{ padding:"52px 32px", textAlign:"center", cursor:"pointer", background:dragging?"#40A0C008":"transparent", border:dragging?"2px dashed #40A0C066":"2px dashed transparent", transition:"background .15s" }}>
