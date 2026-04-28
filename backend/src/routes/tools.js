@@ -309,14 +309,28 @@ Return ONLY a JSON array of 5 objects — no markdown, no explanation:
   } catch (err) { cleanup(); next(err); }
 });
 
-// ── POST /api/tools/process — combined upload + AI pipeline ──
-router.post("/process", requireAuth, videoUpload.single("video"), async (req, res, next) => {
+// ── POST /api/tools/process — SSE streaming pipeline ─────────
+// Streams progress events so long-running jobs don't hit Railway's timeout.
+// Client reads: event: progress | meta | captions | thumbnails | clips | done | error
+router.post("/process", requireAuth, videoUpload.single("video"), async (req, res) => {
+  // SSE headers — keeps connection alive for as long as needed
+  res.setHeader("Content-Type",  "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection",    "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // disable nginx/Railway proxy buffering
+  res.flushHeaders();
+
+  const emit = (event, data) => {
+    try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch {}
+  };
+
   let downloadedPath = null;
   const cleanup = (extra = []) => {
     if (req.file?.path)  fs.unlink(req.file.path,  () => {});
     if (downloadedPath)  fs.unlink(downloadedPath,  () => {});
     extra.forEach(p => fs.unlink(p, () => {}));
   };
+
   try {
     const opts = {
       meta:       req.body.meta       !== "false",
@@ -325,28 +339,33 @@ router.post("/process", requireAuth, videoUpload.single("video"), async (req, re
       repurpose:  req.body.repurpose  === "true",
     };
 
-    // Resolve video path
     const videoUrl = req.body?.videoUrl?.trim();
     let videoPath  = req.file?.path;
     let mimeType   = req.file?.mimetype || "video/mp4";
 
     if (!videoPath && videoUrl) {
+      emit("progress", { phase: "Downloading video…" });
       const outName  = `${req.user.id}_proc_${Date.now()}.mp4`;
       downloadedPath = path.join(uploadsDir, outName);
       videoPath      = downloadedPath;
       await downloadVideoFromUrl(videoUrl, downloadedPath);
     }
-    if (!videoPath) return res.status(400).json({ error: "No video provided" });
+    if (!videoPath) { emit("error", { error: "No video provided" }); return res.end(); }
 
-    const COSTS = { meta: 1, thumbnails: 5, captions: 3, repurpose: 10 };
+    const COSTS    = { meta: 1, thumbnails: 5, captions: 3, repurpose: 10 };
     const totalCost = Object.entries(opts).filter(([, v]) => v).reduce((s, [k]) => s + (COSTS[k] || 0), 0);
 
-    const g = await gate(req, res, totalCost);
-    if (!g) { cleanup(); return; }
+    // Credit check
+    const isUnlimited = ["pro", "business", "max", "agency", "creator"].includes(req.user.plan);
+    if (!isUnlimited && req.user.credits < totalCost) {
+      emit("error", { error: `This costs ${totalCost} credits. You have ${req.user.credits}.` });
+      cleanup(); return res.end();
+    }
 
-    // Phase 1: transcription (shared between captions + repurpose)
+    // Phase 1: Whisper (shared)
     let whisperOutput = null;
     if (opts.captions || opts.repurpose) {
+      emit("progress", { phase: "Transcribing audio with Whisper… (this may take a few minutes)" });
       const fileUrl = await fileToReplicate(videoPath, mimeType);
       whisperOutput = await replicate.run("openai/whisper", {
         input: { audio: fileUrl, model: "large-v2", language: "auto", transcription: "srt", translate: false },
@@ -356,9 +375,14 @@ router.post("/process", requireAuth, videoUpload.single("video"), async (req, re
     const srt        = whisperOutput?.transcription || "";
     const segments   = whisperOutput?.segments || [];
 
-    // Phase 2: meta (uses transcript for context)
+    if (opts.captions) {
+      emit("captions", { srt, transcript });
+    }
+
+    // Phase 2: Meta
     let metaResult = null;
     if (opts.meta) {
+      emit("progress", { phase: "Writing title, description & tags with Claude…" });
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 900,
@@ -368,9 +392,11 @@ router.post("/process", requireAuth, videoUpload.single("video"), async (req, re
       });
       const raw = msg.content[0].text.trim().replace(/^```json\n?/, "").replace(/\n?```$/, "");
       try { metaResult = JSON.parse(raw); } catch { metaResult = null; }
+      emit("meta", { meta: metaResult });
     }
 
-    // Phase 3: thumbnails + repurpose in parallel
+    // Phase 3: Thumbnails + repurpose in parallel
+    emit("progress", { phase: "Generating thumbnails & finding clips…" });
     const [thumbnailResult, clipsResult] = await Promise.all([
       opts.thumbnails ? (async () => {
         const titleCtx = metaResult?.title || "";
@@ -380,7 +406,7 @@ router.post("/process", requireAuth, videoUpload.single("video"), async (req, re
           { label: "Clean & Minimal", prompt: `${base}, clean minimal modern, single focused subject, white background, professional photography` },
           { label: "Cinematic",       prompt: `${base}, cinematic wide shot, moody atmospheric lighting, dark background vibrant accent colors, film quality` },
         ];
-        return Promise.all(variants.map(async v => {
+        const thumbs = await Promise.all(variants.map(async v => {
           const output = await replicate.run(
             "bytedance/sdxl-lightning-4step:5f24084160c9089501c1b3545d9be3c27883ae2239b6f412990e82d4a6210f8f",
             { input: { prompt: v.prompt, negative_prompt: "blurry, low quality, text, watermark, ugly, deformed", width: 1024, height: 576, num_inference_steps: 4 } }
@@ -388,6 +414,8 @@ router.post("/process", requireAuth, videoUpload.single("video"), async (req, re
           const raw = Array.isArray(output) ? output[0] : output;
           return { label: v.label, url: raw?.url ? raw.url().toString() : raw?.toString() };
         }));
+        emit("thumbnails", { thumbnails: thumbs });
+        return thumbs;
       })() : Promise.resolve(null),
 
       opts.repurpose && segments.length > 0 ? (async () => {
@@ -401,36 +429,35 @@ router.post("/process", requireAuth, videoUpload.single("video"), async (req, re
         });
         const raw   = claude.content[0].text.trim().replace(/^```json\n?/, "").replace(/\n?```$/, "");
         const clips = JSON.parse(raw);
-        const clipPaths = [];
-        const cutClips  = await Promise.all(clips.map(async (clip, i) => {
+        emit("progress", { phase: `Cutting ${clips.length} clips with FFmpeg…` });
+        const cutClips = await Promise.all(clips.map(async (clip, i) => {
           const outName = `${req.user.id}_clip${i}_${Date.now()}.mp4`;
           const outPath = path.join(uploadsDir, outName);
-          clipPaths.push(outPath);
           const duration = Math.max(1, clip.end - clip.start);
           await new Promise((resolve, reject) => {
             ffmpeg(videoPath).seekInput(clip.start).duration(duration)
               .videoCodec("copy").audioCodec("copy").output(outPath)
               .on("end", resolve).on("error", reject).run();
           });
-          const r2Url  = await uploadToR2(outPath, "video/mp4").catch(() => null);
+          const r2Url = await uploadToR2(outPath, "video/mp4").catch(() => null);
           if (r2Url) fs.unlink(outPath, () => {});
           return { url: r2Url || `/uploads/${outName}`, title: clip.title, hook: clip.hook, duration: Math.round(duration) };
         }));
+        emit("clips", { clips: cutClips });
         return cutClips;
       })() : Promise.resolve(null),
     ]);
 
     cleanup();
-    if (!g.isUnlimited) await deduct(req.user.id, "upload_process", totalCost);
+    if (!isUnlimited) await deduct(req.user.id, "upload_process", totalCost);
 
-    res.json({
-      meta:       metaResult,
-      thumbnails: thumbnailResult,
-      captions:   opts.captions ? { srt, transcript } : null,
-      clips:      clipsResult,
-      creditsUsed: g.isUnlimited ? 0 : totalCost,
-    });
-  } catch (err) { cleanup(); next(err); }
+    emit("done", { creditsUsed: isUnlimited ? 0 : totalCost });
+    res.end();
+  } catch (err) {
+    cleanup();
+    emit("error", { error: err.message || "Processing failed" });
+    res.end();
+  }
 });
 
 // ── GET /api/tools/tips — AI trending tips for dashboard (no credit cost) ──

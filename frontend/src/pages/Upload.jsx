@@ -40,6 +40,7 @@ export default function Upload({ setPage }) {
   const [dragging,  setDragging]  = useState(false);
   const [opts,      setOpts]      = useState({ meta: true, thumbnails: true, captions: true, repurpose: false });
   const [phase,     setPhase]     = useState("idle"); // idle | processing | done
+  const [progress,  setProgress]  = useState("");
   const [results,   setResults]   = useState(null);
   const [err,       setErr]       = useState("");
   const [editMeta,  setEditMeta]  = useState(null);
@@ -122,19 +123,55 @@ export default function Upload({ setPage }) {
 
   const process = async () => {
     if (!hasInput) return;
-    setPhase("processing"); setErr(""); setResults(null);
+    setPhase("processing"); setErr(""); setResults(null); setProgress("Uploading video…");
+
     const fd = new FormData();
     if (mode === "file") fd.append("video", file);
     else fd.append("videoUrl", url.trim());
     Object.entries(opts).forEach(([k, v]) => fd.append(k, String(v)));
+
     try {
       const r = await fetch(`${API}/api/tools/process`, { method: "POST", headers: hdr(), body: fd });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
-      setResults(d);
-      setEditMeta(d.meta ? { title: d.meta.title || "", description: d.meta.description || "", tags: (d.meta.tags || []).join(", ") } : null);
-      setPickedThumb(0);
-      setPhase("done");
+      if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || `Server error ${r.status}`); }
+
+      // Read SSE stream — assembles partial results as each phase completes
+      const reader  = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      const assembled = {};
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+
+        // Split on double-newline (SSE event separator)
+        const blocks = buf.split("\n\n");
+        buf = blocks.pop(); // keep incomplete chunk
+
+        for (const block of blocks) {
+          const evMatch   = block.match(/^event:\s*(.+)/m);
+          const dataMatch = block.match(/^data:\s*(.+)/m);
+          if (!evMatch || !dataMatch) continue;
+          const event = evMatch[1].trim();
+          let   data;
+          try { data = JSON.parse(dataMatch[1]); } catch { continue; }
+
+          if (event === "progress")   setProgress(data.phase || "");
+          if (event === "error")      throw new Error(data.error);
+          if (event === "meta")       assembled.meta       = data.meta;
+          if (event === "captions")   assembled.captions   = data;
+          if (event === "thumbnails") assembled.thumbnails = data.thumbnails;
+          if (event === "clips")      assembled.clips      = data.clips;
+          if (event === "done") {
+            assembled.creditsUsed = data.creditsUsed;
+            setResults({ ...assembled });
+            setEditMeta(assembled.meta ? { title: assembled.meta.title || "", description: assembled.meta.description || "", tags: (assembled.meta.tags || []).join(", ") } : null);
+            setPickedThumb(0);
+            setPhase("done");
+          }
+        }
+      }
     } catch (e) {
       setErr(e.message);
       setPhase("idle");
@@ -247,8 +284,8 @@ export default function Upload({ setPage }) {
             <div className="card" style={{ padding:"48px 32px", textAlign:"center" }}>
               <div style={{ fontSize:36, color:"#40A0C0", animation:"spin 1s linear infinite", display:"inline-block", marginBottom:18 }}>◌</div>
               <div style={{ fontSize:18, fontWeight:700, color:"#E0E0F8", marginBottom:10 }}>AI is processing your video…</div>
-              <div style={{ fontSize:14, color:"#6090A8", marginBottom:6 }}>Transcribing → writing metadata → generating thumbnails</div>
-              {opts.repurpose && <div style={{ fontSize:13, color:"#555", marginTop:4 }}>Finding best clips takes 3–8 min — don't close this tab</div>}
+              <div style={{ fontSize:14, color:"#6090A8", marginBottom:6 }}>{progress || "Starting up…"}</div>
+              {opts.repurpose && <div style={{ fontSize:13, color:"#555", marginTop:4 }}>Repurposing clips takes 5–10 min — don't close this tab</div>}
             </div>
           )}
         </div>
