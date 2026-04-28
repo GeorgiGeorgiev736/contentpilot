@@ -203,7 +203,7 @@ export default function Upload({ setPage }) {
                   <>
                     <div style={{ fontSize:42, marginBottom:12, opacity:.4 }}>⬆</div>
                     <div style={{ fontSize:16, fontWeight:600, color:"#888", marginBottom:6 }}>Drop your video here or click to browse</div>
-                    <div style={{ fontSize:13, color:"#555" }}>MP4, MOV, MKV · max 200 MB · best with 1–60 min videos</div>
+                    <div style={{ fontSize:13, color:"#555" }}>MP4, MOV, MKV · max 4 GB · best with 1–60 min videos</div>
                   </>
                 )}
               </div>

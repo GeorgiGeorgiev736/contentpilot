@@ -28,7 +28,7 @@ const videoUpload = multer({
       cb(null, `${req.user.id}_tool_${Date.now()}${ext}`);
     },
   }),
-  limits: { fileSize: 200 * 1024 * 1024 }, // 200 MB
+  limits: { fileSize: 4 * 1024 * 1024 * 1024 }, // 4 GB — stored on R2, not local disk
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith("video/") || file.mimetype.startsWith("audio/")) cb(null, true);
     else cb(new Error("Only video/audio files allowed"));
